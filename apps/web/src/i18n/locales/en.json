@@ -85,7 +85,12 @@
   "settings": {
     "title": "Settings",
     "sectionsAria": "Settings sections",
-    "tabs": { "providers": "Providers", "usage": "Usage", "council": "Council", "memory": "Memory" },
+    "tabs": {
+      "providers": "Providers",
+      "usage": "Usage",
+      "council": "Council",
+      "memory": "Memory"
+    },
     "dismissNotice": "Dismiss notification",
     "connectedCount_one": "{{count}} connected",
     "connectedCount_other": "{{count}} connected",
@@ -96,7 +101,12 @@
       "title": "No providers connected",
       "body": "Connect at least one provider to start chatting. Connected providers take part in Council mode."
     },
-    "group": { "connected": "Connected", "popular": "Popular", "results": "Results", "all": "All providers" },
+    "group": {
+      "connected": "Connected",
+      "popular": "Popular",
+      "results": "Results",
+      "all": "All providers"
+    },
     "showAll": "Show all providers ({{count}})",
     "council": {
       "membersTitle": "Council members",

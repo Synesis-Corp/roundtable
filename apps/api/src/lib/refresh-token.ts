@@ -1,5 +1,5 @@
-import { randomBytes, createHash } from "node:crypto";
-import type { CookieOptions, Response } from "express";
+import { randomBytes, createHash } from 'node:crypto';
+import type { CookieOptions, Response } from 'express';
 
 /**
  * Refresh token strategy (httpOnly cookie):
@@ -12,7 +12,7 @@ import type { CookieOptions, Response } from "express";
  *  - Access tokens stay short-lived JWTs in the Authorization header.
  */
 
-export const REFRESH_COOKIE_NAME = "refreshToken";
+export const REFRESH_COOKIE_NAME = 'refreshToken';
 
 /** Refresh token lifetime: 30 days. Access token stays at 15m (see ACCESS_TTL
  *  below) so the access-token window is short even though the refresh window
@@ -20,7 +20,7 @@ export const REFRESH_COOKIE_NAME = "refreshToken";
 export const REFRESH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Access token lifetime: 15 minutes (kept in sync with signToken). */
-export const ACCESS_TTL = "15m";
+export const ACCESS_TTL = '15m';
 
 export interface GeneratedRefreshToken {
   /** Raw opaque token — goes into the cookie, never persisted. */
@@ -33,7 +33,7 @@ export interface GeneratedRefreshToken {
 
 /** Generates a fresh opaque refresh token plus its hash and expiry. */
 export function generateRefreshToken(now: Date = new Date()): GeneratedRefreshToken {
-  const raw = randomBytes(32).toString("hex");
+  const raw = randomBytes(32).toString('hex');
   return {
     raw,
     hash: hashRefreshToken(raw),
@@ -43,7 +43,7 @@ export function generateRefreshToken(now: Date = new Date()): GeneratedRefreshTo
 
 /** sha256 hex digest of a raw refresh token. Deterministic — used for lookups. */
 export function hashRefreshToken(raw: string): string {
-  return createHash("sha256").update(raw).digest("hex");
+  return createHash('sha256').update(raw).digest('hex');
 }
 
 /**
@@ -55,7 +55,7 @@ export function hashRefreshToken(raw: string): string {
  * its own public prefix, so it is configured via env — same reason as WEB_URL.
  */
 export function refreshCookiePath(): string {
-  return process.env.REFRESH_COOKIE_PATH ?? "/auth";
+  return process.env.REFRESH_COOKIE_PATH ?? '/auth';
 }
 
 /**
@@ -65,8 +65,8 @@ export function refreshCookiePath(): string {
 export function refreshCookieOptions(): CookieOptions {
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
     path: refreshCookiePath(),
     maxAge: REFRESH_TTL_MS,
   };

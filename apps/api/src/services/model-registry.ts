@@ -1,15 +1,15 @@
-import type { Modality, Feature } from "@chat/sdk";
-import { getAllModels, getEffortSpec, registerModel } from "@chat/router";
-import type { EffortModelMetadata, EffortSpec } from "@chat/router";
+import type { Modality, Feature } from '@chat/sdk';
+import { getAllModels, getEffortSpec, registerModel } from '@chat/router';
+import type { EffortModelMetadata, EffortSpec } from '@chat/router';
 import {
   fetchModelsDev,
   getModelsDevCache,
   getModelsDevFetchError,
   type ModelsDevModel,
   type ModelsDevProvider,
-} from "@chat/providers";
-import { logger } from "../lib/logger";
-import { loadCapabilitiesFromDb, persistCapabilities } from "../lib/capability-registry";
+} from '@chat/providers';
+import { logger } from '../lib/logger';
+import { loadCapabilitiesFromDb, persistCapabilities } from '../lib/capability-registry';
 
 // ── Public API: models.dev → Feature mapping ────────────────────────────────
 
@@ -27,14 +27,14 @@ import { loadCapabilitiesFromDb, persistCapabilities } from "../lib/capability-r
  */
 export function mapModelsDevFeatures(model: ModelsDevModel): Feature[] {
   const features: Feature[] = [];
-  if (model.reasoning) features.push("reasoning");
-  if (model.tool_call) features.push("tool-use");
-  if (model.structured_output) features.push("structured-output");
-  if (model.attachment && model.modalities?.input?.includes("image")) {
-    features.push("vision");
+  if (model.reasoning) features.push('reasoning');
+  if (model.tool_call) features.push('tool-use');
+  if (model.structured_output) features.push('structured-output');
+  if (model.attachment && model.modalities?.input?.includes('image')) {
+    features.push('vision');
   }
-  if (model.modalities?.input?.includes("pdf")) {
-    features.push("pdf-input");
+  if (model.modalities?.input?.includes('pdf')) {
+    features.push('pdf-input');
   }
   return features;
 }
@@ -64,21 +64,21 @@ export interface AvailableProvider {
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const POPULAR_PROVIDER_IDS = [
-  "openai",
-  "anthropic",
-  "google",
-  "opencode",
-  "groq",
-  "mistral",
-  "cohere",
-  "openrouter",
-  "deepseek",
-  "perplexity",
-  "fireworks-ai",
-  "togetherai",
-  "azure",
-  "xai",
-  "amazon-bedrock",
+  'openai',
+  'anthropic',
+  'google',
+  'opencode',
+  'groq',
+  'mistral',
+  'cohere',
+  'openrouter',
+  'deepseek',
+  'perplexity',
+  'fireworks-ai',
+  'togetherai',
+  'azure',
+  'xai',
+  'amazon-bedrock',
 ];
 
 // ── Registry population ────────────────────────────────────────────────────
@@ -97,14 +97,17 @@ function populateRouterRegistry(): void {
       registerModel({
         modelId: model.id,
         provider: providerId,
-        modalities: (model.modalities?.input ?? ["text"]) as Modality[],
+        modalities: (model.modalities?.input ?? ['text']) as Modality[],
         features,
         contextWindow: model.limit?.context,
       });
     }
   }
 
-  logger.info({ modelCount: getAllModels().length }, "providers: registered models from Models.dev into router registry");
+  logger.info(
+    { modelCount: getAllModels().length },
+    'providers: registered models from Models.dev into router registry'
+  );
 }
 
 // ── Boot sequence ──────────────────────────────────────────────────────────
@@ -113,10 +116,10 @@ export async function initCapabilityRegistry(): Promise<void> {
   try {
     const loaded = await loadCapabilitiesFromDb();
     if (loaded > 0) {
-      logger.info({ count: loaded }, "providers: loaded capabilities from DB cache");
+      logger.info({ count: loaded }, 'providers: loaded capabilities from DB cache');
     }
   } catch (err) {
-    logger.error({ err }, "providers: failed to load capabilities from DB");
+    logger.error({ err }, 'providers: failed to load capabilities from DB');
   }
 
   await fetchModelsDev();
@@ -124,19 +127,19 @@ export async function initCapabilityRegistry(): Promise<void> {
   if (!cache) {
     logger.error(
       { err: getModelsDevFetchError() },
-      "providers: failed to fetch Models.dev — serving DB-cached capabilities"
+      'providers: failed to fetch Models.dev — serving DB-cached capabilities'
     );
     return;
   }
 
-  logger.info({ providerCount: cache.size }, "providers: fetched providers from Models.dev");
+  logger.info({ providerCount: cache.size }, 'providers: fetched providers from Models.dev');
   populateRouterRegistry();
 
   try {
     const persisted = await persistCapabilities(getAllModels());
-    logger.info({ count: persisted }, "providers: persisted capabilities to DB");
+    logger.info({ count: persisted }, 'providers: persisted capabilities to DB');
   } catch (err) {
-    logger.error({ err }, "providers: failed to persist capabilities to DB");
+    logger.error({ err }, 'providers: failed to persist capabilities to DB');
   }
 }
 
@@ -159,15 +162,15 @@ export function extractTopModels(provider: ModelsDevProvider, maxModels = 5): Mo
 
   return scored.slice(0, maxModels).map(({ model }) => {
     const capabilities: string[] = [];
-    if (model.modalities?.input?.includes("text")) capabilities.push("text");
-    if (model.modalities?.input?.includes("image")) capabilities.push("image");
-    if (model.modalities?.input?.includes("audio")) capabilities.push("audio");
-    if (model.modalities?.input?.includes("pdf")) capabilities.push("pdf");
-    if (model.reasoning) capabilities.push("reasoning");
-    if (model.tool_call) capabilities.push("tools");
+    if (model.modalities?.input?.includes('text')) capabilities.push('text');
+    if (model.modalities?.input?.includes('image')) capabilities.push('image');
+    if (model.modalities?.input?.includes('audio')) capabilities.push('audio');
+    if (model.modalities?.input?.includes('pdf')) capabilities.push('pdf');
+    if (model.reasoning) capabilities.push('reasoning');
+    if (model.tool_call) capabilities.push('tools');
 
     const parts: string[] = [];
-    if (capabilities.length > 0) parts.push(capabilities.join(" + "));
+    if (capabilities.length > 0) parts.push(capabilities.join(' + '));
     if (model.limit?.context) {
       // Collapse millions into "M" (1000K and 1050K both read as 1M); only use
       // "K" below 1M. Avoids the confusing "1000K context" / "2000K context".
@@ -185,7 +188,7 @@ export function extractTopModels(provider: ModelsDevProvider, maxModels = 5): Mo
       id: model.id,
       name: model.name,
       provider: provider.id,
-      description: parts.join(", ") || "Text generation",
+      description: parts.join(', ') || 'Text generation',
       contextWindow: model.limit?.context ?? 0,
       capabilities,
     };
@@ -221,7 +224,10 @@ export function getAvailableProviders(): AvailableProvider[] {
 
 // ── Effort spec helpers ────────────────────────────────────────────────────
 
-function findModelsDevModel(providerId: string, modelId: string): {
+function findModelsDevModel(
+  providerId: string,
+  modelId: string
+): {
   provider: ModelsDevProvider;
   model: ModelsDevModel;
 } | null {
@@ -235,12 +241,15 @@ function findModelsDevModel(providerId: string, modelId: string): {
   return model ? { provider, model } : null;
 }
 
-function getEffortMetadata(provider: ModelsDevProvider, model: ModelsDevModel): EffortModelMetadata {
+function getEffortMetadata(
+  provider: ModelsDevProvider,
+  model: ModelsDevModel
+): EffortModelMetadata {
   return {
     apiId: model.id,
-    npm: model.provider?.npm ?? provider.npm ?? "@ai-sdk/openai-compatible",
+    npm: model.provider?.npm ?? provider.npm ?? '@ai-sdk/openai-compatible',
     reasoning: model.reasoning,
-    releaseDate: model.release_date ?? "",
+    releaseDate: model.release_date ?? '',
     outputLimit: model.limit?.output,
   };
 }

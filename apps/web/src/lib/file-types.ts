@@ -10,14 +10,14 @@
  * attribute can be derived from it and stay in sync.
  */
 
-export const ALLOWED_MIME_PREFIXES = ["image/*", "application/pdf"] as const;
+export const ALLOWED_MIME_PREFIXES = ['image/*', 'application/pdf'] as const;
 
 /** Returns true if the file's mime type is allowed for chat attachment. */
 export function isAllowedFile(file: File): boolean {
   const type = file.type;
   if (!type) return false;
   return ALLOWED_MIME_PREFIXES.some((allowed) => {
-    if (allowed.endsWith("/*")) {
+    if (allowed.endsWith('/*')) {
       // Wildcard: "image/*" matches "image/jpeg", "image/png", etc.
       const prefix = allowed.slice(0, -1); // "image/"
       return type.startsWith(prefix);

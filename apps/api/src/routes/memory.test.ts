@@ -71,10 +71,13 @@ describe('memory routes', () => {
   it('creates a trimmed manual memory with normalized unique tags', async () => {
     mockPrisma.memory.create.mockResolvedValue(memory);
 
-    const response = await request(app).post('/memory').set(authHeader).send({
-      content: '  Prefiere respuestas directas  ',
-      tags: [' Preferencia ', 'PRODUCTO', 'preferencia'],
-    });
+    const response = await request(app)
+      .post('/memory')
+      .set(authHeader)
+      .send({
+        content: '  Prefiere respuestas directas  ',
+        tags: [' Preferencia ', 'PRODUCTO', 'preferencia'],
+      });
 
     expect(response.status).toBe(201);
     expect(response.body.id).toBe('memory-1');
@@ -90,11 +93,14 @@ describe('memory routes', () => {
   });
 
   it('rejects invalid create payloads at the Zod boundary', async () => {
-    const response = await request(app).post('/memory').set(authHeader).send({
-      content: '   ',
-      tags: ['ok'],
-      userId: 'user-b',
-    });
+    const response = await request(app)
+      .post('/memory')
+      .set(authHeader)
+      .send({
+        content: '   ',
+        tags: ['ok'],
+        userId: 'user-b',
+      });
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('Validation failed');
@@ -109,10 +115,13 @@ describe('memory routes', () => {
       tags: ['proyecto'],
     });
 
-    const response = await request(app).patch('/memory/memory-1').set(authHeader).send({
-      content: '  Trabaja en Roundtable ',
-      tags: [' Proyecto ', 'proyecto'],
-    });
+    const response = await request(app)
+      .patch('/memory/memory-1')
+      .set(authHeader)
+      .send({
+        content: '  Trabaja en Roundtable ',
+        tags: [' Proyecto ', 'proyecto'],
+      });
 
     expect(response.status).toBe(200);
     expect(response.body.content).toBe('Trabaja en Roundtable');

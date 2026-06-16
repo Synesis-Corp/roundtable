@@ -1,4 +1,4 @@
-import type { Conversation } from "@chat/sdk";
+import type { Conversation } from '@chat/sdk';
 
 export interface ConversationGroup {
   label: string;
@@ -11,9 +11,7 @@ function startOfDay(d: Date): Date {
   return s;
 }
 
-export function groupConversationsByDate(
-  conversations: Conversation[]
-): ConversationGroup[] {
+export function groupConversationsByDate(conversations: Conversation[]): ConversationGroup[] {
   const now = new Date();
   const todayStart = startOfDay(now);
   const yesterdayStart = new Date(todayStart);
@@ -23,11 +21,11 @@ export function groupConversationsByDate(
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const groups: ConversationGroup[] = [
-    { label: "Today", conversations: [] },
-    { label: "Yesterday", conversations: [] },
-    { label: "This week", conversations: [] },
-    { label: "This month", conversations: [] },
-    { label: "Older", conversations: [] },
+    { label: 'Today', conversations: [] },
+    { label: 'Yesterday', conversations: [] },
+    { label: 'This week', conversations: [] },
+    { label: 'This month', conversations: [] },
+    { label: 'Older', conversations: [] },
   ];
 
   const sorted = [...conversations].sort((a, b) => {
@@ -58,42 +56,39 @@ export function groupConversationsByDate(
   return groups.filter((g) => g.conversations.length > 0);
 }
 
-export function formatConversationTime(
-  dateStr: string,
-  group: string
-): string {
+export function formatConversationTime(dateStr: string, group: string): string {
   const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) return '';
 
   const timeOptions: Intl.DateTimeFormatOptions = {
-    hour: "numeric",
-    minute: "2-digit",
+    hour: 'numeric',
+    minute: '2-digit',
     hour12: true,
   };
   const shortDateOptions: Intl.DateTimeFormatOptions = {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
   };
   const olderOptions: Intl.DateTimeFormatOptions = {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   };
 
   switch (group) {
-    case "Today":
-      return date.toLocaleTimeString("en-US", timeOptions);
-    case "Yesterday": {
-      const time = date.toLocaleTimeString("en-US", timeOptions);
+    case 'Today':
+      return date.toLocaleTimeString('en-US', timeOptions);
+    case 'Yesterday': {
+      const time = date.toLocaleTimeString('en-US', timeOptions);
       return `Yesterday, ${time}`;
     }
-    case "This week":
-    case "This month":
-      return date.toLocaleDateString("en-US", shortDateOptions);
-    case "Older":
-      return date.toLocaleDateString("en-US", olderOptions);
+    case 'This week':
+    case 'This month':
+      return date.toLocaleDateString('en-US', shortDateOptions);
+    case 'Older':
+      return date.toLocaleDateString('en-US', olderOptions);
     default:
-      return date.toLocaleDateString("en-US", olderOptions);
+      return date.toLocaleDateString('en-US', olderOptions);
   }
 }

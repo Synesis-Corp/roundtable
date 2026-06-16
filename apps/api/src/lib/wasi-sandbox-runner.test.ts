@@ -34,7 +34,10 @@ describe.skipIf(!hasWasm)('WasiSandboxRunner (integration — real python.wasm)'
   });
 
   it('kills runaway code on the timeout', async () => {
-    const res = await runner.run('while True:\n    pass', { timeoutMs: 2_000, maxOutputChars: 50_000 });
+    const res = await runner.run('while True:\n    pass', {
+      timeoutMs: 2_000,
+      maxOutputChars: 50_000,
+    });
     expect(res.timedOut).toBe(true);
     expect(res.error).toMatch(/timed out/i);
   }, 10_000);

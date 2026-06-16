@@ -1,9 +1,9 @@
-import pino from "pino";
-import { pinoHttp } from "pino-http";
-import { randomUUID } from "node:crypto";
+import pino from 'pino';
+import { pinoHttp } from 'pino-http';
+import { randomUUID } from 'node:crypto';
 
-const isProd = process.env.NODE_ENV === "production";
-const isTest = process.env.NODE_ENV === "test";
+const isProd = process.env.NODE_ENV === 'production';
+const isTest = process.env.NODE_ENV === 'test';
 
 /**
  * Keys that must NEVER reach the logs. The "API key in logs" bug already
@@ -12,21 +12,21 @@ const isTest = process.env.NODE_ENV === "test";
  * occurrences plus the request headers that carry credentials.
  */
 const redactPaths = [
-  "apiKey",
-  "api_key",
-  "apikey",
-  "password",
-  "passwordHash",
-  "encryptedApiKey",
-  "credential",
-  "credentials",
-  "token",
-  "accessToken",
-  "refreshToken",
-  "idToken",
-  "authorization",
-  "req.headers.authorization",
-  "req.headers.cookie",
+  'apiKey',
+  'api_key',
+  'apikey',
+  'password',
+  'passwordHash',
+  'encryptedApiKey',
+  'credential',
+  'credentials',
+  'token',
+  'accessToken',
+  'refreshToken',
+  'idToken',
+  'authorization',
+  'req.headers.authorization',
+  'req.headers.cookie',
   '*.apiKey',
   '*.password',
   '*.token',
@@ -39,8 +39,8 @@ const redactPaths = [
  * test so the vitest output stays clean. Level overridable via LOG_LEVEL.
  */
 export const logger = pino({
-  level: process.env.LOG_LEVEL ?? (isProd ? "info" : "debug"),
-  redact: { paths: redactPaths, censor: "[REDACTED]" },
+  level: process.env.LOG_LEVEL ?? (isProd ? 'info' : 'debug'),
+  redact: { paths: redactPaths, censor: '[REDACTED]' },
   enabled: !isTest,
 });
 
@@ -52,12 +52,12 @@ export const logger = pino({
 export const httpLogger = pinoHttp({
   logger,
   genReqId: (req, res) => {
-    const inbound = req.headers["x-request-id"];
+    const inbound = req.headers['x-request-id'];
     const id = (Array.isArray(inbound) ? inbound[0] : inbound) ?? randomUUID();
-    res.setHeader("x-request-id", id);
+    res.setHeader('x-request-id', id);
     return id;
   },
   autoLogging: {
-    ignore: (req) => req.url === "/health" || req.url === "/ready",
+    ignore: (req) => req.url === '/health' || req.url === '/ready',
   },
 });

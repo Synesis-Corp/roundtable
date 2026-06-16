@@ -18,18 +18,18 @@
  * The test runs from the apps/web/ directory and greps the rest of
  * the monorepo (apps/api/, apps/web/, packages/) for emojis.
  */
-import { describe, it, expect } from "vitest";
-import { execSync } from "node:child_process";
-import { resolve } from "node:path";
+import { describe, it, expect } from 'vitest';
+import { execSync } from 'node:child_process';
+import { resolve } from 'node:path';
 
-const REPO_ROOT = resolve(__dirname, "../../../");
+const REPO_ROOT = resolve(__dirname, '../../../');
 
 // Unicode ranges that cover most emoji usage. The full emoji set is huge;
 // this matches the most common ones (Misc Symbols, Dingbats, Emoticons,
 // Transport, Misc Symbols & Pictographs, Supplemental Symbols and
 // Pictographs, Symbols & Pictographs Extended-A). Anything outside this
 // pattern in product code is almost certainly a regression.
-const EMOJI_PATTERN = "[\\x{1F000}-\\x{1FFFF}]|[\\x{2600}-\\x{27BF}]";
+const EMOJI_PATTERN = '[\\x{1F000}-\\x{1FFFF}]|[\\x{2600}-\\x{27BF}]';
 
 function findEmojis(): { file: string; line: number; match: string }[] {
   // -n: line numbers
@@ -51,19 +51,19 @@ function findEmojis(): { file: string; line: number; match: string }[] {
         `-g '*.{ts,tsx,js,jsx,html}' ` +
         `-g '!*.test.{ts,tsx}' ` +
         `--no-ignore 2>/dev/null || true`,
-      { cwd: REPO_ROOT, encoding: "utf-8" },
+      { cwd: REPO_ROOT, encoding: 'utf-8' }
     );
   } catch {
-    raw = "";
+    raw = '';
   }
 
   return raw
-    .split("\n")
+    .split('\n')
     .filter((line) => line.trim().length > 0)
     .map((line) => {
       // Format: "path/to/file:line:match"
-      const lastColon = line.lastIndexOf(":");
-      const secondLastColon = line.lastIndexOf(":", lastColon - 1);
+      const lastColon = line.lastIndexOf(':');
+      const secondLastColon = line.lastIndexOf(':', lastColon - 1);
       const file = line.slice(0, secondLastColon);
       const lineNum = parseInt(line.slice(secondLastColon + 1, lastColon), 10);
       const match = line.slice(lastColon + 1);
@@ -71,17 +71,17 @@ function findEmojis(): { file: string; line: number; match: string }[] {
     });
 }
 
-describe("no-emojis policy (product code)", () => {
-  it("apps/ and packages/ contain no emoji characters", () => {
+describe('no-emojis policy (product code)', () => {
+  it('apps/ and packages/ contain no emoji characters', () => {
     const hits = findEmojis();
     if (hits.length > 0) {
       const summary = hits
         .map((h) => `  ${h.file}:${h.line}  →  ${h.match.trim().slice(0, 80)}`)
-        .join("\n");
+        .join('\n');
       throw new Error(
         `Found ${hits.length} emoji(s) in product code. ` +
           `Replace with SVG icons (Feather-style stroke) or text. ` +
-          `Project docs (CHANGELOG/STATUS/ROADMAP) may keep ✅/❌/🔴/🕒 as semantic markers, but product UI must be emoji-free.\n\n${summary}`,
+          `Project docs (CHANGELOG/STATUS/ROADMAP) may keep ✅/❌/🔴/🕒 as semantic markers, but product UI must be emoji-free.\n\n${summary}`
       );
     }
     expect(hits).toEqual([]);

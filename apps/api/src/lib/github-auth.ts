@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes } from 'node:crypto';
 
 /** Shape returned by GitHub's `/user` endpoint. Only the fields we use. */
 export interface GitHubUser {
@@ -22,10 +22,10 @@ interface GitHubEmail {
  * and reused in any context. No `prisma` or `express` dependency.
  */
 
-const GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize";
-const GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token";
-const GITHUB_USER_URL = "https://github.com/user";
-const GITHUB_EMAILS_URL = "https://api.github.com/user/emails";
+const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
+const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
+const GITHUB_USER_URL = 'https://github.com/user';
+const GITHUB_EMAILS_URL = 'https://api.github.com/user/emails';
 
 /**
  * Returns the GitHub authorize URL the frontend should redirect (or popup) to.
@@ -38,18 +38,18 @@ const GITHUB_EMAILS_URL = "https://api.github.com/user/emails";
  */
 export function buildAuthorizeUrl(state: string, redirectUri: string, clientId: string): string {
   const url = new URL(GITHUB_AUTHORIZE_URL);
-  url.searchParams.set("client_id", clientId);
-  url.searchParams.set("redirect_uri", redirectUri);
-  url.searchParams.set("state", state);
-  url.searchParams.set("scope", "user:email");
+  url.searchParams.set('client_id', clientId);
+  url.searchParams.set('redirect_uri', redirectUri);
+  url.searchParams.set('state', state);
+  url.searchParams.set('scope', 'user:email');
   // `allow_signup=true` is the default; spelled out for clarity.
-  url.searchParams.set("allow_signup", "true");
+  url.searchParams.set('allow_signup', 'true');
   return url.toString();
 }
 
 /** Generates a 32-byte hex opaque state for CSRF protection. */
 export function generateState(): string {
-  return randomBytes(32).toString("hex");
+  return randomBytes(32).toString('hex');
 }
 
 interface TokenResponse {
@@ -71,13 +71,13 @@ export async function exchangeCodeForToken(
   redirectUri: string,
   clientId: string,
   clientSecret: string,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: typeof fetch = fetch
 ): Promise<string> {
   const res = await fetchImpl(GITHUB_TOKEN_URL, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
     },
     body: new URLSearchParams({
       client_id: clientId,
@@ -94,7 +94,7 @@ export async function exchangeCodeForToken(
   const data = (await res.json()) as TokenResponse;
   if (data.error || !data.access_token) {
     throw new Error(
-      `GitHub token exchange failed: ${data.error ?? "missing access_token"}${data.error_description ? " — " + data.error_description : ""}`,
+      `GitHub token exchange failed: ${data.error ?? 'missing access_token'}${data.error_description ? ' — ' + data.error_description : ''}`
     );
   }
   return data.access_token;
@@ -107,14 +107,14 @@ export async function exchangeCodeForToken(
  */
 export async function fetchGitHubUser(
   accessToken: string,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: typeof fetch = fetch
 ): Promise<GitHubUser> {
   const res = await fetchImpl(GITHUB_USER_URL, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "roundtable-ai",
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'roundtable-ai',
     },
   });
 
@@ -133,14 +133,14 @@ export async function fetchGitHubUser(
  */
 export async function fetchPrimaryEmail(
   accessToken: string,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: typeof fetch = fetch
 ): Promise<string | null> {
   const res = await fetchImpl(GITHUB_EMAILS_URL, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "roundtable-ai",
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'roundtable-ai',
     },
   });
 

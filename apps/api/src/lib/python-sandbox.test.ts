@@ -38,7 +38,16 @@ describe('checkImports — stdlib allowlist (deny-by-default)', () => {
   });
 
   it('exposes a non-empty allowlist that includes the documented safe modules', () => {
-    for (const m of ['math', 'statistics', 'json', 're', 'datetime', 'itertools', 'collections', 'random']) {
+    for (const m of [
+      'math',
+      'statistics',
+      'json',
+      're',
+      'datetime',
+      'itertools',
+      'collections',
+      'random',
+    ]) {
       expect(PYTHON_IMPORT_ALLOWLIST.has(m)).toBe(true);
     }
     expect(PYTHON_IMPORT_ALLOWLIST.has('os')).toBe(false);

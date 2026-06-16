@@ -1,13 +1,9 @@
-import type {
-  ChatRequest,
-  RoutingDecision,
-  UserPreference,
-} from "@chat/sdk";
-import { findCapableModels, getModel, getAllModels } from "./registry";
-import { isUseCaseEligible } from "./capability-matrix";
+import type { ChatRequest, RoutingDecision, UserPreference } from '@chat/sdk';
+import { findCapableModels, getModel, getAllModels } from './registry';
+import { isUseCaseEligible } from './capability-matrix';
 
 function detectRequiredModalities(request: ChatRequest): string[] {
-  const mods = new Set<string>(["text"]);
+  const mods = new Set<string>(['text']);
   const lastMessage = request.messages[request.messages.length - 1];
   if (lastMessage?.attachments) {
     for (const att of lastMessage.attachments) {
@@ -19,24 +15,24 @@ function detectRequiredModalities(request: ChatRequest): string[] {
 
 function detectFeatures(request: ChatRequest): string[] {
   const features = new Set<string>();
-  const content = request.messages.map((m) => m.content).join(" ").toLowerCase();
+  const content = request.messages
+    .map((m) => m.content)
+    .join(' ')
+    .toLowerCase();
   if (/code|function|json|schema|programming/i.test(content)) {
-    features.add("tool-use");
+    features.add('tool-use');
   }
   if (/why|how|explain|reason|think|compare/i.test(content)) {
-    features.add("reasoning");
+    features.add('reasoning');
   }
   return Array.from(features);
 }
 
-export function route(
-  request: ChatRequest,
-  preferences?: UserPreference
-): RoutingDecision {
+export function route(request: ChatRequest, preferences?: UserPreference): RoutingDecision {
   // The use case drives which models are eligible: a model the capability
   // matrix excludes from solo/multi chat (e.g. an embedding model) must never
   // be routed here even if its declared modalities would otherwise match.
-  const useCase: "single" | "multi" = preferences?.multiMode ? "multi" : "single";
+  const useCase: 'single' | 'multi' = preferences?.multiMode ? 'multi' : 'single';
   const eligible = (m: { provider: string; modelId: string }) =>
     isUseCaseEligible(m.provider, m.modelId, useCase);
 
@@ -50,7 +46,7 @@ export function route(
     }
 
     // forceProvider without forceModel — pick first model from that provider
-    const providerModels = findCapableModels(["text"], []).filter(
+    const providerModels = findCapableModels(['text'], []).filter(
       (m) => m.provider === preferences.forceProvider && eligible(m)
     );
     if (providerModels.length > 0) {
@@ -73,9 +69,9 @@ export function route(
   const candidates = findCapableModels(modalities, features).filter(eligible);
 
   if (candidates.length === 0) {
-    const textFallbacks = findCapableModels(["text"], []).filter(eligible);
+    const textFallbacks = findCapableModels(['text'], []).filter(eligible);
     if (textFallbacks.length === 0) {
-      throw new Error("No capable models available");
+      throw new Error('No capable models available');
     }
     return { primary: textFallbacks[0], fallbacks: textFallbacks.slice(1) };
   }

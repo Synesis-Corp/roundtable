@@ -1,8 +1,8 @@
-import multer from "multer";
-import type { Response, NextFunction } from "express";
-import type { Message } from "@chat/sdk";
-import { extractAttachments } from "./attachments";
-import type { AuthenticatedRequest } from "../middleware/auth";
+import multer from 'multer';
+import type { Response, NextFunction } from 'express';
+import type { Message } from '@chat/sdk';
+import { extractAttachments } from './attachments';
+import type { AuthenticatedRequest } from '../middleware/auth';
 
 /** Shared upload middleware — 25MB per file, 10 files max. The size cap
  *  accommodates typical PDFs (papers, contracts, manuals) which commonly run
@@ -14,15 +14,15 @@ export const upload = multer({
 
 /** Wraps multer upload with proper MulterError → 413/400 status codes. */
 export function uploadFiles(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  upload.array("files", 10)(req, res, (err: unknown) => {
+  upload.array('files', 10)(req, res, (err: unknown) => {
     if (err) {
       if (err instanceof multer.MulterError) {
-        if (err.code === "LIMIT_FILE_SIZE" || err.code === "LIMIT_FILE_COUNT") {
+        if (err.code === 'LIMIT_FILE_SIZE' || err.code === 'LIMIT_FILE_COUNT') {
           return res.status(413).json({ error: err.message });
         }
         return res.status(400).json({ error: err.message });
       }
-      return res.status(500).json({ error: "Upload failed" });
+      return res.status(500).json({ error: 'Upload failed' });
     }
     next();
   });
@@ -35,12 +35,15 @@ export function uploadFiles(req: AuthenticatedRequest, res: Response, next: Next
  *
  * When no multipart is detected, the caller falls through to req.body.
  */
-export async function parseMultipartBody(req: AuthenticatedRequest): Promise<{
-  messages: Message[];
-  preferences: Record<string, unknown>;
-  conversationId: string | undefined;
-  ok: true;
-} | { ok: false; error: string; status: number }> {
+export async function parseMultipartBody(req: AuthenticatedRequest): Promise<
+  | {
+      messages: Message[];
+      preferences: Record<string, unknown>;
+      conversationId: string | undefined;
+      ok: true;
+    }
+  | { ok: false; error: string; status: number }
+> {
   let messages: Message[];
   let preferences: Record<string, unknown> = {};
 
@@ -72,16 +75,13 @@ export async function parseMultipartBody(req: AuthenticatedRequest): Promise<{
   const attachments = await extractAttachments(files);
 
   if (attachments.length > 0) {
-    const lastUserIdx = messages.map((m) => m.role).lastIndexOf("user");
+    const lastUserIdx = messages.map((m) => m.role).lastIndexOf('user');
     if (lastUserIdx >= 0) {
       const userMsg = messages[lastUserIdx];
-      if (!userMsg.content || userMsg.content.trim() === "") {
-        userMsg.content = "Analyze this:";
+      if (!userMsg.content || userMsg.content.trim() === '') {
+        userMsg.content = 'Analyze this:';
       }
-      userMsg.attachments = [
-        ...(userMsg.attachments ?? []),
-        ...attachments,
-      ];
+      userMsg.attachments = [...(userMsg.attachments ?? []), ...attachments];
     }
   }
 

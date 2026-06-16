@@ -1,4 +1,4 @@
-import { useTranslation } from "react-i18next";
+import { useTranslation } from 'react-i18next';
 
 interface SidebarTopbarTogglesProps {
   desktopCollapsed: boolean;
@@ -24,20 +24,25 @@ export function SidebarTopbarToggles({
       <button
         onClick={onOpenMobile}
         className="lg:hidden p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
-        style={{ color: "var(--text-3)", borderRadius: "var(--r-sm)" }}
+        style={{ color: 'var(--text-3)', borderRadius: 'var(--r-sm)' }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.color = "var(--text-1)";
-          (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--hover)";
+          (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--hover)';
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)";
-          (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+          (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
         }}
-        title={t("shell.openSidebar")}
-        aria-label={t("shell.openSidebar")}
+        title={t('shell.openSidebar')}
+        aria-label={t('shell.openSidebar')}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
         </svg>
       </button>
       {/* Desktop expand — only shown when collapsed */}
@@ -45,20 +50,25 @@ export function SidebarTopbarToggles({
         <button
           onClick={onToggleDesktopCollapsed}
           className="hidden lg:inline-flex p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
-          style={{ color: "var(--text-3)", borderRadius: "var(--r-sm)" }}
+          style={{ color: 'var(--text-3)', borderRadius: 'var(--r-sm)' }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-1)";
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--hover)";
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--hover)';
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)";
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
           }}
-          title={t("shell.openSidebar")}
-          aria-label={t("shell.openSidebar")}
+          title={t('shell.openSidebar')}
+          aria-label={t('shell.openSidebar')}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 5l7 7-7 7M5 5l7 7-7 7"
+            />
           </svg>
         </button>
       )}
@@ -67,17 +77,17 @@ export function SidebarTopbarToggles({
         <button
           onClick={onNewChat}
           className="hidden lg:inline-flex p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
-          style={{ color: "var(--text-3)", borderRadius: "var(--r-sm)" }}
+          style={{ color: 'var(--text-3)', borderRadius: 'var(--r-sm)' }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-1)";
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--hover)";
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--hover)';
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)";
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
           }}
-          title={t("shell.newChat")}
-          aria-label={t("shell.newChat")}
+          title={t('shell.newChat')}
+          aria-label={t('shell.newChat')}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

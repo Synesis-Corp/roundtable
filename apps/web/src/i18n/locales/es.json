@@ -85,7 +85,12 @@
   "settings": {
     "title": "Ajustes",
     "sectionsAria": "Secciones de ajustes",
-    "tabs": { "providers": "Proveedores", "usage": "Uso", "council": "Consejo", "memory": "Memoria" },
+    "tabs": {
+      "providers": "Proveedores",
+      "usage": "Uso",
+      "council": "Consejo",
+      "memory": "Memoria"
+    },
     "dismissNotice": "Cerrar notificación",
     "connectedCount_one": "{{count}} conectado",
     "connectedCount_other": "{{count}} conectados",
@@ -96,7 +101,12 @@
       "title": "Sin proveedores conectados",
       "body": "Conecta al menos un proveedor para empezar a chatear. Los proveedores conectados participan en el modo Consejo."
     },
-    "group": { "connected": "Conectados", "popular": "Populares", "results": "Resultados", "all": "Todos los proveedores" },
+    "group": {
+      "connected": "Conectados",
+      "popular": "Populares",
+      "results": "Resultados",
+      "all": "Todos los proveedores"
+    },
     "showAll": "Ver todos los proveedores ({{count}})",
     "council": {
       "membersTitle": "Miembros del Consejo",

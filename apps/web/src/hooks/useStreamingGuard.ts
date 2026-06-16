@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
 
 /**
  * Owns the `streaming` flag published to ChatPage via StreamingContext and the
@@ -12,7 +12,7 @@ export function useStreamingGuard() {
   const confirmLeaveIfStreaming = useCallback(() => {
     if (!streaming) return true;
     return window.confirm(
-      "Hay una respuesta en curso. Si salís ahora se perderá lo último que enviaste. ¿Salir igual?"
+      'Hay una respuesta en curso. Si salís ahora se perderá lo último que enviaste. ¿Salir igual?'
     );
   }, [streaming]);
 

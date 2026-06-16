@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import type { AvailableProvider } from "@chat/sdk";
-import { apiGet } from "../lib/api-client";
+import { useState, useEffect, useCallback } from 'react';
+import type { AvailableProvider } from '@chat/sdk';
+import { apiGet } from '../lib/api-client';
 
 interface UseProvidersReturn {
   providers: AvailableProvider[];
@@ -20,12 +20,12 @@ export function useProviders(): UseProvidersReturn {
     setLoading(true);
     setError(null);
 
-    apiGet<{ providers: AvailableProvider[] }>("/providers/available")
+    apiGet<{ providers: AvailableProvider[] }>('/providers/available')
       .then((data) => {
         setProviders(data.providers ?? []);
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Failed to load providers");
+        setError(err instanceof Error ? err.message : 'Failed to load providers');
       })
       .finally(() => {
         setLoading(false);

@@ -1,5 +1,5 @@
-import type { ModelCapability, Modality, Feature } from "@chat/sdk";
-import { getProviderCapabilities } from "./capability-matrix";
+import type { ModelCapability, Modality, Feature } from '@chat/sdk';
+import { getProviderCapabilities } from './capability-matrix';
 
 const registry = new Map<string, ModelCapability>();
 const warnedProviders = new Set<string>();
@@ -38,7 +38,7 @@ export function unregisterModel(provider: string, modelId: string): void {
 }
 
 export function findCapableModels(
-  modalities: string[] = ["text"],
+  modalities: string[] = ['text'],
   features: string[] = []
 ): ModelCapability[] {
   const results: ModelCapability[] = [];

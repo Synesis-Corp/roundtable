@@ -194,7 +194,12 @@ describe('withTemporalContext — tool guidance', () => {
   });
 
   it('adds no tool guidance when no tools are passed (persona + temporal only)', () => {
-    const result = withTemporalContext([{ role: 'user', content: 'Hola' }], { timezone: 'UTC' }, [], INSTANT);
+    const result = withTemporalContext(
+      [{ role: 'user', content: 'Hola' }],
+      { timezone: 'UTC' },
+      [],
+      INSTANT
+    );
     expect(result.map((m) => m.role)).toEqual(['system', 'system', 'user']);
   });
 });

@@ -101,11 +101,9 @@ describe('MemorySettingsSection', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
     await waitFor(() => {
-      expect(updateMemory).toHaveBeenCalledWith(
-        'memory-1',
-        'Prefiere respuestas breves',
-        ['preferencia']
-      );
+      expect(updateMemory).toHaveBeenCalledWith('memory-1', 'Prefiere respuestas breves', [
+        'preferencia',
+      ]);
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Borrar memoria' }));

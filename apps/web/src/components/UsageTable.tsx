@@ -37,14 +37,16 @@ export function UsageTable({ rows, hasEstimatedCosts }: UsageTableProps) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--border)]">
-              {['Provider', 'Modelo', 'Input', 'Output', 'Total', 'Reqs', 'Costo', 'Latencia'].map((h) => (
-                <th
-                  key={h}
-                  className="px-6 py-3 text-left text-xs font-medium text-[var(--text-3)] uppercase tracking-wider"
-                >
-                  {h}
-                </th>
-              ))}
+              {['Provider', 'Modelo', 'Input', 'Output', 'Total', 'Reqs', 'Costo', 'Latencia'].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="px-6 py-3 text-left text-xs font-medium text-[var(--text-3)] uppercase tracking-wider"
+                  >
+                    {h}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
@@ -59,7 +61,9 @@ export function UsageTable({ rows, hasEstimatedCosts }: UsageTableProps) {
                       className="w-2 h-2 rounded-full shrink-0"
                       style={{ backgroundColor: getProviderColor(row.providerId) }}
                     />
-                    <span className="text-sm font-medium text-[var(--text-1)]">{row.providerId}</span>
+                    <span className="text-sm font-medium text-[var(--text-1)]">
+                      {row.providerId}
+                    </span>
                   </div>
                 </td>
                 <td className="px-6 py-3 text-sm text-[var(--text-2)]">{row.modelId}</td>
@@ -72,8 +76,13 @@ export function UsageTable({ rows, hasEstimatedCosts }: UsageTableProps) {
                 <td className="px-6 py-3 text-sm font-medium text-[var(--text-1)] tabular-nums">
                   {row.totalTokens.toLocaleString()}
                 </td>
-                <td className="px-6 py-3 text-sm text-[var(--text-2)] tabular-nums">{row.requestCount}</td>
-                <td className="px-6 py-3 text-sm font-medium tabular-nums" style={{ color: 'var(--accent)' }}>
+                <td className="px-6 py-3 text-sm text-[var(--text-2)] tabular-nums">
+                  {row.requestCount}
+                </td>
+                <td
+                  className="px-6 py-3 text-sm font-medium tabular-nums"
+                  style={{ color: 'var(--accent)' }}
+                >
                   <div className="flex items-center gap-1.5">
                     {formatCost(row.estimatedCostUsd)}
                     {!row.hasBreakdown && row.estimatedCostUsd > 0 && (

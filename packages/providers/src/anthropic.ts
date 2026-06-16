@@ -6,14 +6,14 @@ import type {
   ChatChunk,
   ToolSet,
   StructuredResponse,
-} from "@chat/sdk";
-import type { ZodType } from "zod";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { streamText, generateText, generateObject } from "ai";
-import { getModel } from "@chat/router";
-import { convertMessages, throwIfErrorPart } from "./utils";
-import { buildProviderOptions } from "./effort";
-import { MAX_TOOL_STEPS } from "./constants";
+} from '@chat/sdk';
+import type { ZodType } from 'zod';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { streamText, generateText, generateObject } from 'ai';
+import { getModel } from '@chat/router';
+import { convertMessages, throwIfErrorPart } from './utils';
+import { buildProviderOptions } from './effort';
+import { MAX_TOOL_STEPS } from './constants';
 
 export interface AnthropicConfig {
   id?: string;
@@ -27,32 +27,32 @@ export class AnthropicProvider implements ProviderPlugin {
   private baseURL?: string;
 
   constructor(config?: AnthropicConfig) {
-    this.id = config?.id ?? "anthropic";
-    this.name = config?.name ?? "Anthropic";
+    this.id = config?.id ?? 'anthropic';
+    this.name = config?.name ?? 'Anthropic';
     this.baseURL = config?.baseURL;
   }
 
   getCapabilities(): ModelCapability[] {
     return [
       {
-        modelId: "claude-3-5-sonnet-20241022",
+        modelId: 'claude-3-5-sonnet-20241022',
         provider: this.id,
-        modalities: ["text", "image"],
-        features: ["tool-use", "vision", "structured-output"],
+        modalities: ['text', 'image'],
+        features: ['tool-use', 'vision', 'structured-output'],
         contextWindow: 200000,
       },
       {
-        modelId: "claude-3-opus-20240229",
+        modelId: 'claude-3-opus-20240229',
         provider: this.id,
-        modalities: ["text", "image"],
-        features: ["tool-use", "vision", "structured-output"],
+        modalities: ['text', 'image'],
+        features: ['tool-use', 'vision', 'structured-output'],
         contextWindow: 200000,
       },
       {
-        modelId: "claude-3-haiku-20240307",
+        modelId: 'claude-3-haiku-20240307',
         provider: this.id,
-        modalities: ["text", "image"],
-        features: ["tool-use", "vision"],
+        modalities: ['text', 'image'],
+        features: ['tool-use', 'vision'],
         contextWindow: 200000,
       },
     ];
@@ -73,10 +73,10 @@ export class AnthropicProvider implements ProviderPlugin {
   ): Promise<ChatResponse> {
     const client = this.getClient(apiKey);
     const start = Date.now();
-    const providerOptions = buildProviderOptions(this.id, "anthropic", request);
+    const providerOptions = buildProviderOptions(this.id, 'anthropic', request);
     // Resolve the target model's modalities so convertMessages can route PDFs
     // natively when supported, or inline extracted text otherwise.
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
     const result = await generateText({
       model: client(request.model),
       messages: convertMessages(request.messages, { targetModalities }),
@@ -109,8 +109,8 @@ export class AnthropicProvider implements ProviderPlugin {
   ): Promise<StructuredResponse<T>> {
     const client = this.getClient(apiKey);
     const start = Date.now();
-    const providerOptions = buildProviderOptions(this.id, "anthropic", request);
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const providerOptions = buildProviderOptions(this.id, 'anthropic', request);
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
     const result = await generateObject({
       model: client(request.model),
       schema,
@@ -138,10 +138,10 @@ export class AnthropicProvider implements ProviderPlugin {
     tools?: ToolSet
   ): AsyncIterable<ChatChunk> {
     const client = this.getClient(apiKey);
-    const providerOptions = buildProviderOptions(this.id, "anthropic", request);
+    const providerOptions = buildProviderOptions(this.id, 'anthropic', request);
     // Resolve the target model's modalities so convertMessages can route PDFs
     // natively when supported, or inline extracted text otherwise.
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
 
     try {
       const result = await streamText({
@@ -161,22 +161,33 @@ export class AnthropicProvider implements ProviderPlugin {
       for await (const part of result.fullStream) {
         const p = part as unknown as { type: string; [k: string]: unknown };
         throwIfErrorPart(p);
-        if (p.type === "text-delta") {
-          yield { token: p["textDelta"] as string, model: request.model, provider: this.id, isFinished: false };
-        } else if (p.type === "reasoning") {
-          yield { token: "", reasoning: p["textDelta"] as string, model: request.model, provider: this.id, isFinished: false };
-        } else if (p.type === "tool-call") {
+        if (p.type === 'text-delta') {
           yield {
-            token: "",
-            toolCall: { name: p["toolName"] as string, args: p["args"] },
+            token: p['textDelta'] as string,
             model: request.model,
             provider: this.id,
             isFinished: false,
           };
-        } else if (p.type === "tool-result") {
+        } else if (p.type === 'reasoning') {
           yield {
-            token: "",
-            toolResult: { name: p["toolName"] as string, result: p["result"] },
+            token: '',
+            reasoning: p['textDelta'] as string,
+            model: request.model,
+            provider: this.id,
+            isFinished: false,
+          };
+        } else if (p.type === 'tool-call') {
+          yield {
+            token: '',
+            toolCall: { name: p['toolName'] as string, args: p['args'] },
+            model: request.model,
+            provider: this.id,
+            isFinished: false,
+          };
+        } else if (p.type === 'tool-result') {
+          yield {
+            token: '',
+            toolResult: { name: p['toolName'] as string, result: p['result'] },
             model: request.model,
             provider: this.id,
             isFinished: false,
@@ -187,7 +198,7 @@ export class AnthropicProvider implements ProviderPlugin {
       const usage = await result.usage;
 
       yield {
-        token: "",
+        token: '',
         model: request.model,
         provider: this.id,
         isFinished: true,

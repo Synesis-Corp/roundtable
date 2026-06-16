@@ -1,6 +1,6 @@
 /** Human label for an effort/variant id. */
 export function formatEffortLabel(effort: string): string {
-  return effort === "default" ? "Default" : effort;
+  return effort === 'default' ? 'Default' : effort;
 }
 
 /**
@@ -10,7 +10,7 @@ export function formatEffortLabel(effort: string): string {
 export function parseSelectedModel(
   selectedModel: string
 ): { provider: string; modelId: string } | null {
-  const separator = selectedModel.indexOf(":");
+  const separator = selectedModel.indexOf(':');
   if (separator <= 0 || separator === selectedModel.length - 1) return null;
   return {
     provider: selectedModel.slice(0, separator),

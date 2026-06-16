@@ -19,12 +19,25 @@ export function UsageLoading({ wrap }: { wrap: string }) {
   );
 }
 
-export function UsageError({ wrap, error, onRetry }: { wrap: string; error: string; onRetry: () => void }) {
+export function UsageError({
+  wrap,
+  error,
+  onRetry,
+}: {
+  wrap: string;
+  error: string;
+  onRetry: () => void;
+}) {
   return (
     <div className={wrap}>
       <div className="flex flex-col items-center justify-center py-20">
         <div className="w-16 h-16 rounded-2xl bg-[var(--bg-surface)] flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-[var(--text-3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-8 h-8 text-[var(--text-3)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -51,7 +64,12 @@ export function UsageEmpty({ wrap }: { wrap: string }) {
     <div className={wrap}>
       <div className="flex flex-col items-center justify-center py-20">
         <div className="w-16 h-16 rounded-2xl bg-[var(--bg-surface)] flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-[var(--text-3)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-8 h-8 text-[var(--text-3)]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

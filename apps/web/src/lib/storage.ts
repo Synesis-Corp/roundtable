@@ -84,7 +84,7 @@ export class LocalStorageAdapter implements StorageAdapter {
 /** Feature-detect a usable localStorage (private mode can throw on write). */
 function isLocalStorageAvailable(): boolean {
   try {
-    const probe = "__storage_probe__";
+    const probe = '__storage_probe__';
     window.localStorage.setItem(probe, probe);
     window.localStorage.removeItem(probe);
     return true;

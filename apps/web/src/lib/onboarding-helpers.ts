@@ -1,39 +1,39 @@
-import { storage, type StorageAdapter } from "./storage";
+import { storage, type StorageAdapter } from './storage';
 
 // ─── Storage key ─────────────────────────────────────────────────────────────
 
 /** localStorage key that marks a brand-new user (set from the server `created` signal). */
-export const IS_NEW_KEY = "roundtable:is-new";
+export const IS_NEW_KEY = 'roundtable:is-new';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Copy keys — the persona decision lives in the helper; JSX maps them to text. */
 export type OnboardingCopyKey =
-  | "onboarding.new.title"
-  | "onboarding.new.body"
-  | "onboarding.new.cta"
-  | "onboarding.returning.title"
-  | "onboarding.returning.body"
-  | "onboarding.returning.cta";
+  | 'onboarding.new.title'
+  | 'onboarding.new.body'
+  | 'onboarding.new.cta'
+  | 'onboarding.returning.title'
+  | 'onboarding.returning.body'
+  | 'onboarding.returning.cta';
 
 export interface OnboardingNew {
-  kind: "new";
-  titleKey: "onboarding.new.title";
-  bodyKey: "onboarding.new.body";
-  ctaKey: "onboarding.new.cta";
+  kind: 'new';
+  titleKey: 'onboarding.new.title';
+  bodyKey: 'onboarding.new.body';
+  ctaKey: 'onboarding.new.cta';
 }
 
 export interface OnboardingReturning {
-  kind: "returning";
-  titleKey: "onboarding.returning.title";
-  bodyKey: "onboarding.returning.body";
-  ctaKey: "onboarding.returning.cta";
+  kind: 'returning';
+  titleKey: 'onboarding.returning.title';
+  bodyKey: 'onboarding.returning.body';
+  ctaKey: 'onboarding.returning.cta';
 }
 
 /** Discriminated union — the full result of the persona decision. */
 export type OnboardingState =
-  | { kind: "hidden" }
-  | { kind: "loading" }
+  | { kind: 'hidden' }
+  | { kind: 'loading' }
   | OnboardingNew
   | OnboardingReturning;
 
@@ -62,24 +62,24 @@ export interface OnboardingInput {
  */
 export function getOnboardingState(input: OnboardingInput): OnboardingState {
   if (input.userProvidersLoading || input.modelsLoading) {
-    return { kind: "loading" };
+    return { kind: 'loading' };
   }
   if (input.userProviders.length > 0) {
-    return { kind: "hidden" };
+    return { kind: 'hidden' };
   }
   if (input.isNewFlag) {
     return {
-      kind: "new",
-      titleKey: "onboarding.new.title",
-      bodyKey: "onboarding.new.body",
-      ctaKey: "onboarding.new.cta",
+      kind: 'new',
+      titleKey: 'onboarding.new.title',
+      bodyKey: 'onboarding.new.body',
+      ctaKey: 'onboarding.new.cta',
     };
   }
   return {
-    kind: "returning",
-    titleKey: "onboarding.returning.title",
-    bodyKey: "onboarding.returning.body",
-    ctaKey: "onboarding.returning.cta",
+    kind: 'returning',
+    titleKey: 'onboarding.returning.title',
+    bodyKey: 'onboarding.returning.body',
+    ctaKey: 'onboarding.returning.cta',
   };
 }
 
@@ -93,14 +93,14 @@ export function getOnboardingState(input: OnboardingInput): OnboardingState {
  * plain strings.
  */
 export const ONBOARDING_COPY: Record<OnboardingCopyKey, string> = {
-  "onboarding.new.title": "Conecta tu primer proveedor para empezar",
-  "onboarding.new.body":
-    "Roundtable necesita una clave de API para hablar con los modelos. Añádela en Proveedores y empieza a trabajar.",
-  "onboarding.new.cta": "Ir a Proveedores →",
-  "onboarding.returning.title": "Todavía no tienes proveedores conectados",
-  "onboarding.returning.body":
-    "Sin un proveedor activo no puedes enviar mensajes. Conéctate ahora y todo estará listo.",
-  "onboarding.returning.cta": "Ir a Proveedores →",
+  'onboarding.new.title': 'Conecta tu primer proveedor para empezar',
+  'onboarding.new.body':
+    'Roundtable necesita una clave de API para hablar con los modelos. Añádela en Proveedores y empieza a trabajar.',
+  'onboarding.new.cta': 'Ir a Proveedores →',
+  'onboarding.returning.title': 'Todavía no tienes proveedores conectados',
+  'onboarding.returning.body':
+    'Sin un proveedor activo no puedes enviar mensajes. Conéctate ahora y todo estará listo.',
+  'onboarding.returning.cta': 'Ir a Proveedores →',
 };
 
 // ─── Flag clear helper ────────────────────────────────────────────────────────

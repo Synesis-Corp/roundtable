@@ -1,7 +1,7 @@
-import type { ProviderPlugin, ModelCapability, RoutingDecision } from "@chat/sdk";
-import { prisma } from "./db";
-import { getProvider } from "./provider-registry";
-import { resolveProviderCredential, type RuntimeProviderCredential } from "./provider-credentials";
+import type { ProviderPlugin, ModelCapability, RoutingDecision } from '@chat/sdk';
+import { prisma } from './db';
+import { getProvider } from './provider-registry';
+import { resolveProviderCredential, type RuntimeProviderCredential } from './provider-credentials';
 
 export interface SelectedProvider {
   model: ModelCapability;

@@ -1,11 +1,11 @@
-import { decrypt, encrypt } from "@chat/crypto";
+import { decrypt, encrypt } from '@chat/crypto';
 import {
   CODEX_API_BASE_URL,
   createCodexCredential,
   isCodexCredential,
   refreshCodexAccessToken,
   type CodexCredential,
-} from "./codex-auth";
+} from './codex-auth';
 
 interface ProviderConfigLike {
   id: string;
@@ -32,7 +32,7 @@ function parseOptions(options?: string | null): Record<string, unknown> {
   if (!options) return {};
   try {
     const parsed = JSON.parse(options);
-    return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed : {};
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
@@ -59,7 +59,7 @@ async function refreshIfNeeded(
       encryptedApiKey: encrypt(JSON.stringify(next)),
       options: JSON.stringify({
         ...parseOptions(config.options),
-        authType: "codex",
+        authType: 'codex',
         baseURL: CODEX_API_BASE_URL,
       }),
     },
@@ -90,12 +90,12 @@ export async function resolveProviderCredential(
         apiKey: credential.access,
         options: {
           ...options,
-          authType: "codex",
+          authType: 'codex',
           baseURL: CODEX_API_BASE_URL,
           headers: {
-            originator: "roundtable",
-            "User-Agent": "Roundtable/1.0",
-            ...(credential.accountId ? { "ChatGPT-Account-Id": credential.accountId } : {}),
+            originator: 'roundtable',
+            'User-Agent': 'Roundtable/1.0',
+            ...(credential.accountId ? { 'ChatGPT-Account-Id': credential.accountId } : {}),
           },
         },
       };

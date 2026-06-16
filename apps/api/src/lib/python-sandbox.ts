@@ -112,7 +112,10 @@ export function checkImports(code: string): ImportCheck {
     if (!module) continue;
 
     // Strip `as alias` and dotted submodules down to the root package.
-    const root = module.split(/\s+as\s+/)[0].trim().split('.')[0];
+    const root = module
+      .split(/\s+as\s+/)[0]
+      .trim()
+      .split('.')[0];
     if (root && !PYTHON_IMPORT_ALLOWLIST.has(root)) {
       blocked.add(root);
     }

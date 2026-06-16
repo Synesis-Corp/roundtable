@@ -1,6 +1,6 @@
-import type { Attachment, Modality } from "@chat/sdk";
-import { extractPdfText } from "./pdf-convert";
-import { logger } from "./logger";
+import type { Attachment, Modality } from '@chat/sdk';
+import { extractPdfText } from './pdf-convert';
+import { logger } from './logger';
 
 /**
  * Converts multer in-memory file buffers to SDK Attachment objects. Each file's
@@ -15,15 +15,13 @@ import { logger } from "./logger";
  *
  * No disk writes — all conversions happen in memory.
  */
-export async function extractAttachments(
-  files: Express.Multer.File[],
-): Promise<Attachment[]> {
+export async function extractAttachments(files: Express.Multer.File[]): Promise<Attachment[]> {
   return Promise.all(
     files.map(async (file): Promise<Attachment> => {
-      const base64 = `data:${file.mimetype};base64,${Buffer.from(file.buffer).toString("base64")}`;
-      const isImage = file.mimetype.startsWith("image/");
-      const isPdf = file.mimetype === "application/pdf";
-      const type: Modality = isImage ? "image" : isPdf ? "pdf" : "file";
+      const base64 = `data:${file.mimetype};base64,${Buffer.from(file.buffer).toString('base64')}`;
+      const isImage = file.mimetype.startsWith('image/');
+      const isPdf = file.mimetype === 'application/pdf';
+      const type: Modality = isImage ? 'image' : isPdf ? 'pdf' : 'file';
 
       const attachment: Attachment = {
         type,
@@ -40,13 +38,13 @@ export async function extractAttachments(
           if (truncated) {
             logger.warn(
               { name: file.originalname, pageCount },
-              "pdf: extraction truncated to 50K chars",
+              'pdf: extraction truncated to 50K chars'
             );
           }
         } catch (err) {
           logger.error(
             { err, name: file.originalname },
-            "pdf: extraction failed, sending as opaque file",
+            'pdf: extraction failed, sending as opaque file'
           );
           // Soft fail: attachment stays type:"pdf" with base64 but no extractedText.
           // Models that support PDF natively can still read it; models that don't
@@ -55,6 +53,6 @@ export async function extractAttachments(
       }
 
       return attachment;
-    }),
+    })
   );
 }

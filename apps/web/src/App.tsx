@@ -1,13 +1,13 @@
-import { Routes, Route, Navigate, Outlet, useParams } from "react-router-dom";
-import { Suspense, lazy } from "react";
-import { useTranslation } from "react-i18next";
-import { storage } from "./lib/storage";
-import Layout from "./components/Layout";
-import ChatPage from "./pages/ChatPage";
+import { Routes, Route, Navigate, Outlet, useParams } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
+import { storage } from './lib/storage';
+import Layout from './components/Layout';
+import ChatPage from './pages/ChatPage';
 
-const SettingsPage = lazy(() => import("./pages/SettingsPage"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
-const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 
 /**
  * Gate for the authenticated app. Without a token there is nothing functional
@@ -15,7 +15,7 @@ const RegisterPage = lazy(() => import("./pages/RegisterPage"));
  * instead of rendering an empty chat shell and a sidebar full of dead options.
  */
 function RequireAuth() {
-  const token = storage.get("token");
+  const token = storage.get('token');
   if (!token) return <Navigate to="/login" replace />;
   return <Outlet />;
 }
@@ -26,7 +26,7 @@ function RequireAuth() {
  * them re-authenticate (or get confused by a form they don't need).
  */
 function RedirectIfAuth({ children }: { children: React.ReactNode }) {
-  const token = storage.get("token");
+  const token = storage.get('token');
   if (token) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
@@ -46,13 +46,13 @@ function RedirectIfAuth({ children }: { children: React.ReactNode }) {
  */
 function ChatPageRoute() {
   const { conversationId } = useParams<{ conversationId?: string }>();
-  return <ChatPage key={conversationId ?? "new"} />;
+  return <ChatPage key={conversationId ?? 'new'} />;
 }
 
 /** Full-height shell for the standalone auth pages (no chat sidebar). */
 function AuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh flex flex-col" style={{ backgroundColor: "var(--bg-app)" }}>
+    <div className="min-h-dvh flex flex-col" style={{ backgroundColor: 'var(--bg-app)' }}>
       {children}
     </div>
   );
@@ -68,14 +68,14 @@ function RouteFallback() {
       aria-live="polite"
       style={{
         flex: 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "var(--text-4)",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--text-4)',
         fontSize: 13,
       }}
     >
-      {t("shell.loading")}
+      {t('shell.loading')}
     </div>
   );
 }

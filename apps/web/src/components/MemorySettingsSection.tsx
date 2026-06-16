@@ -76,7 +76,10 @@ export function MemorySettingsSection() {
         }}
       >
         <div className="min-w-0">
-          <h2 id="memory-settings-title" style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)' }}>
+          <h2
+            id="memory-settings-title"
+            style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)' }}
+          >
             Usar memoria
           </h2>
           <p className="mt-1" style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5 }}>

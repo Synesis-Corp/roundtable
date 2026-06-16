@@ -6,14 +6,14 @@ import type {
   ChatChunk,
   ToolSet,
   StructuredResponse,
-} from "@chat/sdk";
-import type { ZodType } from "zod";
-import { createOpenAI } from "@ai-sdk/openai";
-import { streamText, generateText, generateObject } from "ai";
-import { getModel } from "@chat/router";
-import { convertMessages, throwIfErrorPart } from "./utils";
-import { buildProviderOptions } from "./effort";
-import { MAX_TOOL_STEPS } from "./constants";
+} from '@chat/sdk';
+import type { ZodType } from 'zod';
+import { createOpenAI } from '@ai-sdk/openai';
+import { streamText, generateText, generateObject } from 'ai';
+import { getModel } from '@chat/router';
+import { convertMessages, throwIfErrorPart } from './utils';
+import { buildProviderOptions } from './effort';
+import { MAX_TOOL_STEPS } from './constants';
 
 export interface OpenAIConfig {
   id?: string;
@@ -43,8 +43,8 @@ export class OpenAIProvider implements ProviderPlugin {
   private project?: string | null;
 
   constructor(config?: OpenAIConfig) {
-    this.id = config?.id ?? "openai";
-    this.name = config?.name ?? "OpenAI";
+    this.id = config?.id ?? 'openai';
+    this.name = config?.name ?? 'OpenAI';
     this.baseURL = config?.baseURL;
     this.headers = config?.headers;
     this.fetchFn = config?.fetch;
@@ -56,24 +56,24 @@ export class OpenAIProvider implements ProviderPlugin {
   getCapabilities(): ModelCapability[] {
     return [
       {
-        modelId: "gpt-4o",
+        modelId: 'gpt-4o',
         provider: this.id,
-        modalities: ["text", "image"],
-        features: ["tool-use", "vision", "structured-output"],
+        modalities: ['text', 'image'],
+        features: ['tool-use', 'vision', 'structured-output'],
         contextWindow: 128000,
       },
       {
-        modelId: "gpt-4o-mini",
+        modelId: 'gpt-4o-mini',
         provider: this.id,
-        modalities: ["text", "image"],
-        features: ["tool-use", "vision"],
+        modalities: ['text', 'image'],
+        features: ['tool-use', 'vision'],
         contextWindow: 128000,
       },
       {
-        modelId: "o3-mini",
+        modelId: 'o3-mini',
         provider: this.id,
-        modalities: ["text"],
-        features: ["reasoning", "tool-use"],
+        modalities: ['text'],
+        features: ['reasoning', 'tool-use'],
         contextWindow: 200000,
       },
     ];
@@ -88,8 +88,8 @@ export class OpenAIProvider implements ProviderPlugin {
       // Only forward organization/project when the caller set a real string.
       // null and undefined both mean "omit the header" — the AI SDK would
       // otherwise serialize `undefined` as the literal string "undefined".
-      ...(typeof this.organization === "string" ? { organization: this.organization } : {}),
-      ...(typeof this.project === "string" ? { project: this.project } : {}),
+      ...(typeof this.organization === 'string' ? { organization: this.organization } : {}),
+      ...(typeof this.project === 'string' ? { project: this.project } : {}),
     });
   }
 
@@ -101,11 +101,11 @@ export class OpenAIProvider implements ProviderPlugin {
   ): Promise<ChatResponse> {
     const client = this.getClient(apiKey);
     const start = Date.now();
-    const providerOptions = buildProviderOptions(this.id, "openai", request);
+    const providerOptions = buildProviderOptions(this.id, 'openai', request);
     const model = this.useResponsesApi ? client.responses(request.model) : client(request.model);
     // Resolve the target model's modalities so convertMessages can route PDFs
     // natively when supported, or inline extracted text otherwise.
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
     const result = await generateText({
       model,
       messages: convertMessages(request.messages, { targetModalities }),
@@ -140,9 +140,9 @@ export class OpenAIProvider implements ProviderPlugin {
   ): Promise<StructuredResponse<T>> {
     const client = this.getClient(apiKey);
     const start = Date.now();
-    const providerOptions = buildProviderOptions(this.id, "openai", request);
+    const providerOptions = buildProviderOptions(this.id, 'openai', request);
     const model = this.useResponsesApi ? client.responses(request.model) : client(request.model);
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
     const result = await generateObject({
       model,
       schema,
@@ -170,11 +170,11 @@ export class OpenAIProvider implements ProviderPlugin {
     tools?: ToolSet
   ): AsyncIterable<ChatChunk> {
     const client = this.getClient(apiKey);
-    const providerOptions = buildProviderOptions(this.id, "openai", request);
+    const providerOptions = buildProviderOptions(this.id, 'openai', request);
     const model = this.useResponsesApi ? client.responses(request.model) : client(request.model);
     // Resolve the target model's modalities so convertMessages can route PDFs
     // natively when supported, or inline extracted text otherwise.
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
     const result = await streamText({
       model,
       messages: convertMessages(request.messages, { targetModalities }),
@@ -200,38 +200,38 @@ export class OpenAIProvider implements ProviderPlugin {
       // compare on `type` so this stays a normal control-flow branch.
       const p = part as unknown as { type: string; [k: string]: unknown };
       throwIfErrorPart(p);
-      if (p.type === "text-delta") {
+      if (p.type === 'text-delta') {
         yield {
-          token: p["textDelta"] as string,
+          token: p['textDelta'] as string,
           model: request.model,
           provider: this.id,
           isFinished: false,
         };
-      } else if (p.type === "reasoning") {
+      } else if (p.type === 'reasoning') {
         yield {
-          token: "",
-          reasoning: p["textDelta"] as string,
+          token: '',
+          reasoning: p['textDelta'] as string,
           model: request.model,
           provider: this.id,
           isFinished: false,
         };
-      } else if (p.type === "tool-call") {
+      } else if (p.type === 'tool-call') {
         // The model decided to invoke a tool. Surface it as a chunk so the
         // route can publish a `tool.call` SSE event for the UI. The AI SDK
         // v4 names the input field `args` and the identifier `toolCallId`.
         yield {
-          token: "",
-          toolCall: { name: p["toolName"] as string, args: p["args"] },
+          token: '',
+          toolCall: { name: p['toolName'] as string, args: p['args'] },
           model: request.model,
           provider: this.id,
           isFinished: false,
         };
-      } else if (p.type === "tool-result") {
+      } else if (p.type === 'tool-result') {
         // The tool's execute function returned. Surface the result so the
         // route can publish a `tool.result` event before the model continues.
         yield {
-          token: "",
-          toolResult: { name: p["toolName"] as string, result: p["result"] },
+          token: '',
+          toolResult: { name: p['toolName'] as string, result: p['result'] },
           model: request.model,
           provider: this.id,
           isFinished: false,
@@ -242,7 +242,7 @@ export class OpenAIProvider implements ProviderPlugin {
     const usage = await result.usage;
 
     yield {
-      token: "",
+      token: '',
       model: request.model,
       provider: this.id,
       isFinished: true,

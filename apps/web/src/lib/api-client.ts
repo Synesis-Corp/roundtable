@@ -1,5 +1,5 @@
-import { storage } from "./storage";
-const API_BASE = "/api";
+import { storage } from './storage';
+const API_BASE = '/api';
 
 class ApiError extends Error {
   constructor(
@@ -8,19 +8,19 @@ class ApiError extends Error {
     public body: unknown
   ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }
 
 function getToken(): string | null {
-  return storage.get("token");
+  return storage.get('token');
 }
 
 function buildHeaders(includeJson = true): Record<string, string> {
   const headers: Record<string, string> = {};
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
-  if (includeJson) headers["Content-Type"] = "application/json";
+  if (includeJson) headers['Content-Type'] = 'application/json';
   return headers;
 }
 
@@ -41,14 +41,14 @@ let refreshPromise: Promise<boolean> | null = null;
 async function tryRefresh(): Promise<boolean> {
   if (!refreshPromise) {
     refreshPromise = fetch(`${API_BASE}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
+      method: 'POST',
+      credentials: 'include',
     })
       .then(async (res) => {
         if (!res.ok) return false;
         const data = (await res.json()) as { token?: string };
         if (data?.token) {
-          storage.set("token", data.token);
+          storage.set('token', data.token);
           return true;
         }
         return false;
@@ -62,9 +62,9 @@ async function tryRefresh(): Promise<boolean> {
 }
 
 function redirectToLogin(): void {
-  storage.remove("token");
-  if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
-    window.location.href = "/login";
+  storage.remove('token');
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+    window.location.href = '/login';
   }
 }
 
@@ -78,22 +78,23 @@ export async function api<T = unknown>(
   options: RequestInit = {},
   retry = true
 ): Promise<T> {
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
   const isJsonBody = Boolean(
-    options.body && typeof options.body === "string" &&
-    !(options.headers as Record<string, string> | undefined)?.["Content-Type"]
+    options.body &&
+    typeof options.body === 'string' &&
+    !(options.headers as Record<string, string> | undefined)?.['Content-Type']
   );
 
   const headers: Record<string, string> = {
     ...buildHeaders(isJsonBody),
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
 
-  const res = await fetch(url, { ...options, headers, credentials: "include" });
+  const res = await fetch(url, { ...options, headers, credentials: 'include' });
 
   // Access token expired → try a one-time refresh, then replay the request.
   // Skip for /auth/* so a failing refresh/login doesn't loop.
-  if (res.status === 401 && retry && !path.startsWith("/auth/")) {
+  if (res.status === 401 && retry && !path.startsWith('/auth/')) {
     const refreshed = await tryRefresh();
     if (refreshed) {
       return api<T>(path, options, false); // replay once with the new access token
@@ -116,7 +117,7 @@ export async function api<T = unknown>(
  * Convenience for GET requests.
  */
 export function apiGet<T = unknown>(path: string): Promise<T> {
-  return api<T>(path, { method: "GET" });
+  return api<T>(path, { method: 'GET' });
 }
 
 /**
@@ -124,7 +125,7 @@ export function apiGet<T = unknown>(path: string): Promise<T> {
  */
 export function apiPost<T = unknown>(path: string, body: unknown): Promise<T> {
   return api<T>(path, {
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(body),
   });
 }
@@ -134,7 +135,7 @@ export function apiPost<T = unknown>(path: string, body: unknown): Promise<T> {
  */
 export function apiPut<T = unknown>(path: string, body: unknown): Promise<T> {
   return api<T>(path, {
-    method: "PUT",
+    method: 'PUT',
     body: JSON.stringify(body),
   });
 }
@@ -144,7 +145,7 @@ export function apiPut<T = unknown>(path: string, body: unknown): Promise<T> {
  */
 export function apiPatch<T = unknown>(path: string, body: unknown): Promise<T> {
   return api<T>(path, {
-    method: "PATCH",
+    method: 'PATCH',
     body: JSON.stringify(body),
   });
 }
@@ -153,7 +154,7 @@ export function apiPatch<T = unknown>(path: string, body: unknown): Promise<T> {
  * Convenience for DELETE requests.
  */
 export function apiDelete(path: string): Promise<void> {
-  return api<void>(path, { method: "DELETE" });
+  return api<void>(path, { method: 'DELETE' });
 }
 
 /**
@@ -171,17 +172,17 @@ export async function apiStream(
   options: RequestInit = {},
   retry = true
 ): Promise<Response> {
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
   const headers: Record<string, string> = {
     ...buildHeaders(false),
-    ...(options.headers as Record<string, string> || {}),
+    ...((options.headers as Record<string, string>) || {}),
   };
 
-  const res = await fetch(url, { ...options, headers, credentials: "include" });
+  const res = await fetch(url, { ...options, headers, credentials: 'include' });
 
   // Same single-flight refresh as `api` above. Skipped for /auth/* so a
   // failing login/refresh doesn't recurse.
-  if (res.status === 401 && retry && !path.startsWith("/auth/")) {
+  if (res.status === 401 && retry && !path.startsWith('/auth/')) {
     const refreshed = await tryRefresh();
     if (refreshed) {
       return apiStream(path, options, false);

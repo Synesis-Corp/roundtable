@@ -11,7 +11,7 @@
  * thread props through. The bus is the minimal coupling. Naming follows
  * the existing convention (`roundtable:new-chat`, `roundtable:is-new`).
  */
-export const PROVIDERS_CHANGED_EVENT = "roundtable:providers-changed";
+export const PROVIDERS_CHANGED_EVENT = 'roundtable:providers-changed';
 
 /** Dispatches {@link PROVIDERS_CHANGED_EVENT} on `window`. */
 export function emitProvidersChanged(): void {

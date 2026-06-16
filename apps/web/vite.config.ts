@@ -1,18 +1,18 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
   // Read .env from the monorepo root so there's a single env file. Only VITE_*
   // vars are exposed to the client bundle; everything else stays server-side.
-  envDir: "../../",
+  envDir: '../../',
   server: {
     port: 3000,
     proxy: {
-      "/api": {
-        target: "http://localhost:4000",
+      '/api': {
+        target: 'http://localhost:4000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
@@ -36,12 +36,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          react: ["react", "react-dom", "react-router-dom"],
-          markdown: [
-            "react-markdown",
-            "remark-gfm",
-            "react-syntax-highlighter",
-          ],
+          react: ['react', 'react-dom', 'react-router-dom'],
+          markdown: ['react-markdown', 'remark-gfm', 'react-syntax-highlighter'],
         },
       },
     },

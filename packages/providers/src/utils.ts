@@ -1,5 +1,5 @@
-import type { Message, Modality } from "@chat/sdk";
-import type { CoreMessage, CoreUserMessage, CoreAssistantMessage, CoreSystemMessage } from "ai";
+import type { Message, Modality } from '@chat/sdk';
+import type { CoreMessage, CoreUserMessage, CoreAssistantMessage, CoreSystemMessage } from 'ai';
 
 /**
  * Propagates an AI SDK `error` stream part as a thrown error.
@@ -13,20 +13,20 @@ import type { CoreMessage, CoreUserMessage, CoreAssistantMessage, CoreSystemMess
  * SSE error event the frontend renders.
  */
 export function throwIfErrorPart(p: { type: string; [k: string]: unknown }): void {
-  if (p.type !== "error") return;
-  const e = p["error"];
+  if (p.type !== 'error') return;
+  const e = p['error'];
   if (e instanceof Error) throw e;
-  if (typeof e === "string" && e.length > 0) throw new Error(e);
-  if (e && typeof e === "object" && typeof (e as { message?: unknown }).message === "string") {
+  if (typeof e === 'string' && e.length > 0) throw new Error(e);
+  if (e && typeof e === 'object' && typeof (e as { message?: unknown }).message === 'string') {
     throw new Error((e as { message: string }).message);
   }
-  throw new Error("The model provider returned a stream error.");
+  throw new Error('The model provider returned a stream error.');
 }
 
 type MultimodalContent = Array<
-  | { type: "text"; text: string }
-  | { type: "image"; image: string; mimeType?: string }
-  | { type: "file"; data: string; mimeType: string }
+  | { type: 'text'; text: string }
+  | { type: 'image'; image: string; mimeType?: string }
+  | { type: 'file'; data: string; mimeType: string }
 >;
 
 /** Options that control how attachments are routed to the target model. */
@@ -49,8 +49,8 @@ export interface ConvertMessagesOptions {
  * raw base64 (no URI wrapper).
  */
 function stripDataUri(dataUri: string | undefined): string {
-  if (!dataUri) return "";
-  const comma = dataUri.indexOf(",");
+  if (!dataUri) return '';
+  const comma = dataUri.indexOf(',');
   return comma >= 0 ? dataUri.slice(comma + 1) : dataUri;
 }
 
@@ -60,10 +60,10 @@ function stripDataUri(dataUri: string | undefined): string {
  */
 export function convertMessages(
   messages: Message[],
-  options?: ConvertMessagesOptions,
+  options?: ConvertMessagesOptions
 ): CoreMessage[] {
   const targetModalities = options?.targetModalities;
-  const canHandlePdf = targetModalities?.includes("pdf") ?? false;
+  const canHandlePdf = targetModalities?.includes('pdf') ?? false;
 
   return messages.map((m): CoreMessage => {
     const role = m.role;
@@ -86,27 +86,27 @@ export function convertMessages(
       const useLegacyMode = targetModalities === undefined;
 
       for (const att of m.attachments) {
-        if (att.type === "image" && att.base64) {
+        if (att.type === 'image' && att.base64) {
           parts.push({
-            type: "image",
+            type: 'image',
             image: stripDataUri(att.base64),
             mimeType: att.mimeType,
           });
-        } else if (!useLegacyMode && att.type === "pdf" && canHandlePdf && att.base64) {
+        } else if (!useLegacyMode && att.type === 'pdf' && canHandlePdf && att.base64) {
           // Native PDF: AI SDK v4 routes `file` parts to the provider's native
           // format (OpenAI's `file_data`, Anthropic's document block, Google's
           // inline_data). All three accept `application/pdf`.
           parts.push({
-            type: "file",
+            type: 'file',
             data: stripDataUri(att.base64),
-            mimeType: "application/pdf",
+            mimeType: 'application/pdf',
           });
-        } else if (!useLegacyMode && att.type === "pdf" && att.extractedText) {
+        } else if (!useLegacyMode && att.type === 'pdf' && att.extractedText) {
           // Fallback: inline the extracted text with a clear labeled block so
           // the model knows the content came from an attachment.
-          const pageInfo = att.pageCount !== undefined ? `, ${att.pageCount} páginas` : "";
+          const pageInfo = att.pageCount !== undefined ? `, ${att.pageCount} páginas` : '';
           textAccumulator.push(
-            `\n\n[Documento adjunto: ${att.name || "documento.pdf"}${pageInfo}]`,
+            `\n\n[Documento adjunto: ${att.name || 'documento.pdf'}${pageInfo}]`
           );
           textAccumulator.push(att.extractedText);
         } else {
@@ -114,36 +114,36 @@ export function convertMessages(
           // (no options) or PDF without extractedText. The text placeholder is
           // identical to the pre-change behavior.
           textAccumulator.push(
-            `\n[File: ${att.name || "attachment"} (${att.mimeType || "application/octet-stream"})]`,
+            `\n[File: ${att.name || 'attachment'} (${att.mimeType || 'application/octet-stream'})]`
           );
         }
       }
 
       // If we have accumulated user text, push it as the first part.
-      const joinedText = textAccumulator.join("");
+      const joinedText = textAccumulator.join('');
       if (joinedText.trim()) {
-        parts.unshift({ type: "text", text: joinedText });
+        parts.unshift({ type: 'text', text: joinedText });
       }
 
-      if (parts.length === 1 && parts[0].type === "text") {
-        return { role: "user" as const, content: parts[0].text } as CoreUserMessage;
+      if (parts.length === 1 && parts[0].type === 'text') {
+        return { role: 'user' as const, content: parts[0].text } as CoreUserMessage;
       }
 
       return {
-        role: "user" as const,
-        content: parts as CoreUserMessage["content"],
+        role: 'user' as const,
+        content: parts as CoreUserMessage['content'],
       } as CoreUserMessage;
     }
 
     // Plain text message
     switch (role) {
-      case "system":
-        return { role: "system", content: m.content } as CoreSystemMessage;
-      case "assistant":
-        return { role: "assistant", content: m.content } as CoreAssistantMessage;
-      case "user":
+      case 'system':
+        return { role: 'system', content: m.content } as CoreSystemMessage;
+      case 'assistant':
+        return { role: 'assistant', content: m.content } as CoreAssistantMessage;
+      case 'user':
       default:
-        return { role: "user", content: m.content } as CoreUserMessage;
+        return { role: 'user', content: m.content } as CoreUserMessage;
     }
   });
 }

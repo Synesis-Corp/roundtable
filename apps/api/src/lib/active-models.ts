@@ -1,4 +1,4 @@
-import type { ModelInfo } from "../services/model-registry";
+import type { ModelInfo } from '../services/model-registry';
 
 const MAX_ACTIVE_MODELS = 200;
 
@@ -10,7 +10,7 @@ const MAX_ACTIVE_MODELS = 200;
  */
 export function filterActiveModels(
   models: ModelInfo[],
-  activeByProvider: Map<string, string[]>,
+  activeByProvider: Map<string, string[]>
 ): ModelInfo[] {
   return models.filter((m) => {
     const active = activeByProvider.get(m.provider);
@@ -30,7 +30,7 @@ export type ValidateActiveModelsResult =
  */
 export function validateActiveModelIds(input: unknown): ValidateActiveModelsResult {
   if (!Array.isArray(input)) {
-    return { ok: false, error: "modelIds must be an array" };
+    return { ok: false, error: 'modelIds must be an array' };
   }
   if (input.length > MAX_ACTIVE_MODELS) {
     return { ok: false, error: `modelIds cannot exceed ${MAX_ACTIVE_MODELS} entries` };
@@ -38,8 +38,8 @@ export function validateActiveModelIds(input: unknown): ValidateActiveModelsResu
   const seen = new Set<string>();
   const modelIds: string[] = [];
   for (const item of input) {
-    if (typeof item !== "string" || item.trim() === "") {
-      return { ok: false, error: "every modelId must be a non-empty string" };
+    if (typeof item !== 'string' || item.trim() === '') {
+      return { ok: false, error: 'every modelId must be a non-empty string' };
     }
     if (!seen.has(item)) {
       seen.add(item);

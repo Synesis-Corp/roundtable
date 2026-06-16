@@ -1,21 +1,21 @@
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: "jsdom",
+    environment: 'jsdom',
     globals: true,
-    setupFiles: ["./src/test/setup.ts"],
+    setupFiles: ['./src/test/setup.ts'],
     // e2e is Playwright's; keep it out of the vitest run.
-    exclude: ["node_modules", "e2e", "dist"],
+    exclude: ['node_modules', 'e2e', 'dist'],
     passWithNoTests: true,
     coverage: {
-      provider: "v8",
-      reporter: ["text", "lcov"],
-      reportsDirectory: "./coverage",
-      include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.{ts,tsx}", "src/test/**", "e2e/**"],
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'e2e/**'],
       // Coverage gate — enforced in CI via `pnpm coverage`. Numbers set
       // 2026-06-11 to current real values minus a 1-2% buffer, so a small
       // refactor doesn't immediately fail the build. Bump these when the

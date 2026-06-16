@@ -1,7 +1,12 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { webSearch, type WebSearchResponse } from './web-search';
-import { runPython, MAX_CODE_LENGTH, type SandboxRunner, type SandboxResult } from './python-sandbox';
+import {
+  runPython,
+  MAX_CODE_LENGTH,
+  type SandboxRunner,
+  type SandboxResult,
+} from './python-sandbox';
 import { logger } from './logger';
 
 export interface ChatToolsOptions {

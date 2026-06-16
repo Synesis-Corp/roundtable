@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { apiGet, apiPut } from "../lib/api-client";
-import type { ModelInfo } from "@chat/sdk";
+import { useState, useEffect, useCallback } from 'react';
+import { apiGet, apiPut } from '../lib/api-client';
+import type { ModelInfo } from '@chat/sdk';
 
 interface UseActiveModelsReturn {
   /** All selectable models for the provider (the same top-N /connected surfaces). */
@@ -45,7 +45,7 @@ export function useActiveModels(providerId: string | null): UseActiveModelsRetur
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : "No se pudieron cargar los modelos");
+        setError(err instanceof Error ? err.message : 'No se pudieron cargar los modelos');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

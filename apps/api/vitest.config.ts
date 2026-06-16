@@ -1,15 +1,15 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    environment: "node",
+    environment: 'node',
     globals: true,
     coverage: {
-      provider: "v8",
-      reporter: ["text", "lcov"],
-      reportsDirectory: "./coverage",
-      include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts"],
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.test.ts'],
       // Coverage gate — enforced in CI via `pnpm coverage`. Numbers set
       // 2026-06-11 to current real values minus a 1-2% buffer, so a small
       // refactor doesn't immediately fail the build. Bump these when the

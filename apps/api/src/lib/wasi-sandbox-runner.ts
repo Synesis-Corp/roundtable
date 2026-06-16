@@ -125,7 +125,10 @@ export class WasiSandboxRunner implements SandboxRunner {
 
       worker.on('exit', (code) => {
         if (!settled) {
-          finish({ stdout: '', error: code === 0 ? 'No output produced' : `Worker exited (${code})` });
+          finish({
+            stdout: '',
+            error: code === 0 ? 'No output produced' : `Worker exited (${code})`,
+          });
         }
       });
     });

@@ -40,7 +40,7 @@ export interface ModelsDevProvider {
   models: Record<string, ModelsDevModel>;
 }
 
-const MODELS_DEV_API_URL = "https://models.dev/api.json";
+const MODELS_DEV_API_URL = 'https://models.dev/api.json';
 
 let modelsDevCache: Map<string, ModelsDevProvider> | null = null;
 let modelsDevFetchError: string | null = null;
@@ -53,7 +53,7 @@ let modelsDevFetchError: string | null = null;
 export async function fetchModelsDev(): Promise<void> {
   try {
     const res = await fetch(MODELS_DEV_API_URL, {
-      headers: { Accept: "application/json" },
+      headers: { Accept: 'application/json' },
     });
     if (!res.ok) {
       throw new Error(`Models.dev returned ${res.status}`);
@@ -62,8 +62,7 @@ export async function fetchModelsDev(): Promise<void> {
     modelsDevCache = new Map(Object.entries(data));
     modelsDevFetchError = null;
   } catch (err) {
-    modelsDevFetchError =
-      err instanceof Error ? err.message : "Unknown error fetching Models.dev";
+    modelsDevFetchError = err instanceof Error ? err.message : 'Unknown error fetching Models.dev';
   }
 }
 

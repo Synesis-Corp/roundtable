@@ -2621,11 +2621,18 @@ describe('Onboarding — auth endpoints report created', () => {
       vi.restoreAllMocks();
     });
 
-    function setupGitHubMock(opts: { access_token: string; ghUser: { id: number; login: string; name: string | null; email: string | null } }): void {
+    function setupGitHubMock(opts: {
+      access_token: string;
+      ghUser: { id: number; login: string; name: string | null; email: string | null };
+    }): void {
       const fetchMock = vi.fn().mockImplementation(async (url: string) => {
         if (url === 'https://github.com/login/oauth/access_token') {
           return new Response(
-            JSON.stringify({ access_token: opts.access_token, token_type: 'bearer', scope: 'user:email' }),
+            JSON.stringify({
+              access_token: opts.access_token,
+              token_type: 'bearer',
+              scope: 'user:email',
+            }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
           );
         }
@@ -2671,7 +2678,12 @@ describe('Onboarding — auth endpoints report created', () => {
     it('postMessage payload includes created: false for an existing GitHub user', async () => {
       setupGitHubMock({
         access_token: 'gho_onboarding_test',
-        ghUser: { id: 88888, login: 'existingcat', name: 'Existing Cat', email: '[email protected]' },
+        ghUser: {
+          id: 88888,
+          login: 'existingcat',
+          name: 'Existing Cat',
+          email: '[email protected]',
+        },
       });
       // findUnique by githubId returns existing user
       mockPrisma.user.findUnique.mockResolvedValueOnce({

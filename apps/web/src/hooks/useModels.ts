@@ -1,8 +1,8 @@
-import { storage } from "../lib/storage";
-import { useState, useEffect, useCallback } from "react";
-import type { ModelInfo } from "@chat/sdk";
-import { apiGet } from "../lib/api-client";
-import { PROVIDERS_CHANGED_EVENT } from "../lib/provider-events";
+import { storage } from '../lib/storage';
+import { useState, useEffect, useCallback } from 'react';
+import type { ModelInfo } from '@chat/sdk';
+import { apiGet } from '../lib/api-client';
+import { PROVIDERS_CHANGED_EVENT } from '../lib/provider-events';
 
 export interface UseModelsReturn {
   models: ModelInfo[];
@@ -21,19 +21,19 @@ export function useModels(): UseModelsReturn {
     setLoading(true);
     setError(null);
 
-    const token = storage.get("token");
+    const token = storage.get('token');
     if (!token) {
       setModels([]);
       setLoading(false);
       return;
     }
 
-    apiGet<{ models: ModelInfo[] }>("/providers/connected")
+    apiGet<{ models: ModelInfo[] }>('/providers/connected')
       .then((data) => {
         setModels(data.models ?? []);
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Failed to load models");
+        setError(err instanceof Error ? err.message : 'Failed to load models');
       })
       .finally(() => {
         setLoading(false);

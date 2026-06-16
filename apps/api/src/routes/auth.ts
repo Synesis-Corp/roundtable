@@ -1,24 +1,24 @@
-import { Router, type Request, type Response } from "express";
-import bcrypt from "bcrypt";
-import { OAuth2Client } from "google-auth-library";
-import { RegisterSchema, LoginSchema, GoogleAuthSchema } from "@chat/sdk";
-import { prisma } from "../lib/db";
-import { signToken } from "../middleware/auth";
-import { validateBody } from "../middleware/validate";
+import { Router, type Request, type Response } from 'express';
+import bcrypt from 'bcrypt';
+import { OAuth2Client } from 'google-auth-library';
+import { RegisterSchema, LoginSchema, GoogleAuthSchema } from '@chat/sdk';
+import { prisma } from '../lib/db';
+import { signToken } from '../middleware/auth';
+import { validateBody } from '../middleware/validate';
 import {
   REFRESH_COOKIE_NAME,
   generateRefreshToken,
   hashRefreshToken,
   setRefreshCookie,
   clearRefreshCookie,
-} from "../lib/refresh-token";
+} from '../lib/refresh-token';
 import {
   buildAuthorizeUrl,
   exchangeCodeForToken,
   fetchGitHubUser,
   fetchPrimaryEmail,
   generateState,
-} from "../lib/github-auth";
+} from '../lib/github-auth';
 
 const router = Router();
 const googleClient = new OAuth2Client();
@@ -34,21 +34,21 @@ async function issueRefreshCookie(res: Response, userId: string): Promise<void> 
 // Short-lived, httpOnly, SameSite=Lax. Holds the CSRF `state` value the
 // authorize step set; the callback compares it with `req.query.state` to
 // prevent forged callbacks. 10 minutes is the GitHub-recommended window.
-const GITHUB_STATE_COOKIE = "github_oauth_state";
+const GITHUB_STATE_COOKIE = 'github_oauth_state';
 const GITHUB_STATE_MAX_AGE_MS = 10 * 60 * 1000;
 
 function setGitHubStateCookie(res: Response, state: string): void {
   res.cookie(GITHUB_STATE_COOKIE, state, {
     httpOnly: true,
-    sameSite: "lax", // "strict" would block the GitHub → our callback redirect
-    secure: process.env.NODE_ENV === "production",
-    path: "/auth",
+    sameSite: 'lax', // "strict" would block the GitHub → our callback redirect
+    secure: process.env.NODE_ENV === 'production',
+    path: '/auth',
     maxAge: GITHUB_STATE_MAX_AGE_MS,
   });
 }
 
 function clearGitHubStateCookie(res: Response): void {
-  res.clearCookie(GITHUB_STATE_COOKIE, { path: "/auth" });
+  res.clearCookie(GITHUB_STATE_COOKIE, { path: '/auth' });
 }
 
 /**
@@ -56,8 +56,13 @@ function clearGitHubStateCookie(res: Response): void {
  * popup opener via `window.opener.postMessage` and closes itself. The
  * frontend (`oauth-popup.ts`) listens for the message and reacts.
  */
-function oauthCallbackHtml(payload: { type: "oauth-success" | "oauth-error"; token?: string; error?: string; created?: boolean }): string {
-  const json = JSON.stringify(payload).replace(/</g, "\\u003c");
+function oauthCallbackHtml(payload: {
+  type: 'oauth-success' | 'oauth-error';
+  token?: string;
+  error?: string;
+  created?: boolean;
+}): string {
+  const json = JSON.stringify(payload).replace(/</g, '\\u003c');
   return `<!doctype html><html><head><meta charset="utf-8"><title>Sign-in</title></head><body><script>
     (function() {
       var msg = ${json};
@@ -69,13 +74,13 @@ function oauthCallbackHtml(payload: { type: "oauth-success" | "oauth-error"; tok
   </script></body></html>`;
 }
 
-router.post("/register", validateBody(RegisterSchema), async (req, res) => {
+router.post('/register', validateBody(RegisterSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      res.status(409).json({ error: "User already exists" });
+      res.status(409).json({ error: 'User already exists' });
       return;
     }
 
@@ -88,25 +93,25 @@ router.post("/register", validateBody(RegisterSchema), async (req, res) => {
     await issueRefreshCookie(res, user.id);
     res.status(201).json({ token, user: { id: user.id, email: user.email }, created: true });
   } catch (err) {
-    req.log.error({ err }, "registration failed");
-    res.status(500).json({ error: "Registration failed" });
+    req.log.error({ err }, 'registration failed');
+    res.status(500).json({ error: 'Registration failed' });
   }
 });
 
-router.post("/login", validateBody(LoginSchema), async (req, res) => {
+router.post('/login', validateBody(LoginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });
     // No passwordHash = OAuth-only account (e.g. Google) — can't log in by password.
     if (!user || !user.passwordHash) {
-      res.status(401).json({ error: "Invalid credentials" });
+      res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      res.status(401).json({ error: "Invalid credentials" });
+      res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
 
@@ -114,19 +119,19 @@ router.post("/login", validateBody(LoginSchema), async (req, res) => {
     await issueRefreshCookie(res, user.id);
     res.json({ token, user: { id: user.id, email: user.email }, created: false });
   } catch (err) {
-    req.log.error({ err }, "login failed");
-    res.status(500).json({ error: "Login failed" });
+    req.log.error({ err }, 'login failed');
+    res.status(500).json({ error: 'Login failed' });
   }
 });
 
 // Sign in / sign up with Google. The frontend sends the ID token (credential)
 // from Google Identity Services; we verify it server-side, then find-or-create
 // the user and issue OUR JWT (same token the rest of the app already uses).
-router.post("/google", validateBody(GoogleAuthSchema), async (req, res) => {
+router.post('/google', validateBody(GoogleAuthSchema), async (req, res) => {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     if (!clientId) {
-      res.status(503).json({ error: "Google sign-in is not configured" });
+      res.status(503).json({ error: 'Google sign-in is not configured' });
       return;
     }
 
@@ -137,7 +142,7 @@ router.post("/google", validateBody(GoogleAuthSchema), async (req, res) => {
     });
     const payload = ticket.getPayload();
     if (!payload?.email || payload.email_verified !== true) {
-      res.status(401).json({ error: "Google account email not verified" });
+      res.status(401).json({ error: 'Google account email not verified' });
       return;
     }
 
@@ -163,18 +168,18 @@ router.post("/google", validateBody(GoogleAuthSchema), async (req, res) => {
     await issueRefreshCookie(res, user.id);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name }, created });
   } catch (err) {
-    req.log.error({ err }, "google authentication failed");
-    res.status(401).json({ error: "Google authentication failed" });
+    req.log.error({ err }, 'google authentication failed');
+    res.status(401).json({ error: 'Google authentication failed' });
   }
 });
 
 // Exchange a valid refresh cookie for a new access token. Rotates the refresh
 // token (revoke the used one, issue a fresh cookie) to limit replay windows.
-router.post("/refresh", async (req, res) => {
+router.post('/refresh', async (req, res) => {
   try {
     const raw = req.cookies?.[REFRESH_COOKIE_NAME];
-    if (!raw || typeof raw !== "string") {
-      res.status(401).json({ error: "Missing refresh token" });
+    if (!raw || typeof raw !== 'string') {
+      res.status(401).json({ error: 'Missing refresh token' });
       return;
     }
 
@@ -183,14 +188,14 @@ router.post("/refresh", async (req, res) => {
     });
     if (!stored || stored.revokedAt || stored.expiresAt <= new Date()) {
       clearRefreshCookie(res);
-      res.status(401).json({ error: "Invalid refresh token" });
+      res.status(401).json({ error: 'Invalid refresh token' });
       return;
     }
 
     const user = await prisma.user.findUnique({ where: { id: stored.userId } });
     if (!user) {
       clearRefreshCookie(res);
-      res.status(401).json({ error: "Invalid refresh token" });
+      res.status(401).json({ error: 'Invalid refresh token' });
       return;
     }
 
@@ -204,17 +209,17 @@ router.post("/refresh", async (req, res) => {
     const token = signToken(user.id, user.email);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
   } catch (err) {
-    req.log.error({ err }, "token refresh failed");
-    res.status(500).json({ error: "Token refresh failed" });
+    req.log.error({ err }, 'token refresh failed');
+    res.status(500).json({ error: 'Token refresh failed' });
   }
 });
 
 // Revoke the current refresh token and clear the cookie. Idempotent: a missing
 // or already-revoked token still returns 204.
-router.post("/logout", async (req, res) => {
+router.post('/logout', async (req, res) => {
   try {
     const raw = req.cookies?.[REFRESH_COOKIE_NAME];
-    if (raw && typeof raw === "string") {
+    if (raw && typeof raw === 'string') {
       await prisma.refreshToken.updateMany({
         where: { tokenHash: hashRefreshToken(raw), revokedAt: null },
         data: { revokedAt: new Date() },
@@ -223,8 +228,8 @@ router.post("/logout", async (req, res) => {
     clearRefreshCookie(res);
     res.status(204).send();
   } catch (err) {
-    req.log.error({ err }, "logout failed");
-    res.status(500).json({ error: "Logout failed" });
+    req.log.error({ err }, 'logout failed');
+    res.status(500).json({ error: 'Logout failed' });
   }
 });
 
@@ -242,17 +247,17 @@ router.post("/logout", async (req, res) => {
  * `state` and stores it in an httpOnly cookie for CSRF protection on the
  * callback. Returns 503 if the operator hasn't configured GitHub.
  */
-router.get("/github", (req: Request, res: Response) => {
+router.get('/github', (req: Request, res: Response) => {
   const clientId = process.env.GITHUB_CLIENT_ID;
   if (!clientId) {
-    res.status(503).json({ error: "GitHub sign-in is not configured" });
+    res.status(503).json({ error: 'GitHub sign-in is not configured' });
     return;
   }
 
   // Build the callback URL from the configured WEB_URL. The path must match
   // the one registered in the GitHub OAuth App.
-  const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
-  const callbackUrl = `${webUrl.replace(/\/$/, "")}/api/auth/github/callback`;
+  const webUrl = process.env.WEB_URL ?? 'http://localhost:3000';
+  const callbackUrl = `${webUrl.replace(/\/$/, '')}/api/auth/github/callback`;
 
   const state = generateState();
   setGitHubStateCookie(res, state);
@@ -264,21 +269,29 @@ router.get("/github", (req: Request, res: Response) => {
  * JWT via postMessage to the popup opener. The popup window is closed
  * server-side via the inline script.
  */
-router.get("/github/callback", async (req: Request, res: Response) => {
+router.get('/github/callback', async (req: Request, res: Response) => {
   try {
     const clientId = process.env.GITHUB_CLIENT_ID;
     const clientSecret = process.env.GITHUB_CLIENT_SECRET;
     if (!clientId || !clientSecret) {
       clearGitHubStateCookie(res);
-      res.status(503).type("html").send(oauthCallbackHtml({ type: "oauth-error", error: "GitHub sign-in is not configured" }));
+      res
+        .status(503)
+        .type('html')
+        .send(
+          oauthCallbackHtml({ type: 'oauth-error', error: 'GitHub sign-in is not configured' })
+        );
       return;
     }
 
-    const code = typeof req.query.code === "string" ? req.query.code : "";
-    const stateParam = typeof req.query.state === "string" ? req.query.state : "";
+    const code = typeof req.query.code === 'string' ? req.query.code : '';
+    const stateParam = typeof req.query.state === 'string' ? req.query.state : '';
     if (!code) {
       clearGitHubStateCookie(res);
-      res.status(400).type("html").send(oauthCallbackHtml({ type: "oauth-error", error: "Missing authorization code" }));
+      res
+        .status(400)
+        .type('html')
+        .send(oauthCallbackHtml({ type: 'oauth-error', error: 'Missing authorization code' }));
       return;
     }
 
@@ -287,13 +300,16 @@ router.get("/github/callback", async (req: Request, res: Response) => {
     // (both 64 chars). This is sufficient for CSRF state — not a secret.
     if (!stateCookie || stateCookie !== stateParam) {
       clearGitHubStateCookie(res);
-      res.status(401).type("html").send(oauthCallbackHtml({ type: "oauth-error", error: "Invalid OAuth state" }));
+      res
+        .status(401)
+        .type('html')
+        .send(oauthCallbackHtml({ type: 'oauth-error', error: 'Invalid OAuth state' }));
       return;
     }
     clearGitHubStateCookie(res);
 
-    const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
-    const callbackUrl = `${webUrl.replace(/\/$/, "")}/api/auth/github/callback`;
+    const webUrl = process.env.WEB_URL ?? 'http://localhost:3000';
+    const callbackUrl = `${webUrl.replace(/\/$/, '')}/api/auth/github/callback`;
 
     const accessToken = await exchangeCodeForToken(code, callbackUrl, clientId, clientSecret);
     const ghUser = await fetchGitHubUser(accessToken);
@@ -306,7 +322,12 @@ router.get("/github/callback", async (req: Request, res: Response) => {
       email = await fetchPrimaryEmail(accessToken);
     }
     if (!email) {
-      res.status(401).type("html").send(oauthCallbackHtml({ type: "oauth-error", error: "GitHub account email not verified" }));
+      res
+        .status(401)
+        .type('html')
+        .send(
+          oauthCallbackHtml({ type: 'oauth-error', error: 'GitHub account email not verified' })
+        );
       return;
     }
 
@@ -331,16 +352,22 @@ router.get("/github/callback", async (req: Request, res: Response) => {
 
     const token = signToken(user.id, user.email);
     await issueRefreshCookie(res, user.id);
-    res.status(200).type("html").send(
-      oauthCallbackHtml({
-        type: "oauth-success",
-        token,
-        created: ghCreated,
-      }),
-    );
+    res
+      .status(200)
+      .type('html')
+      .send(
+        oauthCallbackHtml({
+          type: 'oauth-success',
+          token,
+          created: ghCreated,
+        })
+      );
   } catch (err) {
-    req.log.error({ err }, "github oauth callback failed");
-    res.status(502).type("html").send(oauthCallbackHtml({ type: "oauth-error", error: "GitHub authentication failed" }));
+    req.log.error({ err }, 'github oauth callback failed');
+    res
+      .status(502)
+      .type('html')
+      .send(oauthCallbackHtml({ type: 'oauth-error', error: 'GitHub authentication failed' }));
   }
 });
 

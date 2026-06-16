@@ -1,5 +1,5 @@
-import { RoundtableMark } from "./RoundtableMark";
-import type { MultiInfo } from "../types/chat";
+import { RoundtableMark } from './RoundtableMark';
+import type { MultiInfo } from '../types/chat';
 
 /** Orchestration banner shown while Roundtable plans and runs subtasks. */
 export function RoundtableBanner({ multiInfo }: { multiInfo: MultiInfo }) {
@@ -14,13 +14,19 @@ export function RoundtableBanner({ multiInfo }: { multiInfo: MultiInfo }) {
         </div>
         <ul className="text-xs text-gray-300 space-y-1">
           {multiInfo.plan.map((step, i) => (
-            <li key={i} className="flex gap-2"><span className="text-purple-400">{i + 1}.</span>{step}</li>
+            <li key={i} className="flex gap-2">
+              <span className="text-purple-400">{i + 1}.</span>
+              {step}
+            </li>
           ))}
         </ul>
         {multiInfo.contributors && (
           <div className="mt-3 pt-3 border-t border-purple-700/30 flex flex-wrap gap-1.5">
             {multiInfo.contributors.map((c, i) => (
-              <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-200 border border-purple-700/30">
+              <span
+                key={i}
+                className="text-[11px] px-2 py-0.5 rounded-full bg-purple-900/40 text-purple-200 border border-purple-700/30"
+              >
                 {c.provider} · {c.model}
               </span>
             ))}

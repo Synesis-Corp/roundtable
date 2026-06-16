@@ -63,9 +63,7 @@ describe('useMemory', () => {
       tags: ['proyecto'],
     });
 
-    await act(() =>
-      result.current.updateMemory('memory-2', 'Construye Roundtable', ['proyecto'])
-    );
+    await act(() => result.current.updateMemory('memory-2', 'Construye Roundtable', ['proyecto']));
     expect(result.current.memories[0]).toEqual(updated);
     expect(api.patch).toHaveBeenCalledWith('/memory/memory-2', {
       content: 'Construye Roundtable',

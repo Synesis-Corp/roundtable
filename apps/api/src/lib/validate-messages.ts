@@ -1,5 +1,5 @@
-import type { Response } from "express";
-import { ChatMessagesSchema } from "@chat/sdk";
+import type { Response } from 'express';
+import { ChatMessagesSchema } from '@chat/sdk';
 
 /**
  * Validates the shape of a resolved chat `messages` array against the Zod
@@ -11,7 +11,7 @@ export function ensureValidMessages(messages: unknown, res: Response): boolean {
   const result = ChatMessagesSchema.safeParse(messages);
   if (!result.success) {
     res.status(400).json({
-      error: "Invalid messages",
+      error: 'Invalid messages',
       details: result.error.flatten(),
     });
     return false;

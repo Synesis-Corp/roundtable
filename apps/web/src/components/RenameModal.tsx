@@ -21,7 +21,7 @@ export function RenameModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={() => {
         if (!renaming) onCancel();
       }}
@@ -32,15 +32,15 @@ export function RenameModal({
         aria-label="Renombrar conversación"
         onClick={(e) => e.stopPropagation()}
         style={{
-          backgroundColor: "var(--bg-surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--r-lg)",
+          backgroundColor: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--r-lg)',
           padding: 24,
           maxWidth: 420,
-          width: "100%",
+          width: '100%',
         }}
       >
-        <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-1)", marginBottom: 12 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)', marginBottom: 12 }}>
           Renombrar conversación
         </h2>
         <input
@@ -49,22 +49,24 @@ export function RenameModal({
           maxLength={200}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") onConfirm();
-            if (e.key === "Escape") onCancel();
+            if (e.key === 'Enter') onConfirm();
+            if (e.key === 'Escape') onCancel();
           }}
           style={{
-            width: "100%",
+            width: '100%',
             fontSize: 14,
-            padding: "9px 12px",
-            borderRadius: "var(--r-sm)",
-            border: "1px solid var(--border-strong)",
-            backgroundColor: "var(--bg-input)",
-            color: "var(--text-1)",
+            padding: '9px 12px',
+            borderRadius: 'var(--r-sm)',
+            border: '1px solid var(--border-strong)',
+            backgroundColor: 'var(--bg-input)',
+            color: 'var(--text-1)',
             marginBottom: 20,
-            outline: "none",
+            outline: 'none',
           }}
         />
-        <div style={{ display: "flex", gap: 8, justifyContent: "space-between", alignItems: "center" }}>
+        <div
+          style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}
+        >
           <button
             type="button"
             onClick={onRegenerateTitle}
@@ -73,17 +75,17 @@ export function RenameModal({
             style={{
               fontSize: 13,
               fontWeight: 500,
-              padding: "8px 12px",
-              borderRadius: "var(--r-sm)",
-              border: "1px solid var(--accent-line)",
-              backgroundColor: "var(--accent-quiet)",
-              color: "var(--accent-text)",
+              padding: '8px 12px',
+              borderRadius: 'var(--r-sm)',
+              border: '1px solid var(--accent-line)',
+              backgroundColor: 'var(--accent-quiet)',
+              color: 'var(--accent-text)',
               opacity: renaming || regeneratingTitle ? 0.7 : 1,
-              cursor: renaming || regeneratingTitle ? "default" : "pointer",
+              cursor: renaming || regeneratingTitle ? 'default' : 'pointer',
             }}
           >
             {regeneratingTitle ? (
-              "Generando…"
+              'Generando…'
             ) : (
               <span className="inline-flex items-center gap-1.5">
                 <svg
@@ -103,7 +105,7 @@ export function RenameModal({
               </span>
             )}
           </button>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
               onClick={onCancel}
@@ -111,12 +113,12 @@ export function RenameModal({
               style={{
                 fontSize: 13,
                 fontWeight: 500,
-                padding: "8px 14px",
-                borderRadius: "var(--r-sm)",
-                border: "1px solid var(--border)",
-                backgroundColor: "transparent",
-                color: "var(--text-2)",
-                cursor: renaming ? "default" : "pointer",
+                padding: '8px 14px',
+                borderRadius: 'var(--r-sm)',
+                border: '1px solid var(--border)',
+                backgroundColor: 'transparent',
+                color: 'var(--text-2)',
+                cursor: renaming ? 'default' : 'pointer',
               }}
             >
               Cancelar
@@ -128,16 +130,16 @@ export function RenameModal({
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                padding: "8px 14px",
-                borderRadius: "var(--r-sm)",
-                border: "none",
-                backgroundColor: "var(--accent)",
-                color: "#fff",
+                padding: '8px 14px',
+                borderRadius: 'var(--r-sm)',
+                border: 'none',
+                backgroundColor: 'var(--accent)',
+                color: '#fff',
                 opacity: renaming || !renameValue.trim() ? 0.7 : 1,
-                cursor: renaming || !renameValue.trim() ? "default" : "pointer",
+                cursor: renaming || !renameValue.trim() ? 'default' : 'pointer',
               }}
             >
-              {renaming ? "Guardando…" : "Guardar"}
+              {renaming ? 'Guardando…' : 'Guardar'}
             </button>
           </div>
         </div>

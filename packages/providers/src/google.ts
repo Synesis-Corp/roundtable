@@ -6,14 +6,14 @@ import type {
   ChatChunk,
   ToolSet,
   StructuredResponse,
-} from "@chat/sdk";
-import type { ZodType } from "zod";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { streamText, generateText, generateObject } from "ai";
-import { getModel } from "@chat/router";
-import { convertMessages, throwIfErrorPart } from "./utils";
-import { buildProviderOptions } from "./effort";
-import { MAX_TOOL_STEPS } from "./constants";
+} from '@chat/sdk';
+import type { ZodType } from 'zod';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { streamText, generateText, generateObject } from 'ai';
+import { getModel } from '@chat/router';
+import { convertMessages, throwIfErrorPart } from './utils';
+import { buildProviderOptions } from './effort';
+import { MAX_TOOL_STEPS } from './constants';
 
 export interface GoogleConfig {
   id?: string;
@@ -27,32 +27,32 @@ export class GoogleProvider implements ProviderPlugin {
   private baseURL?: string;
 
   constructor(config?: GoogleConfig) {
-    this.id = config?.id ?? "google";
-    this.name = config?.name ?? "Google";
+    this.id = config?.id ?? 'google';
+    this.name = config?.name ?? 'Google';
     this.baseURL = config?.baseURL;
   }
 
   getCapabilities(): ModelCapability[] {
     return [
       {
-        modelId: "gemini-1.5-pro",
+        modelId: 'gemini-1.5-pro',
         provider: this.id,
-        modalities: ["text", "image", "audio", "file"],
-        features: ["tool-use", "vision", "structured-output"],
+        modalities: ['text', 'image', 'audio', 'file'],
+        features: ['tool-use', 'vision', 'structured-output'],
         contextWindow: 2000000,
       },
       {
-        modelId: "gemini-1.5-flash",
+        modelId: 'gemini-1.5-flash',
         provider: this.id,
-        modalities: ["text", "image", "audio"],
-        features: ["tool-use", "vision"],
+        modalities: ['text', 'image', 'audio'],
+        features: ['tool-use', 'vision'],
         contextWindow: 1000000,
       },
       {
-        modelId: "gemini-2.0-flash-exp",
+        modelId: 'gemini-2.0-flash-exp',
         provider: this.id,
-        modalities: ["text", "image", "audio"],
-        features: ["tool-use", "vision", "reasoning"],
+        modalities: ['text', 'image', 'audio'],
+        features: ['tool-use', 'vision', 'reasoning'],
         contextWindow: 1000000,
       },
     ];
@@ -73,10 +73,10 @@ export class GoogleProvider implements ProviderPlugin {
   ): Promise<ChatResponse> {
     const client = this.getClient(apiKey);
     const start = Date.now();
-    const providerOptions = buildProviderOptions(this.id, "google", request);
+    const providerOptions = buildProviderOptions(this.id, 'google', request);
     // Resolve the target model's modalities so convertMessages can route PDFs
     // natively when supported, or inline extracted text otherwise.
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
     const result = await generateText({
       model: client(request.model),
       messages: convertMessages(request.messages, { targetModalities }),
@@ -109,8 +109,8 @@ export class GoogleProvider implements ProviderPlugin {
   ): Promise<StructuredResponse<T>> {
     const client = this.getClient(apiKey);
     const start = Date.now();
-    const providerOptions = buildProviderOptions(this.id, "google", request);
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const providerOptions = buildProviderOptions(this.id, 'google', request);
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
     const result = await generateObject({
       model: client(request.model),
       schema,
@@ -138,10 +138,10 @@ export class GoogleProvider implements ProviderPlugin {
     tools?: ToolSet
   ): AsyncIterable<ChatChunk> {
     const client = this.getClient(apiKey);
-    const providerOptions = buildProviderOptions(this.id, "google", request);
+    const providerOptions = buildProviderOptions(this.id, 'google', request);
     // Resolve the target model's modalities so convertMessages can route PDFs
     // natively when supported, or inline extracted text otherwise.
-    const targetModalities = getModel(this.id, request.model)?.modalities ?? ["text"];
+    const targetModalities = getModel(this.id, request.model)?.modalities ?? ['text'];
     const result = await streamText({
       model: client(request.model),
       messages: convertMessages(request.messages, { targetModalities }),
@@ -159,33 +159,33 @@ export class GoogleProvider implements ProviderPlugin {
     for await (const part of result.fullStream) {
       const p = part as unknown as { type: string; [k: string]: unknown };
       throwIfErrorPart(p);
-      if (p.type === "text-delta") {
+      if (p.type === 'text-delta') {
         yield {
-          token: p["textDelta"] as string,
+          token: p['textDelta'] as string,
           model: request.model,
           provider: this.id,
           isFinished: false,
         };
-      } else if (p.type === "reasoning") {
+      } else if (p.type === 'reasoning') {
         yield {
-          token: "",
-          reasoning: p["textDelta"] as string,
+          token: '',
+          reasoning: p['textDelta'] as string,
           model: request.model,
           provider: this.id,
           isFinished: false,
         };
-      } else if (p.type === "tool-call") {
+      } else if (p.type === 'tool-call') {
         yield {
-          token: "",
-          toolCall: { name: p["toolName"] as string, args: p["args"] },
+          token: '',
+          toolCall: { name: p['toolName'] as string, args: p['args'] },
           model: request.model,
           provider: this.id,
           isFinished: false,
         };
-      } else if (p.type === "tool-result") {
+      } else if (p.type === 'tool-result') {
         yield {
-          token: "",
-          toolResult: { name: p["toolName"] as string, result: p["result"] },
+          token: '',
+          toolResult: { name: p['toolName'] as string, result: p['result'] },
           model: request.model,
           provider: this.id,
           isFinished: false,
@@ -196,7 +196,7 @@ export class GoogleProvider implements ProviderPlugin {
     const usage = await result.usage;
 
     yield {
-      token: "",
+      token: '',
       model: request.model,
       provider: this.id,
       isFinished: true,

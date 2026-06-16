@@ -1,6 +1,6 @@
-import type { ModelCapability, Modality, Feature } from "@chat/sdk";
-import { registerModel } from "@chat/router";
-import { prisma } from "./db";
+import type { ModelCapability, Modality, Feature } from '@chat/sdk';
+import { registerModel } from '@chat/router';
+import { prisma } from './db';
 
 /**
  * Persistence bridge between the DB (CapabilityEntry) and the in-memory router

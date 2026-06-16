@@ -1,7 +1,7 @@
-import { storage } from "../lib/storage";
-import { useNavigate } from "react-router-dom";
-import { openOAuthPopup } from "../lib/oauth-popup";
-import { IS_NEW_KEY } from "../lib/onboarding-helpers";
+import { storage } from '../lib/storage';
+import { useNavigate } from 'react-router-dom';
+import { openOAuthPopup } from '../lib/oauth-popup';
+import { IS_NEW_KEY } from '../lib/onboarding-helpers';
 
 /**
  * "Sign in with GitHub" button. Opens a popup to /api/auth/github, which
@@ -10,28 +10,24 @@ import { IS_NEW_KEY } from "../lib/onboarding-helpers";
  * button renders nothing when VITE_GITHUB_ENABLED is unset, mirroring the
  * degraded UI of the Google button when VITE_GOOGLE_CLIENT_ID is missing.
  */
-export default function GitHubSignInButton({
-  onError,
-}: {
-  onError?: (message: string) => void;
-}) {
+export default function GitHubSignInButton({ onError }: { onError?: (message: string) => void }) {
   const navigate = useNavigate();
   // Opt-out: the button shows by default. The operator sets
   // VITE_GITHUB_ENABLED=false to hide it. The backend will return 503 if
   // GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET aren't set, so a click on an
   // unconfigured button shows a clean error instead of a dead UI.
-  const enabled = import.meta.env.VITE_GITHUB_ENABLED !== "false";
+  const enabled = import.meta.env.VITE_GITHUB_ENABLED !== 'false';
 
   if (!enabled) return null;
 
   const handleClick = () => {
     openOAuthPopup({
-      url: "/api/auth/github",
-      popupName: "github-oauth",
+      url: '/api/auth/github',
+      popupName: 'github-oauth',
       onSuccess: (token, created) => {
-        storage.set("token", token);
-        if (created) storage.set(IS_NEW_KEY, "1");
-        navigate("/");
+        storage.set('token', token);
+        if (created) storage.set(IS_NEW_KEY, '1');
+        navigate('/');
       },
       onError: (message) => onError?.(message),
     });

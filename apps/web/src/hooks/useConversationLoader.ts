@@ -4,12 +4,12 @@
 /*  streams, and resets state when navigating to a fresh chat ("/").   */
 /* ------------------------------------------------------------------ */
 
-import { useEffect } from "react";
-import { storage } from "../lib/storage";
-import { apiGet } from "../lib/api-client";
-import { mapPersistedCouncilInfo } from "../lib/chat-page-helpers";
-import type { ChatMessage, CouncilInfo, MultiInfo } from "../types/chat";
-import type { Attachment } from "@chat/sdk";
+import { useEffect } from 'react';
+import { storage } from '../lib/storage';
+import { apiGet } from '../lib/api-client';
+import { mapPersistedCouncilInfo } from '../lib/chat-page-helpers';
+import type { ChatMessage, CouncilInfo, MultiInfo } from '../types/chat';
+import type { Attachment } from '@chat/sdk';
 
 interface LoaderArgs {
   routeConversationId: string | undefined;
@@ -33,7 +33,7 @@ interface PersistedMessage {
   attachments?: Attachment[] | null;
   reasoning?: string | null;
   toolCalls?: Array<{ name: string; args?: unknown; result?: unknown }> | null;
-  councilTurn?: Parameters<typeof mapPersistedCouncilInfo>[0]["councilTurn"];
+  councilTurn?: Parameters<typeof mapPersistedCouncilInfo>[0]['councilTurn'];
 }
 
 interface PersistedConversation {
@@ -67,7 +67,7 @@ export function useConversationLoader({
       return;
     }
 
-    const token = storage.get("token");
+    const token = storage.get('token');
     if (!token) return;
 
     let aborted = false;
@@ -79,7 +79,7 @@ export function useConversationLoader({
         if (data.messages) {
           const hydratedMessages: ChatMessage[] = data.messages.map((m) => ({
             id: m.id,
-            role: m.role as "user" | "assistant" | "system",
+            role: m.role as 'user' | 'assistant' | 'system',
             content: m.content,
             provider: m.providerId,
             model: m.modelId,
@@ -95,7 +95,7 @@ export function useConversationLoader({
           // appending onto a persisted partial (which would duplicate). (P.1)
           const resuming = data.isStreaming === true;
           const visibleMessages =
-            resuming && hydratedMessages[hydratedMessages.length - 1]?.role === "assistant"
+            resuming && hydratedMessages[hydratedMessages.length - 1]?.role === 'assistant'
               ? hydratedMessages.slice(0, -1)
               : hydratedMessages;
 
@@ -106,7 +106,8 @@ export function useConversationLoader({
           setCouncilInfo(
             resuming
               ? null
-              : [...hydratedMessages].reverse().find((message) => message.councilInfo)?.councilInfo ?? null
+              : ([...hydratedMessages].reverse().find((message) => message.councilInfo)
+                  ?.councilInfo ?? null)
           );
 
           if (resuming) {
@@ -118,7 +119,7 @@ export function useConversationLoader({
       })
       .catch((err) => {
         if (aborted) return;
-        setError(err instanceof Error ? err.message : "Failed to load conversation");
+        setError(err instanceof Error ? err.message : 'Failed to load conversation');
         setMessages([]);
       })
       .finally(() => {

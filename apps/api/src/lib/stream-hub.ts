@@ -1,4 +1,4 @@
-import type { Response } from "express";
+import type { Response } from 'express';
 
 /**
  * In-memory hub for in-flight SSE generations, keyed by conversationId.
@@ -15,7 +15,7 @@ import type { Response } from "express";
  * (Redis pub/sub + a durable buffer); the producer/subscriber API stays the same.
  */
 
-export type StreamStatus = "running" | "done" | "error";
+export type StreamStatus = 'running' | 'done' | 'error';
 
 export interface StreamSession {
   conversationId: string;
@@ -52,7 +52,7 @@ export class StreamHub {
       conversationId,
       userId,
       events: [],
-      status: "running",
+      status: 'running',
       subscribers: new Set(),
       abort: new AbortController(),
       createdAt: Date.now(),
@@ -67,7 +67,7 @@ export class StreamHub {
 
   /** True only while a generation for this conversation is actively running. */
   isActive(conversationId: string): boolean {
-    return this.sessions.get(conversationId)?.status === "running";
+    return this.sessions.get(conversationId)?.status === 'running';
   }
 
   /** Buffer an event and fan it out to every live subscriber. */
@@ -95,7 +95,7 @@ export class StreamHub {
         return;
       }
     }
-    if (session.status === "running") {
+    if (session.status === 'running') {
       session.subscribers.add(res);
     } else {
       try {
@@ -124,9 +124,12 @@ export class StreamHub {
     }
     session.subscribers.clear();
     if (session.evictTimer) clearTimeout(session.evictTimer);
-    session.evictTimer = setTimeout(() => this.sessions.delete(session.conversationId), EVICT_AFTER_MS);
+    session.evictTimer = setTimeout(
+      () => this.sessions.delete(session.conversationId),
+      EVICT_AFTER_MS
+    );
     // Don't keep the event loop alive just for cleanup.
-    if (typeof session.evictTimer === "object" && "unref" in session.evictTimer) {
+    if (typeof session.evictTimer === 'object' && 'unref' in session.evictTimer) {
       (session.evictTimer as { unref: () => void }).unref();
     }
   }
@@ -135,7 +138,7 @@ export class StreamHub {
   evict(conversationId: string): void {
     const session = this.sessions.get(conversationId);
     if (!session) return;
-    if (session.status === "running") session.abort.abort();
+    if (session.status === 'running') session.abort.abort();
     for (const res of session.subscribers) {
       try {
         res.end();

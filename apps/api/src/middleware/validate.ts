@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from "express";
-import type { ZodSchema } from "zod";
+import type { Request, Response, NextFunction } from 'express';
+import type { ZodSchema } from 'zod';
 
 /**
  * Returns middleware that validates `req.body` against a Zod schema. On failure
@@ -12,7 +12,7 @@ export function validateBody<T>(schema: ZodSchema<T>) {
     const result = schema.safeParse(req.body);
     if (!result.success) {
       res.status(400).json({
-        error: "Validation failed",
+        error: 'Validation failed',
         details: result.error.flatten().fieldErrors,
       });
       return;

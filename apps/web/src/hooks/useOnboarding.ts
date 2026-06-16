@@ -1,12 +1,12 @@
-import { useMemo, useCallback, useState } from "react";
-import type { UserProvider } from "@chat/sdk";
-import { storage } from "../lib/storage";
+import { useMemo, useCallback, useState } from 'react';
+import type { UserProvider } from '@chat/sdk';
+import { storage } from '../lib/storage';
 import {
   IS_NEW_KEY,
   getOnboardingState,
   clearIsNewFlag,
   type OnboardingState,
-} from "../lib/onboarding-helpers";
+} from '../lib/onboarding-helpers';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,7 +42,7 @@ export function useOnboarding(args: UseOnboardingArgs): UseOnboardingReturn {
   // This is needed because storage.get() is not reactive on its own.
   const [, forceUpdate] = useState(0);
 
-  const isNewFlag = storage.get(IS_NEW_KEY) === "1";
+  const isNewFlag = storage.get(IS_NEW_KEY) === '1';
 
   const onboarding = useMemo(
     () =>
@@ -52,7 +52,7 @@ export function useOnboarding(args: UseOnboardingArgs): UseOnboardingReturn {
         userProvidersLoading: args.userProvidersLoading,
         modelsLoading: args.modelsLoading,
       }),
-    [isNewFlag, args.userProviders, args.userProvidersLoading, args.modelsLoading],
+    [isNewFlag, args.userProviders, args.userProvidersLoading, args.modelsLoading]
   );
 
   const clearIsNew = useCallback(() => {

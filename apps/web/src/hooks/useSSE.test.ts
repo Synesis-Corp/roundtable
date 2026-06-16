@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { useSSE } from "./useSSE";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { useSSE } from './useSSE';
 
 /** Builds a fake fetch Response whose body streams the given SSE text chunks. */
 function streamResponse(chunks: string[], ok = true) {
@@ -9,7 +9,7 @@ function streamResponse(chunks: string[], ok = true) {
   return {
     ok,
     status: ok ? 200 : 500,
-    json: () => Promise.resolve({ error: "boom" }),
+    json: () => Promise.resolve({ error: 'boom' }),
     body: {
       getReader() {
         return {
@@ -36,7 +36,7 @@ function makeHandlers() {
   };
 }
 
-describe("useSSE", () => {
+describe('useSSE', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -44,10 +44,10 @@ describe("useSSE", () => {
     vi.unstubAllGlobals();
   });
 
-  it("streams tokens and finishes with the final payload", async () => {
+  it('streams tokens and finishes with the final payload', async () => {
     const handlers = makeHandlers();
     vi.stubGlobal(
-      "fetch",
+      'fetch',
       vi.fn(() =>
         Promise.resolve(
           streamResponse([
@@ -61,31 +61,39 @@ describe("useSSE", () => {
 
     const { result } = renderHook(() => useSSE(handlers));
     act(() => {
-      result.current.startStream("tok", [{ role: "user", content: "hi" }]);
+      result.current.startStream('tok', [{ role: 'user', content: 'hi' }]);
     });
 
     await waitFor(() => expect(handlers.onFinish).toHaveBeenCalled());
     expect(handlers.onMessage).toHaveBeenCalledTimes(2);
-    expect(handlers.onMessage).toHaveBeenNthCalledWith(1, "Hello", { provider: "openai", model: "gpt-4o" });
-    expect(handlers.onFinish).toHaveBeenCalledWith(expect.objectContaining({ conversationId: "c1" }));
+    expect(handlers.onMessage).toHaveBeenNthCalledWith(1, 'Hello', {
+      provider: 'openai',
+      model: 'gpt-4o',
+    });
+    expect(handlers.onFinish).toHaveBeenCalledWith(
+      expect.objectContaining({ conversationId: 'c1' })
+    );
     expect(handlers.onError).not.toHaveBeenCalled();
     await waitFor(() => expect(result.current.streaming).toBe(false));
   });
 
-  it("calls onError when the response is not ok", async () => {
+  it('calls onError when the response is not ok', async () => {
     const handlers = makeHandlers();
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(streamResponse([], false))));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve(streamResponse([], false)))
+    );
 
     const { result } = renderHook(() => useSSE(handlers));
     act(() => {
-      result.current.startStream("tok", [{ role: "user", content: "hi" }]);
+      result.current.startStream('tok', [{ role: 'user', content: 'hi' }]);
     });
 
     await waitFor(() => expect(handlers.onError).toHaveBeenCalled());
     expect(handlers.onFinish).not.toHaveBeenCalled();
   });
 
-  it("routes to /api/chat/multi and reports the plan in Council mode", async () => {
+  it('routes to /api/chat/multi and reports the plan in Council mode', async () => {
     const handlers = makeHandlers();
     const fetchSpy = vi.fn(() =>
       Promise.resolve(
@@ -96,30 +104,34 @@ describe("useSSE", () => {
         ])
       )
     );
-    vi.stubGlobal("fetch", fetchSpy);
+    vi.stubGlobal('fetch', fetchSpy);
 
     const { result } = renderHook(() => useSSE(handlers));
     act(() => {
-      result.current.startStream("tok", [{ role: "user", content: "hi" }], { multiMode: true });
+      result.current.startStream('tok', [{ role: 'user', content: 'hi' }], { multiMode: true });
     });
 
     await waitFor(() => expect(handlers.onFinish).toHaveBeenCalled());
-    expect(fetchSpy).toHaveBeenCalledWith("/api/chat/multi", expect.anything());
-    expect(handlers.onMultiStatus).toHaveBeenCalledWith({ type: "plan", plan: ["a", "b"] });
+    expect(fetchSpy).toHaveBeenCalledWith('/api/chat/multi', expect.anything());
+    expect(handlers.onMultiStatus).toHaveBeenCalledWith({ type: 'plan', plan: ['a', 'b'] });
   });
 
-  it("surfaces SSE error events instead of swallowing them", async () => {
+  it('surfaces SSE error events instead of swallowing them', async () => {
     const handlers = makeHandlers();
     vi.stubGlobal(
-      "fetch",
+      'fetch',
       vi.fn(() =>
-        Promise.resolve(streamResponse(['data: {"error":"Stored credentials for provider \\"openai\\" can no longer be decrypted. Reconnect this provider in Settings."}\n\n']))
+        Promise.resolve(
+          streamResponse([
+            'data: {"error":"Stored credentials for provider \\"openai\\" can no longer be decrypted. Reconnect this provider in Settings."}\n\n',
+          ])
+        )
       )
     );
 
     const { result } = renderHook(() => useSSE(handlers));
     act(() => {
-      result.current.startStream("tok", [{ role: "user", content: "hi" }]);
+      result.current.startStream('tok', [{ role: 'user', content: 'hi' }]);
     });
 
     await waitFor(() => expect(handlers.onError).toHaveBeenCalled());
@@ -133,10 +145,10 @@ describe("useSSE", () => {
     await waitFor(() => expect(result.current.streaming).toBe(false));
   });
 
-  it("forwards real council events including proposal progress", async () => {
+  it('forwards real council events including proposal progress', async () => {
     const handlers = makeHandlers();
     vi.stubGlobal(
-      "fetch",
+      'fetch',
       vi.fn(() =>
         Promise.resolve(
           streamResponse([
@@ -152,16 +164,23 @@ describe("useSSE", () => {
 
     const { result } = renderHook(() => useSSE(handlers));
     act(() => {
-      result.current.startStream("tok", [{ role: "user", content: "hi" }], { multiMode: true });
+      result.current.startStream('tok', [{ role: 'user', content: 'hi' }], { multiMode: true });
     });
 
     await waitFor(() => expect(handlers.onFinish).toHaveBeenCalled());
-    expect(handlers.onCouncilEvent).toHaveBeenCalledWith(expect.objectContaining({ type: "council.start" }));
-    expect(handlers.onCouncilEvent).toHaveBeenCalledWith(expect.objectContaining({ type: "voice.proposal" }));
-    expect(handlers.onMessage).toHaveBeenCalledWith("Hola", { provider: "council", model: "council" });
+    expect(handlers.onCouncilEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'council.start' })
+    );
+    expect(handlers.onCouncilEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'voice.proposal' })
+    );
+    expect(handlers.onMessage).toHaveBeenCalledWith('Hola', {
+      provider: 'council',
+      model: 'council',
+    });
   });
 
-  it("resumeStream re-attaches to a background generation and replays it (P.1)", async () => {
+  it('resumeStream re-attaches to a background generation and replays it (P.1)', async () => {
     const handlers = makeHandlers();
     const fetchSpy = vi.fn(() =>
       Promise.resolve(
@@ -172,32 +191,32 @@ describe("useSSE", () => {
         ])
       )
     );
-    vi.stubGlobal("fetch", fetchSpy);
+    vi.stubGlobal('fetch', fetchSpy);
 
     const { result } = renderHook(() => useSSE(handlers));
     act(() => {
-      result.current.resumeStream("c1");
+      result.current.resumeStream('c1');
     });
 
     await waitFor(() => expect(handlers.onFinish).toHaveBeenCalled());
     expect(fetchSpy).toHaveBeenCalledWith(
-      "/api/chat/stream/c1/live",
-      expect.objectContaining({ method: "GET" })
+      '/api/chat/stream/c1/live',
+      expect.objectContaining({ method: 'GET' })
     );
-    expect(handlers.onMessage).toHaveBeenCalledWith("Resumed answer", expect.anything());
+    expect(handlers.onMessage).toHaveBeenCalledWith('Resumed answer', expect.anything());
     expect(handlers.onError).not.toHaveBeenCalled();
   });
 
-  it("resumeStream exits quietly when no stream is active (stream.inactive)", async () => {
+  it('resumeStream exits quietly when no stream is active (stream.inactive)', async () => {
     const handlers = makeHandlers();
     vi.stubGlobal(
-      "fetch",
+      'fetch',
       vi.fn(() => Promise.resolve(streamResponse(['data: {"type":"stream.inactive"}\n\n'])))
     );
 
     const { result } = renderHook(() => useSSE(handlers));
     act(() => {
-      result.current.resumeStream("c1");
+      result.current.resumeStream('c1');
     });
 
     await waitFor(() => expect(result.current.streaming).toBe(false));

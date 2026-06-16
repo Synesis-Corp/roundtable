@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { apiGet } from "../lib/api-client";
+import { useState, useEffect, useCallback } from 'react';
+import { apiGet } from '../lib/api-client';
 
 /** Live health of one connected provider (mirrors the backend shape). */
 export interface ProviderHealth {
@@ -25,7 +25,7 @@ export function useProvidersHealth(): UseProvidersHealthReturn {
 
   const fetchHealth = useCallback(() => {
     setLoading(true);
-    apiGet<{ health: Record<string, ProviderHealth> }>("/providers/health")
+    apiGet<{ health: Record<string, ProviderHealth> }>('/providers/health')
       .then((data) => setHealth(data.health ?? {}))
       .catch(() => setHealth({}))
       .finally(() => setLoading(false));

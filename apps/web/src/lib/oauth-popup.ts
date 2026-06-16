@@ -1,4 +1,4 @@
-import { storage } from "./storage";
+import { storage } from './storage';
 
 /**
  * Payload posted from the OAuth callback popup to its opener (the page that
@@ -7,8 +7,8 @@ import { storage } from "./storage";
  * `apps/api/src/routes/auth.ts#oauthCallbackHtml` serializes this exact shape.
  */
 export type OAuthMessage =
-  | { type: "oauth-success"; token: string; created?: boolean }
-  | { type: "oauth-error"; error: string };
+  | { type: 'oauth-success'; token: string; created?: boolean }
+  | { type: 'oauth-error'; error: string };
 
 export interface OpenOAuthPopupOptions {
   /** Backend route that initiates the OAuth flow (e.g. "/api/auth/github"). */
@@ -41,13 +41,13 @@ export interface OpenOAuthPopupOptions {
  * documents the contract.)
  */
 export function openOAuthPopup(opts: OpenOAuthPopupOptions): Window | null {
-  const popupName = opts.popupName ?? "oauth-popup";
-  const features = opts.features ?? "width=600,height=700,scrollbars=yes,resizable=yes";
+  const popupName = opts.popupName ?? 'oauth-popup';
+  const features = opts.features ?? 'width=600,height=700,scrollbars=yes,resizable=yes';
   const timeoutMs = opts.timeoutMs ?? 5 * 60 * 1000;
 
   const popup = window.open(opts.url, popupName, features);
   if (!popup) {
-    opts.onError("Popup was blocked. Please allow popups for this site.");
+    opts.onError('Popup was blocked. Please allow popups for this site.');
     return null;
   }
 
@@ -57,7 +57,7 @@ export function openOAuthPopup(opts: OpenOAuthPopupOptions): Window | null {
   const expectedOrigin = window.location.origin;
 
   const cleanup = () => {
-    window.removeEventListener("message", listener);
+    window.removeEventListener('message', listener);
     if (timeoutHandle) window.clearTimeout(timeoutHandle);
     if (!popup.closed) popup.close();
   };
@@ -65,18 +65,18 @@ export function openOAuthPopup(opts: OpenOAuthPopupOptions): Window | null {
   const listener = (event: MessageEvent<unknown>) => {
     if (event.origin !== expectedOrigin) return; // ignore messages from other origins
     const data = event.data as OAuthMessage | undefined;
-    if (!data || typeof data !== "object" || typeof data.type !== "string") return;
-    if (data.type === "oauth-success") {
-      if (typeof data.token !== "string" || data.token.length === 0) {
+    if (!data || typeof data !== 'object' || typeof data.type !== 'string') return;
+    if (data.type === 'oauth-success') {
+      if (typeof data.token !== 'string' || data.token.length === 0) {
         cleanup();
-        opts.onError("OAuth succeeded but no token was returned");
+        opts.onError('OAuth succeeded but no token was returned');
         return;
       }
       // Defense in depth: the message comes from our own origin, but the
       // token still needs to look like a JWT (3 base64url segments).
       if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(data.token)) {
         cleanup();
-        opts.onError("Received an invalid token");
+        opts.onError('Received an invalid token');
         return;
       }
       cleanup();
@@ -85,18 +85,18 @@ export function openOAuthPopup(opts: OpenOAuthPopupOptions): Window | null {
       // themselves; we just hand it back).
       void storage;
       opts.onSuccess(data.token, data.created);
-    } else if (data.type === "oauth-error") {
+    } else if (data.type === 'oauth-error') {
       cleanup();
-      opts.onError(data.error || "OAuth failed");
+      opts.onError(data.error || 'OAuth failed');
     }
   };
 
-  window.addEventListener("message", listener);
+  window.addEventListener('message', listener);
 
   // Timeout: the user walked away. Close the popup and fail the flow.
   const timeoutHandle = window.setTimeout(() => {
     cleanup();
-    opts.onError("OAuth timed out. Please try again.");
+    opts.onError('OAuth timed out. Please try again.');
   }, timeoutMs);
 
   return popup;

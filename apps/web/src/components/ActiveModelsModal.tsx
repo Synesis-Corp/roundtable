@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useActiveModels } from "../hooks/useActiveModels";
+import { useEffect, useState } from 'react';
+import { useActiveModels } from '../hooks/useActiveModels';
 
 export interface ActiveModelsModalProps {
   /** Provider whose models we're editing. `null` keeps the modal closed. */
@@ -29,9 +29,7 @@ export function ActiveModelsModal({
 
   // Empty activeIds means "all shown", so start with every model checked.
   useEffect(() => {
-    setSelected(
-      activeIds.length > 0 ? new Set(activeIds) : new Set(models.map((m) => m.id))
-    );
+    setSelected(activeIds.length > 0 ? new Set(activeIds) : new Set(models.map((m) => m.id)));
   }, [models, activeIds]);
 
   if (!providerId) return null;
@@ -56,7 +54,7 @@ export function ActiveModelsModal({
       onSaved?.();
       onClose();
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "No se pudo guardar");
+      setSaveError(err instanceof Error ? err.message : 'No se pudo guardar');
     } finally {
       setSaving(false);
     }
@@ -65,7 +63,7 @@ export function ActiveModelsModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={onClose}
     >
       <div
@@ -74,31 +72,30 @@ export function ActiveModelsModal({
         aria-label={`Modelos activos de ${providerName}`}
         className="w-full max-w-md overflow-hidden"
         style={{
-          backgroundColor: "var(--bg-surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--r-lg)",
+          backgroundColor: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--r-lg)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ padding: 20, borderBottom: "1px solid var(--border)" }}>
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-1)" }}>
+        <div style={{ padding: 20, borderBottom: '1px solid var(--border)' }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)' }}>
             Modelos activos · {providerName}
           </h2>
-          <p className="mt-1" style={{ fontSize: 12, color: "var(--text-3)" }}>
-            Elegí qué modelos mostrar en todo el sistema. Con todos seleccionados se
-            muestran todos.
+          <p className="mt-1" style={{ fontSize: 12, color: 'var(--text-3)' }}>
+            Elegí qué modelos mostrar en todo el sistema. Con todos seleccionados se muestran todos.
           </p>
         </div>
 
-        <div style={{ maxHeight: 360, overflowY: "auto", padding: "8px 12px" }}>
+        <div style={{ maxHeight: 360, overflowY: 'auto', padding: '8px 12px' }}>
           {loading && (
-            <p style={{ fontSize: 13, color: "var(--text-3)", padding: 12 }}>Cargando…</p>
+            <p style={{ fontSize: 13, color: 'var(--text-3)', padding: 12 }}>Cargando…</p>
           )}
           {error && !loading && (
-            <p style={{ fontSize: 13, color: "var(--m-rose)", padding: 12 }}>{error}</p>
+            <p style={{ fontSize: 13, color: 'var(--m-rose)', padding: 12 }}>{error}</p>
           )}
           {!loading && !error && models.length === 0 && (
-            <p style={{ fontSize: 13, color: "var(--text-3)", padding: 12 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-3)', padding: 12 }}>
               No hay modelos disponibles para este proveedor.
             </p>
           )}
@@ -107,23 +104,16 @@ export function ActiveModelsModal({
               <label
                 key={m.id}
                 className="flex cursor-pointer items-center gap-3"
-                style={{ padding: "8px 8px", borderRadius: "var(--r-sm)" }}
+                style={{ padding: '8px 8px', borderRadius: 'var(--r-sm)' }}
               >
-                <input
-                  type="checkbox"
-                  checked={selected.has(m.id)}
-                  onChange={() => toggle(m.id)}
-                />
+                <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggle(m.id)} />
                 <span className="min-w-0">
-                  <span
-                    className="block truncate"
-                    style={{ fontSize: 13, color: "var(--text-1)" }}
-                  >
+                  <span className="block truncate" style={{ fontSize: 13, color: 'var(--text-1)' }}>
                     {m.name}
                   </span>
                   <span
                     className="font-mono-ui block truncate"
-                    style={{ fontSize: 11, color: "var(--text-3)" }}
+                    style={{ fontSize: 11, color: 'var(--text-3)' }}
                   >
                     {m.id}
                   </span>
@@ -134,33 +124,31 @@ export function ActiveModelsModal({
 
         <div
           className="flex items-center justify-between gap-2"
-          style={{ padding: 16, borderTop: "1px solid var(--border)" }}
+          style={{ padding: 16, borderTop: '1px solid var(--border)' }}
         >
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setSelected(new Set(models.map((m) => m.id)))}
-              style={{ fontSize: 12, color: "var(--text-3)" }}
+              style={{ fontSize: 12, color: 'var(--text-3)' }}
             >
               Todos
             </button>
             <button
               type="button"
               onClick={() => setSelected(new Set())}
-              style={{ fontSize: 12, color: "var(--text-3)" }}
+              style={{ fontSize: 12, color: 'var(--text-3)' }}
             >
               Ninguno
             </button>
           </div>
           <div className="flex items-center gap-2">
-            {saveError && (
-              <span style={{ fontSize: 12, color: "var(--m-rose)" }}>{saveError}</span>
-            )}
+            {saveError && <span style={{ fontSize: 12, color: 'var(--m-rose)' }}>{saveError}</span>}
             <button
               type="button"
               onClick={onClose}
               className="rounded-lg px-3 py-1.5 text-sm"
-              style={{ color: "var(--text-3)" }}
+              style={{ color: 'var(--text-3)' }}
             >
               Cancelar
             </button>
@@ -169,9 +157,9 @@ export function ActiveModelsModal({
               onClick={handleSave}
               disabled={saving || loading}
               className="rounded-lg px-4 py-1.5 text-sm font-medium disabled:opacity-50"
-              style={{ backgroundColor: "var(--accent)", color: "#fff" }}
+              style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
             >
-              {saving ? "Guardando…" : "Guardar"}
+              {saving ? 'Guardando…' : 'Guardar'}
             </button>
           </div>
         </div>

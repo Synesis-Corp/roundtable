@@ -16,50 +16,50 @@ export interface EffortModelMetadata {
   outputLimit?: number;
 }
 
-const WIDELY_SUPPORTED_EFFORTS = ["low", "medium", "high"];
-const OPENAI_NONE_EFFORT_RELEASE_DATE = "2025-11-13";
-const OPENAI_XHIGH_EFFORT_RELEASE_DATE = "2025-12-04";
+const WIDELY_SUPPORTED_EFFORTS = ['low', 'medium', 'high'];
+const OPENAI_NONE_EFFORT_RELEASE_DATE = '2025-11-13';
+const OPENAI_XHIGH_EFFORT_RELEASE_DATE = '2025-12-04';
 const GPT5_FAMILY_RE = /(?:^|\/)gpt-5(?:[.-]|$)/;
 
 function openAIReasoningEfforts(apiId: string, releaseDate: string): string[] | null {
   const id = apiId.toLowerCase();
-  if (id === "gpt-5-pro" || id === "openai/gpt-5-pro") return null;
-  if (id.includes("codex")) {
-    if (id.includes("5.2") || id.includes("5.3")) {
-      return [...WIDELY_SUPPORTED_EFFORTS, "xhigh"];
+  if (id === 'gpt-5-pro' || id === 'openai/gpt-5-pro') return null;
+  if (id.includes('codex')) {
+    if (id.includes('5.2') || id.includes('5.3')) {
+      return [...WIDELY_SUPPORTED_EFFORTS, 'xhigh'];
     }
     return [...WIDELY_SUPPORTED_EFFORTS];
   }
 
   const efforts = [...WIDELY_SUPPORTED_EFFORTS];
-  if (GPT5_FAMILY_RE.test(id)) efforts.unshift("minimal");
-  if (releaseDate >= OPENAI_NONE_EFFORT_RELEASE_DATE) efforts.unshift("none");
-  if (releaseDate >= OPENAI_XHIGH_EFFORT_RELEASE_DATE) efforts.push("xhigh");
+  if (GPT5_FAMILY_RE.test(id)) efforts.unshift('minimal');
+  if (releaseDate >= OPENAI_NONE_EFFORT_RELEASE_DATE) efforts.unshift('none');
+  if (releaseDate >= OPENAI_XHIGH_EFFORT_RELEASE_DATE) efforts.push('xhigh');
   return efforts;
 }
 
 function anthropicAdaptiveEfforts(apiId: string): string[] | null {
-  if (["opus-4-7", "opus-4.7"].some((value) => apiId.includes(value))) {
-    return ["low", "medium", "high", "xhigh", "max"];
+  if (['opus-4-7', 'opus-4.7'].some((value) => apiId.includes(value))) {
+    return ['low', 'medium', 'high', 'xhigh', 'max'];
   }
-  if (["opus-4-6", "opus-4.6", "sonnet-4-6", "sonnet-4.6"].some((value) => apiId.includes(value))) {
-    return ["low", "medium", "high", "max"];
+  if (['opus-4-6', 'opus-4.6', 'sonnet-4-6', 'sonnet-4.6'].some((value) => apiId.includes(value))) {
+    return ['low', 'medium', 'high', 'max'];
   }
   return null;
 }
 
 function isOpenCodeExcludedReasoningModel(id: string): boolean {
   return [
-    "deepseek-chat",
-    "deepseek-reasoner",
-    "deepseek-r1",
-    "deepseek-v3",
-    "minimax",
-    "glm",
-    "kimi",
-    "k2p",
-    "qwen",
-    "big-pickle",
+    'deepseek-chat',
+    'deepseek-reasoner',
+    'deepseek-r1',
+    'deepseek-v3',
+    'minimax',
+    'glm',
+    'kimi',
+    'k2p',
+    'qwen',
+    'big-pickle',
   ].some((value) => id.includes(value));
 }
 
@@ -101,42 +101,40 @@ export function getEffortSpec(
   const id = `${modelId} ${apiId}`.toLowerCase();
   if (isOpenCodeExcludedReasoningModel(id)) return null;
 
-  const npm = metadata.npm ?? "@ai-sdk/openai-compatible";
-  const releaseDate = metadata.releaseDate ?? "";
+  const npm = metadata.npm ?? '@ai-sdk/openai-compatible';
+  const releaseDate = metadata.releaseDate ?? '';
 
-  if (id.includes("grok") && id.includes("grok-3-mini")) {
-    return variantsFromEfforts(["low", "high"], (effort) => ({ reasoningEffort: effort }));
+  if (id.includes('grok') && id.includes('grok-3-mini')) {
+    return variantsFromEfforts(['low', 'high'], (effort) => ({ reasoningEffort: effort }));
   }
-  if (id.includes("grok")) return null;
+  if (id.includes('grok')) return null;
 
   switch (npm) {
-    case "@ai-sdk/openai": {
+    case '@ai-sdk/openai': {
       const efforts = openAIReasoningEfforts(apiId, releaseDate);
       if (!efforts) return null;
       return variantsFromEfforts(efforts, (effort) => ({ reasoningEffort: effort }));
     }
 
-    case "@ai-sdk/anthropic": {
-      const efforts = anthropicAdaptiveEfforts(apiId) ?? ["high", "max"];
+    case '@ai-sdk/anthropic': {
+      const efforts = anthropicAdaptiveEfforts(apiId) ?? ['high', 'max'];
       return variantsFromEfforts(efforts, (effort) => {
         const budgetTokens = thinkingBudgetFor(effort, metadata.outputLimit);
-        return budgetTokens
-          ? { thinking: { type: "enabled", budgetTokens } }
-          : {};
+        return budgetTokens ? { thinking: { type: 'enabled', budgetTokens } } : {};
       });
     }
 
-    case "@ai-sdk/google": {
-      if (id.includes("2.5")) {
-        return variantsFromEfforts(["high", "max"], (effort) => ({
+    case '@ai-sdk/google': {
+      if (id.includes('2.5')) {
+        return variantsFromEfforts(['high', 'max'], (effort) => ({
           thinkingConfig: {
             includeThoughts: true,
-            thinkingBudget: effort === "max" ? 24_576 : 16_000,
+            thinkingBudget: effort === 'max' ? 24_576 : 16_000,
           },
         }));
       }
 
-      const levels = id.includes("3.1") ? ["low", "medium", "high"] : ["low", "high"];
+      const levels = id.includes('3.1') ? ['low', 'medium', 'high'] : ['low', 'high'];
       return variantsFromEfforts(levels, (effort) => ({
         thinkingConfig: {
           includeThoughts: true,
@@ -145,10 +143,10 @@ export function getEffortSpec(
       }));
     }
 
-    case "@ai-sdk/openai-compatible":
+    case '@ai-sdk/openai-compatible':
     default: {
       const efforts = [...WIDELY_SUPPORTED_EFFORTS];
-      if (apiId.toLowerCase().includes("deepseek-v4")) efforts.push("max");
+      if (apiId.toLowerCase().includes('deepseek-v4')) efforts.push('max');
       return variantsFromEfforts(efforts, (effort) => ({ reasoning_effort: effort }));
     }
   }

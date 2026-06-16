@@ -10,4 +10,4 @@
  * VITE_CODEX_ENABLED=false; OpenAI is connected by API key instead. Default on
  * to preserve the native/desktop experience.
  */
-export const CODEX_ENABLED = import.meta.env.VITE_CODEX_ENABLED !== "false";
+export const CODEX_ENABLED = import.meta.env.VITE_CODEX_ENABLED !== 'false';

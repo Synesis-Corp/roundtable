@@ -1,36 +1,36 @@
-import { storage } from "../lib/storage";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { apiPost } from "../lib/api-client";
-import GoogleSignInButton from "../components/GoogleSignInButton";
-import GitHubSignInButton from "../components/GitHubSignInButton";
-import LanguageSwitcher from "../components/LanguageSwitcher";
+import { storage } from '../lib/storage';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { apiPost } from '../lib/api-client';
+import GoogleSignInButton from '../components/GoogleSignInButton';
+import GitHubSignInButton from '../components/GitHubSignInButton';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
-      const data = await apiPost<{ token?: string }>("/auth/login", { email, password });
+      const data = await apiPost<{ token?: string }>('/auth/login', { email, password });
 
       if (data.token) {
-        storage.set("token", data.token);
-        navigate("/");
+        storage.set('token', data.token);
+        navigate('/');
       } else {
-        setError(t("auth.login.errors.noToken"));
+        setError(t('auth.login.errors.noToken'));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("auth.login.errors.failed"));
+      setError(err instanceof Error ? err.message : t('auth.login.errors.failed'));
     } finally {
       setLoading(false);
     }
@@ -48,8 +48,8 @@ export default function LoginPage() {
             alt="Roundtable"
             className="mx-auto mb-4 h-14 w-14 rounded-3xl shadow-2xl"
           />
-          <h1 className="heading text-3xl">{t("auth.login.title")}</h1>
-          <p className="text-sm text-gray-500 mt-2">{t("auth.login.subtitle")}</p>
+          <h1 className="heading text-3xl">{t('auth.login.title')}</h1>
+          <p className="text-sm text-gray-500 mt-2">{t('auth.login.subtitle')}</p>
         </div>
 
         {error && (
@@ -60,50 +60,54 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">{t("common.email")}</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              {t('common.email')}
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              placeholder={t("common.emailPlaceholder")}
+              placeholder={t('common.emailPlaceholder')}
               className="input-dark w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">{t("common.password")}</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              {t('common.password')}
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              placeholder={t("auth.login.passwordPlaceholder")}
+              placeholder={t('auth.login.passwordPlaceholder')}
               className="input-dark w-full"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full text-base py-2.5"
-          >
+          <button type="submit" disabled={loading} className="btn-primary w-full text-base py-2.5">
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="dot-pulse"><span /><span /><span /></span>
-                {t("auth.login.submitting")}
+                <span className="dot-pulse">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                {t('auth.login.submitting')}
               </span>
             ) : (
-              t("auth.login.submit")
+              t('auth.login.submit')
             )}
           </button>
         </form>
 
         <div className="my-6 flex items-center gap-3 text-xs text-gray-500">
           <div className="h-px flex-1 bg-gray-700/60" />
-          <span>{t("common.or")}</span>
+          <span>{t('common.or')}</span>
           <div className="h-px flex-1 bg-gray-700/60" />
         </div>
 
@@ -113,9 +117,12 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          {t("auth.login.noAccount")}{" "}
-          <Link to="/register" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 font-medium">
-            {t("auth.login.createAccount")}
+          {t('auth.login.noAccount')}{' '}
+          <Link
+            to="/register"
+            className="text-blue-400 hover:text-blue-300 underline underline-offset-2 font-medium"
+          >
+            {t('auth.login.createAccount')}
           </Link>
         </p>
       </div>

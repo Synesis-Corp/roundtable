@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ChatPage from "./ChatPage";
-import type { OnboardingState } from "../lib/onboarding-helpers";
-import type { UseModelsReturn } from "../hooks/useModels";
-import type { UseSettingsReturn } from "../hooks/useSettings";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ChatPage from './ChatPage';
+import type { OnboardingState } from '../lib/onboarding-helpers';
+import type { UseModelsReturn } from '../hooks/useModels';
+import type { UseSettingsReturn } from '../hooks/useSettings';
 
 const mockStartStream = vi.hoisted(() => vi.fn());
 const mockStopStream = vi.hoisted(() => vi.fn());
@@ -15,79 +15,117 @@ const mockUseSSE = vi.hoisted(() =>
     startStream: mockStartStream,
     resumeStream: mockResumeStream,
     stopStream: mockStopStream,
-  })),
+  }))
 );
 
-const mockUseModels = vi.hoisted(() => vi.fn((): Partial<UseModelsReturn> => ({
-  models: [
-    { id: "gpt-4o", name: "GPT-4o", provider: "openai", description: "", contextWindow: 128000, capabilities: ["text"] },
-    { id: "gpt-4o-mini", name: "GPT-4o Mini", provider: "openai", description: "", contextWindow: 128000, capabilities: ["text"] },
-    { id: "deepseek-chat", name: "DeepSeek Chat", provider: "deepseek", description: "", contextWindow: 64000, capabilities: ["text"] },
-    { id: "deepseek-coder", name: "DeepSeek Coder", provider: "deepseek", description: "", contextWindow: 64000, capabilities: ["text"] },
-  ],
-  loading: false,
-  error: null,
-  searchModels: vi.fn(() => []),
-  refetch: vi.fn(),
-})));
+const mockUseModels = vi.hoisted(() =>
+  vi.fn(
+    (): Partial<UseModelsReturn> => ({
+      models: [
+        {
+          id: 'gpt-4o',
+          name: 'GPT-4o',
+          provider: 'openai',
+          description: '',
+          contextWindow: 128000,
+          capabilities: ['text'],
+        },
+        {
+          id: 'gpt-4o-mini',
+          name: 'GPT-4o Mini',
+          provider: 'openai',
+          description: '',
+          contextWindow: 128000,
+          capabilities: ['text'],
+        },
+        {
+          id: 'deepseek-chat',
+          name: 'DeepSeek Chat',
+          provider: 'deepseek',
+          description: '',
+          contextWindow: 64000,
+          capabilities: ['text'],
+        },
+        {
+          id: 'deepseek-coder',
+          name: 'DeepSeek Coder',
+          provider: 'deepseek',
+          description: '',
+          contextWindow: 64000,
+          capabilities: ['text'],
+        },
+      ],
+      loading: false,
+      error: null,
+      searchModels: vi.fn(() => []),
+      refetch: vi.fn(),
+    })
+  )
+);
 
-const mockUseSettings = vi.hoisted(() => vi.fn((): Partial<UseSettingsReturn> => ({
-  userProviders: [
-    { id: "up-openai", providerId: "openai", maskedKey: "sk-****", isActive: true },
-    { id: "up-deepseek", providerId: "deepseek", maskedKey: "sk-****", isActive: true },
-  ],
-  userProvidersLoading: false,
-  userProviderMap: new Map(),
-  saveMessages: {},
-  saving: {},
-  testing: {},
-  codexConnecting: false,
-  codexNotice: null,
-  pendingDisconnect: null,
-  fetchUserProviders: vi.fn(),
-  testConnection: vi.fn(),
-  handleConnect: vi.fn(),
-  requestDisconnect: vi.fn(),
-  handleDisconnectConfirmed: vi.fn(),
-  setPendingDisconnect: vi.fn(),
-  handleCodexStart: vi.fn(),
-  setSaveMessages: vi.fn(),
-  setCodexNotice: vi.fn(),
-})));
+const mockUseSettings = vi.hoisted(() =>
+  vi.fn(
+    (): Partial<UseSettingsReturn> => ({
+      userProviders: [
+        { id: 'up-openai', providerId: 'openai', maskedKey: 'sk-****', isActive: true },
+        { id: 'up-deepseek', providerId: 'deepseek', maskedKey: 'sk-****', isActive: true },
+      ],
+      userProvidersLoading: false,
+      userProviderMap: new Map(),
+      saveMessages: {},
+      saving: {},
+      testing: {},
+      codexConnecting: false,
+      codexNotice: null,
+      pendingDisconnect: null,
+      fetchUserProviders: vi.fn(),
+      testConnection: vi.fn(),
+      handleConnect: vi.fn(),
+      requestDisconnect: vi.fn(),
+      handleDisconnectConfirmed: vi.fn(),
+      setPendingDisconnect: vi.fn(),
+      handleCodexStart: vi.fn(),
+      setSaveMessages: vi.fn(),
+      setCodexNotice: vi.fn(),
+    })
+  )
+);
 
-const mockUseCouncilConfig = vi.hoisted(() => vi.fn(() => ({
-  config: null,
-  loading: false,
-  error: null,
-  updateConfig: vi.fn(),
-  deleteConfig: vi.fn(),
-})));
+const mockUseCouncilConfig = vi.hoisted(() =>
+  vi.fn(() => ({
+    config: null,
+    loading: false,
+    error: null,
+    updateConfig: vi.fn(),
+    deleteConfig: vi.fn(),
+  }))
+);
 
 // mockUseOnboarding — controllable per test via .mockReturnValue()
 const mockUseOnboarding = vi.hoisted(() =>
   vi.fn((): { onboarding: OnboardingState; clearIsNew: () => void } => ({
-    onboarding: { kind: "hidden" },
+    onboarding: { kind: 'hidden' },
     clearIsNew: vi.fn(),
-  })),
+  }))
 );
 
-vi.mock("../hooks/useSSE", () => ({
+vi.mock('../hooks/useSSE', () => ({
   useSSE: mockUseSSE,
 }));
 
-vi.mock("../hooks/useModels", () => ({
+vi.mock('../hooks/useModels', () => ({
   useModels: mockUseModels,
 }));
 
-vi.mock("../hooks/useSettings", () => ({
+vi.mock('../hooks/useSettings', () => ({
   useSettings: mockUseSettings,
 }));
 
-vi.mock("../hooks/useCouncilConfig", () => ({
+vi.mock('../hooks/useCouncilConfig', () => ({
   useCouncilConfig: mockUseCouncilConfig,
 }));
 
-vi.mock("../hooks/useOnboarding", () => ({
+vi.mock('../hooks/useOnboarding', () => ({
   useOnboarding: mockUseOnboarding,
 }));
 
@@ -101,9 +139,9 @@ function renderChatPage() {
   );
 }
 
-describe("ChatPage — Council Count Display", () => {
+describe('ChatPage — Council Count Display', () => {
   beforeEach(() => {
-    localStorage.setItem("token", "test-token");
+    localStorage.setItem('token', 'test-token');
     Element.prototype.scrollIntoView = vi.fn();
     vi.clearAllMocks();
   });
@@ -113,11 +151,11 @@ describe("ChatPage — Council Count Display", () => {
     vi.restoreAllMocks();
   });
 
-  it("shows auto council count when no manual config exists", async () => {
+  it('shows auto council count when no manual config exists', async () => {
     renderChatPage();
 
     // Enable council mode by clicking the Consejo button
-    const councilButton = screen.getByRole("button", { name: /Consejo/i });
+    const councilButton = screen.getByRole('button', { name: /Consejo/i });
     fireEvent.click(councilButton);
 
     await waitFor(() => {
@@ -127,15 +165,15 @@ describe("ChatPage — Council Count Display", () => {
     });
   });
 
-  it("shows configured council count when manual config exists", async () => {
+  it('shows configured council count when manual config exists', async () => {
     mockUseCouncilConfig.mockReturnValue({
       config: {
-        id: "cfg-1",
-        userId: "u-1",
-        modelIds: ["openai:gpt-4o", "deepseek:deepseek-chat", "anthropic:claude-3-opus"],
-        mode: "manual",
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z",
+        id: 'cfg-1',
+        userId: 'u-1',
+        modelIds: ['openai:gpt-4o', 'deepseek:deepseek-chat', 'anthropic:claude-3-opus'],
+        mode: 'manual',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
       } as any,
       loading: false,
       error: null,
@@ -146,7 +184,7 @@ describe("ChatPage — Council Count Display", () => {
     renderChatPage();
 
     // Enable council mode
-    const councilButton = screen.getByRole("button", { name: /Consejo/i });
+    const councilButton = screen.getByRole('button', { name: /Consejo/i });
     fireEvent.click(councilButton);
 
     await waitFor(() => {
@@ -156,9 +194,9 @@ describe("ChatPage — Council Count Display", () => {
   });
 });
 
-describe("ChatPage — incognito mode", () => {
+describe('ChatPage — incognito mode', () => {
   beforeEach(() => {
-    localStorage.setItem("token", "test-token");
+    localStorage.setItem('token', 'test-token');
     Element.prototype.scrollIntoView = vi.fn();
     vi.clearAllMocks();
   });
@@ -168,40 +206,40 @@ describe("ChatPage — incognito mode", () => {
     vi.restoreAllMocks();
   });
 
-  it("propagates incognito preferences and never sends a persisted conversation id", async () => {
+  it('propagates incognito preferences and never sends a persisted conversation id', async () => {
     renderChatPage();
 
-    fireEvent.click(screen.getByRole("switch", { name: /modo incógnito/i }));
-    fireEvent.change(screen.getByRole("textbox"), {
-      target: { value: "Mensaje privado" },
+    fireEvent.click(screen.getByRole('switch', { name: /modo incógnito/i }));
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'Mensaje privado' },
     });
-    fireEvent.click(screen.getByRole("button", { name: /enviar mensaje/i }));
+    fireEvent.click(screen.getByRole('button', { name: /enviar mensaje/i }));
 
     await waitFor(() => expect(mockStartStream).toHaveBeenCalledTimes(1));
     expect(mockStartStream).toHaveBeenCalledWith(
-      "test-token",
-      [{ role: "user", content: "Mensaje privado" }],
+      'test-token',
+      [{ role: 'user', content: 'Mensaje privado' }],
       expect.objectContaining({ incognito: true }),
       undefined,
-      undefined,
+      undefined
     );
   });
 
-  it("resets the ephemeral transcript when incognito is disabled", async () => {
+  it('resets the ephemeral transcript when incognito is disabled', async () => {
     renderChatPage();
 
-    fireEvent.click(screen.getByRole("switch", { name: /modo incógnito/i }));
-    fireEvent.change(screen.getByRole("textbox"), {
-      target: { value: "No persistir" },
+    fireEvent.click(screen.getByRole('switch', { name: /modo incógnito/i }));
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: 'No persistir' },
     });
-    fireEvent.click(screen.getByRole("button", { name: /enviar mensaje/i }));
+    fireEvent.click(screen.getByRole('button', { name: /enviar mensaje/i }));
 
-    expect((await screen.findAllByText("No persistir")).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('No persistir')).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole("switch", { name: /modo incógnito/i }));
+    fireEvent.click(screen.getByRole('switch', { name: /modo incógnito/i }));
 
     await waitFor(() => {
-      expect(screen.queryByText("No persistir")).not.toBeInTheDocument();
+      expect(screen.queryByText('No persistir')).not.toBeInTheDocument();
       expect(screen.getByPlaceholderText(/escribe un mensaje/i)).toBeInTheDocument();
     });
   });
@@ -209,9 +247,9 @@ describe("ChatPage — incognito mode", () => {
 
 // ─── Onboarding CTA tests (Phase 4.1) ────────────────────────────────────────
 
-describe("ChatPage — Onboarding CTA (single mode)", () => {
+describe('ChatPage — Onboarding CTA (single mode)', () => {
   beforeEach(() => {
-    localStorage.setItem("token", "test-token");
+    localStorage.setItem('token', 'test-token');
     Element.prototype.scrollIntoView = vi.fn();
     vi.clearAllMocks();
     // Default settings mock: no providers, not loading
@@ -232,74 +270,78 @@ describe("ChatPage — Onboarding CTA (single mode)", () => {
     vi.restoreAllMocks();
   });
 
-  it("kind=new: greeting is NOT in DOM, CTA with link to /settings IS present", () => {
+  it('kind=new: greeting is NOT in DOM, CTA with link to /settings IS present', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
-        kind: "new" as const,
-        titleKey: "onboarding.new.title" as const,
-        bodyKey: "onboarding.new.body" as const,
-        ctaKey: "onboarding.new.cta" as const,
+        kind: 'new' as const,
+        titleKey: 'onboarding.new.title' as const,
+        bodyKey: 'onboarding.new.body' as const,
+        ctaKey: 'onboarding.new.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.queryByText("What are we working on today?")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /settings|proveedor|configuraci/i })).toBeInTheDocument();
+    expect(screen.queryByText('What are we working on today?')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /settings|proveedor|configuraci/i })
+    ).toBeInTheDocument();
   });
 
-  it("kind=returning: greeting IS in DOM, soft banner with link to /settings IS present", () => {
+  it('kind=returning: greeting IS in DOM, soft banner with link to /settings IS present', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
-        kind: "returning" as const,
-        titleKey: "onboarding.returning.title" as const,
-        bodyKey: "onboarding.returning.body" as const,
-        ctaKey: "onboarding.returning.cta" as const,
+        kind: 'returning' as const,
+        titleKey: 'onboarding.returning.title' as const,
+        bodyKey: 'onboarding.returning.body' as const,
+        ctaKey: 'onboarding.returning.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.getByText("What are we working on today?")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /settings|proveedor|configuraci/i })).toBeInTheDocument();
+    expect(screen.getByText('What are we working on today?')).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /settings|proveedor|configuraci/i })
+    ).toBeInTheDocument();
   });
 
-  it("kind=hidden: no onboarding CTA or banner rendered", () => {
+  it('kind=hidden: no onboarding CTA or banner rendered', () => {
     mockUseOnboarding.mockReturnValue({
-      onboarding: { kind: "hidden" as const },
+      onboarding: { kind: 'hidden' as const },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
     // No link to /settings from onboarding (existing providers warning is hidden in single mode)
-    expect(screen.queryByTestId("onboarding-cta")).not.toBeInTheDocument();
+    expect(screen.queryByTestId('onboarding-cta')).not.toBeInTheDocument();
   });
 
-  it("kind=loading: no onboarding CTA or banner, no flash", () => {
+  it('kind=loading: no onboarding CTA or banner, no flash', () => {
     mockUseOnboarding.mockReturnValue({
-      onboarding: { kind: "loading" as const },
+      onboarding: { kind: 'loading' as const },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.queryByTestId("onboarding-cta")).not.toBeInTheDocument();
+    expect(screen.queryByTestId('onboarding-cta')).not.toBeInTheDocument();
   });
 
-  it("multiMode=true: no onboarding CTA; showEmptyProvidersWarning block (council) unaffected", () => {
+  it('multiMode=true: no onboarding CTA; showEmptyProvidersWarning block (council) unaffected', () => {
     // useOnboarding result should not matter in council mode
     mockUseOnboarding.mockReturnValue({
       onboarding: {
-        kind: "new" as const,
-        titleKey: "onboarding.new.title" as const,
-        bodyKey: "onboarding.new.body" as const,
-        ctaKey: "onboarding.new.cta" as const,
+        kind: 'new' as const,
+        titleKey: 'onboarding.new.title' as const,
+        bodyKey: 'onboarding.new.body' as const,
+        ctaKey: 'onboarding.new.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
     // Activate council mode
-    fireEvent.click(screen.getByRole("button", { name: /Consejo/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Consejo/i }));
     // The onboarding CTA (data-testid) must NOT be present in council mode
-    expect(screen.queryByTestId("onboarding-cta")).not.toBeInTheDocument();
+    expect(screen.queryByTestId('onboarding-cta')).not.toBeInTheDocument();
   });
 
-  it("regression (2026-06-14): user connected (userProviders.length > 0) → no CTA, even if useOnboarding returns returning", () => {
+  it('regression (2026-06-14): user connected (userProviders.length > 0) → no CTA, even if useOnboarding returns returning', () => {
     // THE BUG: in the live app, the user connected DeepSeek and the
     // model selector shows it, but the CTA banner still says
     // "Sin un proveedor activo". The integration is:
@@ -310,11 +352,11 @@ describe("ChatPage — Onboarding CTA (single mode)", () => {
     // AND keep the mocked useOnboarding as the source of truth for
     // onboarding kind. The render path must not show the CTA.
     mockUseSettings.mockReturnValue({
-      userProviders: [
-        { id: "up-1", providerId: "deepseek", maskedKey: "sk-***", isActive: true },
-      ],
+      userProviders: [{ id: 'up-1', providerId: 'deepseek', maskedKey: 'sk-***', isActive: true }],
       userProvidersLoading: false,
-      userProviderMap: new Map([["deepseek", { id: "up-1", providerId: "deepseek", maskedKey: "sk-***", isActive: true }]]),
+      userProviderMap: new Map([
+        ['deepseek', { id: 'up-1', providerId: 'deepseek', maskedKey: 'sk-***', isActive: true }],
+      ]),
       saveMessages: {},
       saving: {},
       testing: {},
@@ -333,7 +375,14 @@ describe("ChatPage — Onboarding CTA (single mode)", () => {
     });
     mockUseModels.mockReturnValue({
       models: [
-        { id: "deepseek-v4-pro", name: "DeepSeek V4 Pro", provider: "deepseek", description: "", contextWindow: 0, capabilities: [] },
+        {
+          id: 'deepseek-v4-pro',
+          name: 'DeepSeek V4 Pro',
+          provider: 'deepseek',
+          description: '',
+          contextWindow: 0,
+          capabilities: [],
+        },
       ],
       loading: false,
       error: null,
@@ -343,14 +392,14 @@ describe("ChatPage — Onboarding CTA (single mode)", () => {
     // Mocked useOnboarding is the contract: when userProviders.length > 0,
     // the hook returns hidden. The render MUST respect that.
     mockUseOnboarding.mockReturnValue({
-      onboarding: { kind: "hidden" as const },
+      onboarding: { kind: 'hidden' as const },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
     // The "Sin un proveedor activo" body must NOT be in the DOM.
     expect(screen.queryByText(/sin un proveedor activo/i)).toBeNull();
     // The CTA data-testid must NOT be present.
-    expect(screen.queryByTestId("onboarding-cta")).toBeNull();
+    expect(screen.queryByTestId('onboarding-cta')).toBeNull();
   });
 });
 
@@ -359,18 +408,20 @@ describe("ChatPage — Onboarding CTA (single mode)", () => {
 // Mock the wizard so we don't have to drag in useProviders/useSettings/useModels
 // mocking here. We assert the wizard is opened with the right open prop.
 const mockOnboardingWizard = vi.hoisted(() => vi.fn());
-vi.mock("../components/OnboardingWizard", () => ({
-  OnboardingWizard: (props: { open: boolean; onClose: () => void; onCompleted: (providerId: string, modelId: string) => void }) => {
+vi.mock('../components/OnboardingWizard', () => ({
+  OnboardingWizard: (props: {
+    open: boolean;
+    onClose: () => void;
+    onCompleted: (providerId: string, modelId: string) => void;
+  }) => {
     mockOnboardingWizard(props);
-    return props.open ? (
-      <div data-testid="onboarding-wizard-stub">wizard-open</div>
-    ) : null;
+    return props.open ? <div data-testid="onboarding-wizard-stub">wizard-open</div> : null;
   },
 }));
 
-describe("ChatPage — onboarding wizard (Fase 2.3)", () => {
+describe('ChatPage — onboarding wizard (Fase 2.3)', () => {
   beforeEach(() => {
-    localStorage.setItem("token", "test-token");
+    localStorage.setItem('token', 'test-token');
     Element.prototype.scrollIntoView = vi.fn();
     vi.clearAllMocks();
     mockOnboardingWizard.mockClear();
@@ -394,58 +445,58 @@ describe("ChatPage — onboarding wizard (Fase 2.3)", () => {
   it("onboarding CTA exposes a 'Conectar aquí' button (kind=new)", () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
-        kind: "new" as const,
-        titleKey: "onboarding.new.title" as const,
-        bodyKey: "onboarding.new.body" as const,
-        ctaKey: "onboarding.new.cta" as const,
+        kind: 'new' as const,
+        titleKey: 'onboarding.new.title' as const,
+        bodyKey: 'onboarding.new.body' as const,
+        ctaKey: 'onboarding.new.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.getByRole("button", { name: /connect here/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /connect here/i })).toBeInTheDocument();
   });
 
   it("onboarding CTA exposes a 'Conectar aquí' button (kind=returning)", () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
-        kind: "returning" as const,
-        titleKey: "onboarding.returning.title" as const,
-        bodyKey: "onboarding.returning.body" as const,
-        ctaKey: "onboarding.returning.cta" as const,
+        kind: 'returning' as const,
+        titleKey: 'onboarding.returning.title' as const,
+        bodyKey: 'onboarding.returning.body' as const,
+        ctaKey: 'onboarding.returning.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.getByRole("button", { name: /connect here/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /connect here/i })).toBeInTheDocument();
   });
 
   it("clicking 'Conectar aquí' opens the wizard (NOT the inline modal)", () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
-        kind: "new" as const,
-        titleKey: "onboarding.new.title" as const,
-        bodyKey: "onboarding.new.body" as const,
-        ctaKey: "onboarding.new.cta" as const,
+        kind: 'new' as const,
+        titleKey: 'onboarding.new.title' as const,
+        bodyKey: 'onboarding.new.body' as const,
+        ctaKey: 'onboarding.new.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
     // Wizard starts closed
-    expect(screen.queryByTestId("onboarding-wizard-stub")).toBeNull();
+    expect(screen.queryByTestId('onboarding-wizard-stub')).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: /connect here/i }));
+    fireEvent.click(screen.getByRole('button', { name: /connect here/i }));
 
     // Now the wizard is open (visible in the DOM)
-    expect(screen.getByTestId("onboarding-wizard-stub")).toBeInTheDocument();
+    expect(screen.getByTestId('onboarding-wizard-stub')).toBeInTheDocument();
     // The mock received open=true
     const lastCallProps = mockOnboardingWizard.mock.calls.at(-1)?.[0];
     expect(lastCallProps?.open).toBe(true);
   });
 });
 
-describe("ChatPage — stale selectedModel cleanup (regression 2026-06-14)", () => {
+describe('ChatPage — stale selectedModel cleanup (regression 2026-06-14)', () => {
   beforeEach(() => {
-    localStorage.setItem("token", "test-token");
+    localStorage.setItem('token', 'test-token');
     Element.prototype.scrollIntoView = vi.fn();
     vi.clearAllMocks();
   });
@@ -455,21 +506,37 @@ describe("ChatPage — stale selectedModel cleanup (regression 2026-06-14)", () 
     vi.restoreAllMocks();
   });
 
-  it("clears a stored selectedModel that is NOT in the current models list", async () => {
+  it('clears a stored selectedModel that is NOT in the current models list', async () => {
     // Simulate a previous session leaving "openai:gpt-5.4" in localStorage.
-    localStorage.setItem("selectedModel", "openai:gpt-5.4");
+    localStorage.setItem('selectedModel', 'openai:gpt-5.4');
 
     // The new user only has deepseek models.
     mockUseModels.mockReturnValue({
       models: [
-        { id: "deepseek-v4-flash", name: "DeepSeek V4 Flash", provider: "deepseek", description: "", contextWindow: 1000000, capabilities: ["text"] },
-        { id: "deepseek-v4-pro", name: "DeepSeek V4 Pro", provider: "deepseek", description: "", contextWindow: 1000000, capabilities: ["text"] },
+        {
+          id: 'deepseek-v4-flash',
+          name: 'DeepSeek V4 Flash',
+          provider: 'deepseek',
+          description: '',
+          contextWindow: 1000000,
+          capabilities: ['text'],
+        },
+        {
+          id: 'deepseek-v4-pro',
+          name: 'DeepSeek V4 Pro',
+          provider: 'deepseek',
+          description: '',
+          contextWindow: 1000000,
+          capabilities: ['text'],
+        },
       ],
       loading: false,
       error: null,
     });
     mockUseSettings.mockReturnValue({
-      userProviders: [{ id: "up-deepseek", providerId: "deepseek", maskedKey: "sk-****", isActive: true }],
+      userProviders: [
+        { id: 'up-deepseek', providerId: 'deepseek', maskedKey: 'sk-****', isActive: true },
+      ],
       userProvidersLoading: false,
     });
 
@@ -477,23 +544,32 @@ describe("ChatPage — stale selectedModel cleanup (regression 2026-06-14)", () 
 
     // The defensive useEffect should detect the stale value and remove it.
     await waitFor(() => {
-      expect(localStorage.getItem("selectedModel")).toBeNull();
+      expect(localStorage.getItem('selectedModel')).toBeNull();
     });
   });
 
-  it("KEEPS a stored selectedModel that IS in the current models list", async () => {
+  it('KEEPS a stored selectedModel that IS in the current models list', async () => {
     // Same user, same model: this should be preserved.
-    localStorage.setItem("selectedModel", "deepseek:deepseek-v4-flash");
+    localStorage.setItem('selectedModel', 'deepseek:deepseek-v4-flash');
 
     mockUseModels.mockReturnValue({
       models: [
-        { id: "deepseek-v4-flash", name: "DeepSeek V4 Flash", provider: "deepseek", description: "", contextWindow: 1000000, capabilities: ["text"] },
+        {
+          id: 'deepseek-v4-flash',
+          name: 'DeepSeek V4 Flash',
+          provider: 'deepseek',
+          description: '',
+          contextWindow: 1000000,
+          capabilities: ['text'],
+        },
       ],
       loading: false,
       error: null,
     });
     mockUseSettings.mockReturnValue({
-      userProviders: [{ id: "up-deepseek", providerId: "deepseek", maskedKey: "sk-****", isActive: true }],
+      userProviders: [
+        { id: 'up-deepseek', providerId: 'deepseek', maskedKey: 'sk-****', isActive: true },
+      ],
       userProvidersLoading: false,
     });
 
@@ -501,6 +577,6 @@ describe("ChatPage — stale selectedModel cleanup (regression 2026-06-14)", () 
 
     // Give the effect a tick to run; value should remain.
     await new Promise((r) => setTimeout(r, 50));
-    expect(localStorage.getItem("selectedModel")).toBe("deepseek:deepseek-v4-flash");
+    expect(localStorage.getItem('selectedModel')).toBe('deepseek:deepseek-v4-flash');
   });
 });

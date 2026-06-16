@@ -1,8 +1,8 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes } from 'node:crypto';
 
-export const CODEX_CLIENT_ID = "app_EMoamEEZ73f0CkXaXp7hrann";
-export const CODEX_ISSUER = "https://auth.openai.com";
-export const CODEX_API_BASE_URL = "https://chatgpt.com/backend-api/codex";
+export const CODEX_CLIENT_ID = 'app_EMoamEEZ73f0CkXaXp7hrann';
+export const CODEX_ISSUER = 'https://auth.openai.com';
+export const CODEX_API_BASE_URL = 'https://chatgpt.com/backend-api/codex';
 export const CODEX_API_ENDPOINT = `${CODEX_API_BASE_URL}/responses`;
 export const CODEX_OAUTH_PORT = 1455;
 export const CODEX_REDIRECT_URI = `http://localhost:${CODEX_OAUTH_PORT}/auth/callback`;
@@ -20,8 +20,8 @@ export interface CodexTokenResponse {
 }
 
 export interface CodexCredential {
-  type: "oauth";
-  provider: "openai-codex";
+  type: 'oauth';
+  provider: 'openai-codex';
   refresh: string;
   access: string;
   expires: number;
@@ -31,20 +31,20 @@ export interface CodexCredential {
 interface IdTokenClaims {
   chatgpt_account_id?: string;
   organizations?: Array<{ id: string }>;
-  "https://api.openai.com/auth"?: {
+  'https://api.openai.com/auth'?: {
     chatgpt_account_id?: string;
   };
 }
 
 function base64UrlEncode(input: Buffer): string {
-  return input.toString("base64url");
+  return input.toString('base64url');
 }
 
 function parseJwtClaims(token: string): IdTokenClaims | undefined {
-  const parts = token.split(".");
+  const parts = token.split('.');
   if (parts.length !== 3) return undefined;
   try {
-    return JSON.parse(Buffer.from(parts[1], "base64url").toString());
+    return JSON.parse(Buffer.from(parts[1], 'base64url').toString());
   } catch {
     return undefined;
   }
@@ -53,7 +53,7 @@ function parseJwtClaims(token: string): IdTokenClaims | undefined {
 function extractAccountIdFromClaims(claims: IdTokenClaims): string | undefined {
   return (
     claims.chatgpt_account_id ||
-    claims["https://api.openai.com/auth"]?.chatgpt_account_id ||
+    claims['https://api.openai.com/auth']?.chatgpt_account_id ||
     claims.organizations?.[0]?.id
   );
 }
@@ -71,7 +71,7 @@ export function extractCodexAccountId(tokens: CodexTokenResponse): string | unde
 
 export function generatePKCE(): PkceCodes {
   const verifier = base64UrlEncode(randomBytes(32));
-  const challenge = base64UrlEncode(createHash("sha256").update(verifier).digest());
+  const challenge = base64UrlEncode(createHash('sha256').update(verifier).digest());
   return { verifier, challenge };
 }
 
@@ -81,27 +81,30 @@ export function generateOAuthState(): string {
 
 export function buildCodexAuthorizeUrl(pkce: PkceCodes, state: string): string {
   const params = new URLSearchParams({
-    response_type: "code",
+    response_type: 'code',
     client_id: CODEX_CLIENT_ID,
     redirect_uri: CODEX_REDIRECT_URI,
-    scope: "openid profile email offline_access",
+    scope: 'openid profile email offline_access',
     code_challenge: pkce.challenge,
-    code_challenge_method: "S256",
-    id_token_add_organizations: "true",
-    codex_cli_simplified_flow: "true",
+    code_challenge_method: 'S256',
+    id_token_add_organizations: 'true',
+    codex_cli_simplified_flow: 'true',
     state,
-    originator: "roundtable",
+    originator: 'roundtable',
   });
 
   return `${CODEX_ISSUER}/oauth/authorize?${params.toString()}`;
 }
 
-export async function exchangeCodexCode(code: string, pkce: PkceCodes): Promise<CodexTokenResponse> {
+export async function exchangeCodexCode(
+  code: string,
+  pkce: PkceCodes
+): Promise<CodexTokenResponse> {
   const response = await fetch(`${CODEX_ISSUER}/oauth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      grant_type: "authorization_code",
+      grant_type: 'authorization_code',
       code,
       redirect_uri: CODEX_REDIRECT_URI,
       client_id: CODEX_CLIENT_ID,
@@ -118,10 +121,10 @@ export async function exchangeCodexCode(code: string, pkce: PkceCodes): Promise<
 
 export async function refreshCodexAccessToken(refreshToken: string): Promise<CodexTokenResponse> {
   const response = await fetch(`${CODEX_ISSUER}/oauth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
-      grant_type: "refresh_token",
+      grant_type: 'refresh_token',
       refresh_token: refreshToken,
       client_id: CODEX_CLIENT_ID,
     }).toString(),
@@ -136,8 +139,8 @@ export async function refreshCodexAccessToken(refreshToken: string): Promise<Cod
 
 export function createCodexCredential(tokens: CodexTokenResponse): CodexCredential {
   return {
-    type: "oauth",
-    provider: "openai-codex",
+    type: 'oauth',
+    provider: 'openai-codex',
     refresh: tokens.refresh_token,
     access: tokens.access_token,
     expires: Date.now() + (tokens.expires_in ?? 3600) * 1000,
@@ -147,12 +150,12 @@ export function createCodexCredential(tokens: CodexTokenResponse): CodexCredenti
 
 export function isCodexCredential(value: unknown): value is CodexCredential {
   return (
-    typeof value === "object" &&
+    typeof value === 'object' &&
     value !== null &&
-    (value as Partial<CodexCredential>).type === "oauth" &&
-    (value as Partial<CodexCredential>).provider === "openai-codex" &&
-    typeof (value as Partial<CodexCredential>).access === "string" &&
-    typeof (value as Partial<CodexCredential>).refresh === "string"
+    (value as Partial<CodexCredential>).type === 'oauth' &&
+    (value as Partial<CodexCredential>).provider === 'openai-codex' &&
+    typeof (value as Partial<CodexCredential>).access === 'string' &&
+    typeof (value as Partial<CodexCredential>).refresh === 'string'
   );
 }
 
@@ -163,7 +166,7 @@ export function isCodexCredential(value: unknown): value is CodexCredential {
  * omits it whenever the chat has no system message.
  */
 const CODEX_DEFAULT_INSTRUCTIONS =
-  "You are Roundtable, a helpful and knowledgeable assistant. Answer clearly and accurately.";
+  'You are Roundtable, a helpful and knowledgeable assistant. Answer clearly and accurately.';
 
 /**
  * Creates a fetch wrapper for the Codex (ChatGPT Plus/Pro) credential path.
@@ -179,22 +182,27 @@ const CODEX_DEFAULT_INSTRUCTIONS =
  */
 export function createCodexFetch(): typeof fetch {
   return async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
-    const urlStr = typeof input === "string" ? input : input instanceof URL ? input.href : (input as Request).url;
+    const urlStr =
+      typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.href
+          : (input as Request).url;
 
     const headers = {
       ...(init?.headers as Record<string, string> | undefined),
-      originator: "roundtable",
+      originator: 'roundtable',
     };
-    const target = urlStr.includes("/chat/completions") ? new URL(CODEX_API_ENDPOINT) : input;
+    const target = urlStr.includes('/chat/completions') ? new URL(CODEX_API_ENDPOINT) : input;
 
     // Adapt the serialized Responses body to the Codex backend's requirements:
     //  - `instructions` must be present and non-empty.
     //  - `store` must be explicitly false (the backend rejects stored responses).
     let body = init?.body;
-    if (typeof body === "string") {
+    if (typeof body === 'string') {
       try {
         const parsed = JSON.parse(body) as Record<string, unknown>;
-        if (parsed && typeof parsed === "object") {
+        if (parsed && typeof parsed === 'object') {
           let changed = false;
           if (!parsed.instructions) {
             parsed.instructions = CODEX_DEFAULT_INSTRUCTIONS;
@@ -213,7 +221,10 @@ export function createCodexFetch(): typeof fetch {
 
     const res = await fetch(target, { ...init, body, headers });
     if (!res.ok) {
-      const detail = await res.clone().text().catch(() => "");
+      const detail = await res
+        .clone()
+        .text()
+        .catch(() => '');
       console.error(`Codex backend rejected request: ${res.status} ${detail.slice(0, 300)}`);
     }
     return res;

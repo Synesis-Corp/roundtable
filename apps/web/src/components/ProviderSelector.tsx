@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useMemo } from "react";
-import { useModels } from "../hooks/useModels";
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { useModels } from '../hooks/useModels';
 
 interface Props {
   selected: string | null;
@@ -9,20 +9,20 @@ interface Props {
 export default function ProviderSelector({ selected, onSelect }: Props) {
   const { models, loading } = useModels();
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-        setSearch("");
+        setSearch('');
       }
     }
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
   const filteredModels = useMemo(() => {
@@ -36,26 +36,26 @@ export default function ProviderSelector({ selected, onSelect }: Props) {
     );
   }, [models, search]);
 
-  const selectedModel = selected
-    ? models.find((m) => `${m.provider}:${m.id}` === selected)
-    : null;
+  const selectedModel = selected ? models.find((m) => `${m.provider}:${m.id}` === selected) : null;
 
-  const selectedLabel = selectedModel?.name || "Select model";
+  const selectedLabel = selectedModel?.name || 'Select model';
 
   return (
     <div ref={containerRef} className="relative">
       <button
         onClick={() => {
           setIsOpen((v) => !v);
-          setSearch("");
+          setSearch('');
         }}
         disabled={loading || models.length === 0}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-gray-700/50 hover:bg-gray-700 text-xs text-gray-300 transition-colors disabled:opacity-40"
       >
         <span className="truncate max-w-[100px]">{selectedLabel}</span>
         <svg
-          className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
@@ -76,15 +76,13 @@ export default function ProviderSelector({ selected, onSelect }: Props) {
           </div>
 
           <div className="max-h-64 overflow-y-auto py-1">
-            {loading && (
-              <div className="p-4 text-sm text-gray-500 text-center">Loading...</div>
-            )}
+            {loading && <div className="p-4 text-sm text-gray-500 text-center">Loading...</div>}
 
             {!loading && filteredModels.length === 0 && (
               <div className="p-4 text-sm text-gray-400 text-center">
                 {models.length === 0
-                  ? "No connected providers. Connect in Settings."
-                  : "No models match your search."}
+                  ? 'No connected providers. Connect in Settings.'
+                  : 'No models match your search.'}
               </div>
             )}
 
@@ -97,10 +95,10 @@ export default function ProviderSelector({ selected, onSelect }: Props) {
                   onClick={() => {
                     onSelect(isSelected ? null : key);
                     setIsOpen(false);
-                    setSearch("");
+                    setSearch('');
                   }}
                   className={`w-full text-left px-3 py-2.5 flex items-center gap-2.5 transition-colors ${
-                    isSelected ? "bg-blue-900/30" : "hover:bg-gray-700/50"
+                    isSelected ? 'bg-blue-900/30' : 'hover:bg-gray-700/50'
                   }`}
                 >
                   <div className="flex-1 min-w-0">
@@ -112,9 +110,7 @@ export default function ProviderSelector({ selected, onSelect }: Props) {
                         {model.provider}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5 truncate">
-                      {model.description}
-                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5 truncate">{model.description}</div>
                     {model.capabilities && model.capabilities.length > 0 && (
                       <div className="flex gap-1 mt-1">
                         {model.capabilities.slice(0, 3).map((cap) => (
@@ -129,8 +125,18 @@ export default function ProviderSelector({ selected, onSelect }: Props) {
                     )}
                   </div>
                   {isSelected && (
-                    <svg className="w-4 h-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-4 h-4 text-blue-400 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </button>

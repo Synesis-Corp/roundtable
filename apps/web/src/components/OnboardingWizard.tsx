@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { useProviders } from "../hooks/useProviders";
-import { useSettings } from "../hooks/useSettings";
-import { useModels } from "../hooks/useModels";
-import { CODEX_ENABLED } from "../lib/features";
+import { useEffect, useState } from 'react';
+import { useProviders } from '../hooks/useProviders';
+import { useSettings } from '../hooks/useSettings';
+import { useModels } from '../hooks/useModels';
+import { CODEX_ENABLED } from '../lib/features';
 
 type WizardStep = 1 | 2 | 3 | 4;
-type ValidationResult = "idle" | "validating" | "success" | "error";
+type ValidationResult = 'idle' | 'validating' | 'success' | 'error';
 
 interface OnboardingWizardProps {
   /** Whether the wizard is visible. */
@@ -21,10 +21,10 @@ interface OnboardingWizardProps {
 }
 
 const STEP_TITLES: Record<WizardStep, string> = {
-  1: "Elegí tu primer proveedor",
-  2: "Conectá tu cuenta",
-  3: "Verificá la conexión",
-  4: "Elegí tu modelo por defecto",
+  1: 'Elegí tu primer proveedor',
+  2: 'Conectá tu cuenta',
+  3: 'Verificá la conexión',
+  4: 'Elegí tu modelo por defecto',
 };
 
 /**
@@ -51,7 +51,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
   // Wizard state
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [advancedOptions, setAdvancedOptions] = useState<{
@@ -59,7 +59,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
     headers?: string;
     endpoint?: string;
   }>({});
-  const [validationResult, setValidationResult] = useState<ValidationResult>("idle");
+  const [validationResult, setValidationResult] = useState<ValidationResult>('idle');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [defaultModelId, setDefaultModelId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -71,18 +71,18 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
   // OAuth (Codex) is the openai path ONLY when enabled. On hosted instances
   // (VITE_CODEX_ENABLED=false) the localhost loopback callback can't work, so
   // openai falls back to the normal API-key flow like any other provider.
-  const isOAuthProvider = CODEX_ENABLED && selectedProvider === "openai";
+  const isOAuthProvider = CODEX_ENABLED && selectedProvider === 'openai';
 
   // Reset state on every open (close + reopen starts fresh).
   useEffect(() => {
     if (!open) return;
     setCurrentStep(1);
     setSelectedProvider(null);
-    setApiKey("");
+    setApiKey('');
     setShowKey(false);
     setShowAdvanced(false);
     setAdvancedOptions({});
-    setValidationResult("idle");
+    setValidationResult('idle');
     setValidationError(null);
     setDefaultModelId(null);
     setSubmitting(false);
@@ -100,7 +100,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
   // When entering step 3 with a fresh key, reset validation.
   useEffect(() => {
     if (currentStep === 3) {
-      setValidationResult("idle");
+      setValidationResult('idle');
       setValidationError(null);
     }
   }, [currentStep, apiKey]);
@@ -132,24 +132,24 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
 
   const handleValidate = async () => {
     if (!selectedProvider || !apiKey.trim()) return;
-    setValidationResult("validating");
+    setValidationResult('validating');
     setValidationError(null);
     try {
       await testConnection(selectedProvider, apiKey.trim());
-      setValidationResult("success");
+      setValidationResult('success');
     } catch (err) {
       // The useSettings.testConnection swallows API errors and stores them
       // in saveMessages; we read from the latest message via DOM if needed.
       // For simplicity, we use a generic message + the optional err.message.
-      setValidationResult("error");
+      setValidationResult('error');
       setValidationError(
-        err instanceof Error && err.message ? err.message : "No se pudo verificar la conexión"
+        err instanceof Error && err.message ? err.message : 'No se pudo verificar la conexión'
       );
     }
   };
 
   const handleSkipValidation = () => {
-    setValidationResult("success"); // allow advancing
+    setValidationResult('success'); // allow advancing
   };
 
   // ── Step 3 → Step 4 transition: connect the provider (2026-06-14 fix) ──
@@ -165,7 +165,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
   // belt-and-suspenders so step 4 has the list ready when it mounts.
   const handleAdvanceFromValidate = async () => {
     if (!selectedProvider || !apiKey.trim()) return;
-    if (validationResult !== "success") return;
+    if (validationResult !== 'success') return;
     setConnecting(true);
     setSubmitError(null);
     try {
@@ -186,9 +186,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
       refetchModels();
       setCurrentStep(4);
     } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : "No se pudo conectar"
-      );
+      setSubmitError(err instanceof Error ? err.message : 'No se pudo conectar');
     } finally {
       setConnecting(false);
     }
@@ -232,7 +230,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
       aria-modal="true"
       aria-label="Asistente de configuración"
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={() => {
         if (!submitting) onClose();
       }}
@@ -241,13 +239,13 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg overflow-hidden"
         style={{
-          backgroundColor: "var(--bg-surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--r-lg)",
+          backgroundColor: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--r-lg)',
         }}
       >
         {/* Header: stepper + title */}
-        <div style={{ padding: "20px 20px 12px", borderBottom: "1px solid var(--border)" }}>
+        <div style={{ padding: '20px 20px 12px', borderBottom: '1px solid var(--border)' }}>
           <div
             data-testid="onboarding-wizard-stepper"
             className="flex items-center gap-1.5 mb-3"
@@ -256,20 +254,19 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
             {[1, 2, 3, 4].map((step) => (
               <div
                 key={step}
-                aria-current={step === currentStep ? "step" : undefined}
+                aria-current={step === currentStep ? 'step' : undefined}
                 data-testid={`step-indicator-${step}`}
                 className="flex-1 h-1 rounded-full transition-colors"
                 style={{
-                  backgroundColor:
-                    step <= currentStep ? "var(--accent)" : "var(--border)",
+                  backgroundColor: step <= currentStep ? 'var(--accent)' : 'var(--border)',
                 }}
               />
             ))}
           </div>
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-1)" }}>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)' }}>
             {STEP_TITLES[currentStep]}
           </h2>
-          <p className="mt-1" style={{ fontSize: 12, color: "var(--text-3)" }}>
+          <p className="mt-1" style={{ fontSize: 12, color: 'var(--text-3)' }}>
             Paso {currentStep} de 4
           </p>
         </div>
@@ -277,7 +274,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
         {/* Body */}
         <div
           data-testid={`wizard-step-${currentStep}-body`}
-          style={{ padding: 20, maxHeight: 480, overflowY: "auto" }}
+          style={{ padding: 20, maxHeight: 480, overflowY: 'auto' }}
         >
           {/* Submit / connect error (2026-06-14 fix): rendered at the
               top of the body so it shows in ANY step, not just step 4.
@@ -291,11 +288,11 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
               className="mb-3"
               style={{
                 fontSize: 13,
-                color: "var(--m-rose)",
-                padding: "8px 10px",
-                borderRadius: "var(--r-sm)",
-                backgroundColor: "rgba(208,119,160,0.06)",
-                border: "1px solid rgba(208,119,160,0.3)",
+                color: 'var(--m-rose)',
+                padding: '8px 10px',
+                borderRadius: 'var(--r-sm)',
+                backgroundColor: 'rgba(208,119,160,0.06)',
+                border: '1px solid rgba(208,119,160,0.3)',
               }}
             >
               {submitError}
@@ -305,12 +302,11 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
           {/* ── STEP 1: Provider picker ──────────────────────────────────── */}
           {currentStep === 1 && (
             <div>
-              <p className="mb-3" style={{ fontSize: 13, color: "var(--text-2)" }}>
-                Elegí un proveedor para empezar. Después podés agregar más en
-                Configuración.
+              <p className="mb-3" style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                Elegí un proveedor para empezar. Después podés agregar más en Configuración.
               </p>
               {providersLoading && (
-                <p style={{ fontSize: 13, color: "var(--text-3)" }}>Cargando…</p>
+                <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Cargando…</p>
               )}
               {!providersLoading && popularProviders.length > 0 && (
                 <div className="grid grid-cols-1 gap-2">
@@ -326,9 +322,9 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                         className="text-left p-3 rounded-md transition-colors"
                         style={{
                           border: isSel
-                            ? "1px solid var(--accent-line)"
-                            : "1px solid var(--border)",
-                          backgroundColor: isSel ? "var(--accent-quiet)" : "transparent",
+                            ? '1px solid var(--accent-line)'
+                            : '1px solid var(--border)',
+                          backgroundColor: isSel ? 'var(--accent-quiet)' : 'transparent',
                         }}
                       >
                         <div className="flex items-center justify-between gap-2">
@@ -336,29 +332,26 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                             style={{
                               fontSize: 14,
                               fontWeight: 500,
-                              color: "var(--text-1)",
+                              color: 'var(--text-1)',
                             }}
                           >
                             {p.name}
                           </span>
-                          {p.id === "openai" && CODEX_ENABLED && (
+                          {p.id === 'openai' && CODEX_ENABLED && (
                             <span
                               className="text-[10px] font-medium px-1.5 py-0.5 rounded"
                               style={{
-                                backgroundColor: "var(--accent-quiet)",
-                                color: "var(--accent-text)",
-                                border: "1px solid var(--accent-line)",
+                                backgroundColor: 'var(--accent-quiet)',
+                                color: 'var(--accent-text)',
+                                border: '1px solid var(--accent-line)',
                               }}
                             >
                               OAuth
                             </span>
                           )}
                         </div>
-                        <p
-                          className="mt-0.5"
-                          style={{ fontSize: 12, color: "var(--text-3)" }}
-                        >
-                          {p.modelCount} modelos · {p.popular ? "Popular" : "Soporte"}
+                        <p className="mt-0.5" style={{ fontSize: 12, color: 'var(--text-3)' }}>
+                          {p.modelCount} modelos · {p.popular ? 'Popular' : 'Soporte'}
                         </p>
                       </button>
                     );
@@ -373,9 +366,9 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
             <div>
               {!isOAuthProvider && (
                 <>
-                  <p className="mb-2" style={{ fontSize: 13, color: "var(--text-2)" }}>
-                    Pegá tu API key de{" "}
-                    <strong style={{ color: "var(--text-1)" }}>
+                  <p className="mb-2" style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                    Pegá tu API key de{' '}
+                    <strong style={{ color: 'var(--text-1)' }}>
                       {selectedProviderData?.name ?? selectedProvider}
                     </strong>
                     . Se cifra antes de guardarse.
@@ -383,7 +376,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                   <div className="relative">
                     <input
                       data-testid="api-key-input"
-                      type={showKey ? "text" : "password"}
+                      type={showKey ? 'text' : 'password'}
                       value={apiKey}
                       onChange={(e) => setApiKey(e.target.value)}
                       placeholder="sk-…"
@@ -391,23 +384,23 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                       spellCheck={false}
                       className="w-full pr-10 pl-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-surface)]"
                       style={{
-                        backgroundColor: "var(--bg-input)",
-                        color: "var(--text-1)",
-                        border: "1px solid var(--border)",
-                        borderRadius: "var(--r-sm)",
+                        backgroundColor: 'var(--bg-input)',
+                        color: 'var(--text-1)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--r-sm)',
                       }}
                     />
                     <button
                       type="button"
                       onClick={() => setShowKey((s) => !s)}
-                      aria-label={showKey ? "Ocultar API key" : "Mostrar API key"}
+                      aria-label={showKey ? 'Ocultar API key' : 'Mostrar API key'}
                       data-testid="toggle-show-key"
                       className="absolute top-1/2 right-2 -translate-y-1/2 p-1"
                       style={{
-                        color: "var(--text-3)",
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
+                        color: 'var(--text-3)',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
                       }}
                     >
                       {showKey ? (
@@ -450,9 +443,11 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                     onClick={() => setShowAdvanced((v) => !v)}
                     data-testid="toggle-advanced"
                     className="mt-3 text-xs underline"
-                    style={{ color: "var(--accent)" }}
+                    style={{ color: 'var(--accent)' }}
                   >
-                    {showAdvanced ? "Ocultar opciones avanzadas" : "Opciones avanzadas (baseURL, headers)"}
+                    {showAdvanced
+                      ? 'Ocultar opciones avanzadas'
+                      : 'Opciones avanzadas (baseURL, headers)'}
                   </button>
 
                   {showAdvanced && (
@@ -461,32 +456,32 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                         data-testid="advanced-baseurl"
                         type="text"
                         placeholder="Base URL (opcional)"
-                        value={advancedOptions.baseURL ?? ""}
+                        value={advancedOptions.baseURL ?? ''}
                         onChange={(e) =>
                           setAdvancedOptions((o) => ({ ...o, baseURL: e.target.value }))
                         }
                         className="w-full px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-surface)]"
                         style={{
-                          backgroundColor: "var(--bg-input)",
-                          color: "var(--text-1)",
-                          border: "1px solid var(--border)",
-                          borderRadius: "var(--r-sm)",
+                          backgroundColor: 'var(--bg-input)',
+                          color: 'var(--text-1)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--r-sm)',
                         }}
                       />
                       <input
                         data-testid="advanced-headers"
                         type="text"
                         placeholder='Headers JSON (opcional, ej. {"X-Custom": "value"})'
-                        value={advancedOptions.headers ?? ""}
+                        value={advancedOptions.headers ?? ''}
                         onChange={(e) =>
                           setAdvancedOptions((o) => ({ ...o, headers: e.target.value }))
                         }
                         className="w-full px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-surface)]"
                         style={{
-                          backgroundColor: "var(--bg-input)",
-                          color: "var(--text-1)",
-                          border: "1px solid var(--border)",
-                          borderRadius: "var(--r-sm)",
+                          backgroundColor: 'var(--bg-input)',
+                          color: 'var(--text-1)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--r-sm)',
                         }}
                       />
                     </div>
@@ -499,20 +494,16 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                   data-testid="wizard-oauth-branch"
                   className="rounded-md p-4"
                   style={{
-                    border: "1px solid var(--border)",
-                    backgroundColor: "var(--bg-app)",
+                    border: '1px solid var(--border)',
+                    backgroundColor: 'var(--bg-app)',
                   }}
                 >
-                  <p className="text-sm" style={{ color: "var(--text-1)" }}>
+                  <p className="text-sm" style={{ color: 'var(--text-1)' }}>
                     <strong>Codex usa autenticación con ChatGPT Plus.</strong>
                   </p>
-                  <p
-                    className="mt-1.5 text-xs"
-                    style={{ color: "var(--text-3)" }}
-                  >
-                    Te llevamos a Configuración para conectar tu cuenta de
-                    OpenAI. Cuando vuelvas, ya vas a tener un modelo listo para
-                    chatear.
+                  <p className="mt-1.5 text-xs" style={{ color: 'var(--text-3)' }}>
+                    Te llevamos a Configuración para conectar tu cuenta de OpenAI. Cuando vuelvas,
+                    ya vas a tener un modelo listo para chatear.
                   </p>
                   <button
                     type="button"
@@ -521,14 +512,14 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                     data-testid="wizard-codex-button"
                     className="mt-3 text-sm font-medium px-4 py-2 rounded-md"
                     style={{
-                      backgroundColor: "var(--accent)",
-                      color: "#fff",
-                      border: "1px solid var(--accent-line)",
+                      backgroundColor: 'var(--accent)',
+                      color: '#fff',
+                      border: '1px solid var(--accent-line)',
                       opacity: codexConnecting ? 0.7 : 1,
-                      cursor: codexConnecting ? "default" : "pointer",
+                      cursor: codexConnecting ? 'default' : 'pointer',
                     }}
                   >
-                    {codexConnecting ? "Conectando…" : "Conectar con ChatGPT Plus"}
+                    {codexConnecting ? 'Conectando…' : 'Conectar con ChatGPT Plus'}
                   </button>
                 </div>
               )}
@@ -538,12 +529,12 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
           {/* ── STEP 3: Validate ────────────────────────────────────────── */}
           {currentStep === 3 && (
             <div>
-              <p className="mb-3" style={{ fontSize: 13, color: "var(--text-2)" }}>
-                Verificamos tu clave con una llamada mínima al proveedor. Esto
-                evita que descubras un problema en el primer chat.
+              <p className="mb-3" style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                Verificamos tu clave con una llamada mínima al proveedor. Esto evita que descubras
+                un problema en el primer chat.
               </p>
 
-              {validationResult === "idle" && (
+              {validationResult === 'idle' && (
                 <div className="flex flex-col items-start gap-2">
                   <button
                     type="button"
@@ -552,13 +543,11 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                     data-testid="wizard-validate-button"
                     className="text-sm font-medium px-4 py-2 rounded-md"
                     style={{
-                      backgroundColor: "var(--accent)",
-                      color: "#fff",
-                      border: "1px solid var(--accent-line)",
-                      opacity:
-                        !selectedProvider || !apiKey.trim() ? 0.5 : 1,
-                      cursor:
-                        !selectedProvider || !apiKey.trim() ? "default" : "pointer",
+                      backgroundColor: 'var(--accent)',
+                      color: '#fff',
+                      border: '1px solid var(--accent-line)',
+                      opacity: !selectedProvider || !apiKey.trim() ? 0.5 : 1,
+                      cursor: !selectedProvider || !apiKey.trim() ? 'default' : 'pointer',
                     }}
                   >
                     Verificar conexión
@@ -568,30 +557,27 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                     onClick={handleSkipValidation}
                     data-testid="wizard-skip-validation"
                     className="text-xs underline"
-                    style={{ color: "var(--text-3)" }}
+                    style={{ color: 'var(--text-3)' }}
                   >
                     Saltar (degraded)
                   </button>
                 </div>
               )}
 
-              {validationResult === "validating" && (
-                <p
-                  data-testid="wizard-validating"
-                  style={{ fontSize: 13, color: "var(--text-3)" }}
-                >
+              {validationResult === 'validating' && (
+                <p data-testid="wizard-validating" style={{ fontSize: 13, color: 'var(--text-3)' }}>
                   Verificando…
                 </p>
               )}
 
-              {validationResult === "success" && (
+              {validationResult === 'success' && (
                 <div
                   data-testid="wizard-validation-success"
                   className="rounded-md p-3"
                   style={{
-                    border: "1px solid rgba(92,176,139,0.32)",
-                    backgroundColor: "rgba(92,176,139,0.06)",
-                    color: "var(--m-green)",
+                    border: '1px solid rgba(92,176,139,0.32)',
+                    backgroundColor: 'rgba(92,176,139,0.06)',
+                    color: 'var(--m-green)',
                     fontSize: 13,
                   }}
                 >
@@ -613,14 +599,14 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                 </div>
               )}
 
-              {validationResult === "error" && (
+              {validationResult === 'error' && (
                 <div
                   data-testid="wizard-validation-error"
                   className="rounded-md p-3"
                   style={{
-                    border: "1px solid rgba(208,119,160,0.32)",
-                    backgroundColor: "rgba(208,119,160,0.06)",
-                    color: "var(--m-rose)",
+                    border: '1px solid rgba(208,119,160,0.32)',
+                    backgroundColor: 'rgba(208,119,160,0.06)',
+                    color: 'var(--m-rose)',
                     fontSize: 13,
                   }}
                 >
@@ -638,7 +624,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
-                    {validationError ?? "No se pudo verificar la conexión"}
+                    {validationError ?? 'No se pudo verificar la conexión'}
                   </span>
                   <div className="mt-2 flex items-center gap-3">
                     <button
@@ -646,7 +632,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                       onClick={handleValidate}
                       data-testid="wizard-retry-validation"
                       className="text-xs underline"
-                      style={{ color: "var(--accent)" }}
+                      style={{ color: 'var(--accent)' }}
                     >
                       Reintentar
                     </button>
@@ -654,7 +640,7 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
                       type="button"
                       onClick={handleSkipValidation}
                       className="text-xs underline"
-                      style={{ color: "var(--text-3)" }}
+                      style={{ color: 'var(--text-3)' }}
                     >
                       Saltar (degraded)
                     </button>
@@ -667,66 +653,64 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
           {/* ── STEP 4: Default model ────────────────────────────────────── */}
           {currentStep === 4 && (
             <div>
-              <p className="mb-3" style={{ fontSize: 13, color: "var(--text-2)" }}>
-                Elegí el modelo con el que querés empezar. Después podés
-                cambiarlo desde el selector del chat.
+              <p className="mb-3" style={{ fontSize: 13, color: 'var(--text-2)' }}>
+                Elegí el modelo con el que querés empezar. Después podés cambiarlo desde el selector
+                del chat.
               </p>
 
               {modelsLoading && (
-                <p style={{ fontSize: 13, color: "var(--text-3)" }}>Cargando modelos…</p>
+                <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Cargando modelos…</p>
               )}
 
-              {!modelsLoading && (() => {
-                const providerModels = models.filter(
-                  (m) => m.provider === selectedProvider
-                );
-                if (providerModels.length === 0) {
+              {!modelsLoading &&
+                (() => {
+                  const providerModels = models.filter((m) => m.provider === selectedProvider);
+                  if (providerModels.length === 0) {
+                    return (
+                      <div
+                        data-testid="wizard-no-models"
+                        className="rounded-md p-3"
+                        style={{
+                          border: '1px solid var(--m-amber)',
+                          backgroundColor: 'rgba(207,154,94,0.06)',
+                          color: 'var(--m-amber)',
+                          fontSize: 13,
+                        }}
+                      >
+                        No hay modelos activos para {selectedProviderData?.name ?? selectedProvider}
+                        .{' '}
+                        <a
+                          href="/settings"
+                          className="underline"
+                          style={{ color: 'var(--accent)' }}
+                        >
+                          Ir a Configuración
+                        </a>{' '}
+                        para activarlos.
+                      </div>
+                    );
+                  }
                   return (
-                    <div
-                      data-testid="wizard-no-models"
-                      className="rounded-md p-3"
+                    <select
+                      data-testid="wizard-model-select"
+                      value={defaultModelId ?? ''}
+                      onChange={(e) => setDefaultModelId(e.target.value)}
+                      className="w-full px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-surface)]"
                       style={{
-                        border: "1px solid var(--m-amber)",
-                        backgroundColor: "rgba(207,154,94,0.06)",
-                        color: "var(--m-amber)",
-                        fontSize: 13,
+                        backgroundColor: 'var(--bg-input)',
+                        color: 'var(--text-1)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--r-sm)',
                       }}
                     >
-                      No hay modelos activos para{" "}
-                      {selectedProviderData?.name ?? selectedProvider}.{" "}
-                      <a
-                        href="/settings"
-                        className="underline"
-                        style={{ color: "var(--accent)" }}
-                      >
-                        Ir a Configuración
-                      </a>{" "}
-                      para activarlos.
-                    </div>
+                      {providerModels.map((m) => (
+                        <option key={`${m.provider}:${m.id}`} value={m.id}>
+                          {m.name} ({m.provider})
+                        </option>
+                      ))}
+                    </select>
                   );
-                }
-                return (
-                  <select
-                    data-testid="wizard-model-select"
-                    value={defaultModelId ?? ""}
-                    onChange={(e) => setDefaultModelId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-surface)]"
-                    style={{
-                      backgroundColor: "var(--bg-input)",
-                      color: "var(--text-1)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "var(--r-sm)",
-                    }}
-                  >
-                    {providerModels.map((m) => (
-                      <option key={`${m.provider}:${m.id}`} value={m.id}>
-                        {m.name} ({m.provider})
-                      </option>
-                    ))}
-                  </select>
-                );
-              })()}
-
+                })()}
             </div>
           )}
         </div>
@@ -734,12 +718,12 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
         {/* Footer: Atrás / Siguiente / Empezar */}
         <div
           style={{
-            display: "flex",
+            display: 'flex',
             gap: 8,
-            justifyContent: "space-between",
-            padding: "12px 20px",
-            borderTop: "1px solid var(--border)",
-            backgroundColor: "var(--bg-app)",
+            justifyContent: 'space-between',
+            padding: '12px 20px',
+            borderTop: '1px solid var(--border)',
+            backgroundColor: 'var(--bg-app)',
           }}
         >
           <button
@@ -750,15 +734,15 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
             style={{
               fontSize: 13,
               fontWeight: 500,
-              padding: "8px 14px",
-              borderRadius: "var(--r-sm)",
-              border: "1px solid var(--border)",
-              backgroundColor: "transparent",
-              color: "var(--text-2)",
-              cursor: submitting ? "default" : "pointer",
+              padding: '8px 14px',
+              borderRadius: 'var(--r-sm)',
+              border: '1px solid var(--border)',
+              backgroundColor: 'transparent',
+              color: 'var(--text-2)',
+              cursor: submitting ? 'default' : 'pointer',
             }}
           >
-            {currentStep === 1 ? "Cancelar" : "Atrás"}
+            {currentStep === 1 ? 'Cancelar' : 'Atrás'}
           </button>
 
           {currentStep < 4 && (
@@ -773,22 +757,21 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
               disabled={
                 (currentStep === 1 && !selectedProvider) ||
                 (currentStep === 2 && !isOAuthProvider && !apiKey.trim()) ||
-                (currentStep === 3 &&
-                  (validationResult !== "success" || connecting))
+                (currentStep === 3 && (validationResult !== 'success' || connecting))
               }
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                padding: "8px 14px",
-                borderRadius: "var(--r-sm)",
-                border: "none",
-                backgroundColor: "var(--accent)",
-                color: "#fff",
+                padding: '8px 14px',
+                borderRadius: 'var(--r-sm)',
+                border: 'none',
+                backgroundColor: 'var(--accent)',
+                color: '#fff',
                 opacity: 1,
-                cursor: currentStep === 3 && connecting ? "default" : "pointer",
+                cursor: currentStep === 3 && connecting ? 'default' : 'pointer',
               }}
             >
-              {currentStep === 3 && connecting ? "Conectando…" : "Siguiente"}
+              {currentStep === 3 && connecting ? 'Conectando…' : 'Siguiente'}
             </button>
           )}
 
@@ -801,16 +784,16 @@ export function OnboardingWizard({ open, onClose, onCompleted }: OnboardingWizar
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                padding: "8px 14px",
-                borderRadius: "var(--r-sm)",
-                border: "none",
-                backgroundColor: "var(--accent)",
-                color: "#fff",
+                padding: '8px 14px',
+                borderRadius: 'var(--r-sm)',
+                border: 'none',
+                backgroundColor: 'var(--accent)',
+                color: '#fff',
                 opacity: submitting || !defaultModelId ? 0.5 : 1,
-                cursor: submitting || !defaultModelId ? "default" : "pointer",
+                cursor: submitting || !defaultModelId ? 'default' : 'pointer',
               }}
             >
-              {submitting ? "Conectando…" : "Empezar a chatear"}
+              {submitting ? 'Conectando…' : 'Empezar a chatear'}
             </button>
           )}
         </div>

@@ -1,6 +1,6 @@
-import { prisma } from "./db";
-import { getProvider } from "./provider-registry";
-import { resolveProviderCredential } from "./provider-credentials";
+import { prisma } from './db';
+import { getProvider } from './provider-registry';
+import { resolveProviderCredential } from './provider-credentials';
 
 /** Health status for a single provider. `checkedAt` is epoch ms. */
 export interface ProviderHealth {
@@ -68,22 +68,22 @@ const realChecker: HealthChecker = async (userId, providerId) => {
     const config = await prisma.providerConfig.findUnique({
       where: { userId_providerId: { userId, providerId } },
     });
-    if (!config) return { ok: false, error: "Provider not configured" };
+    if (!config) return { ok: false, error: 'Provider not configured' };
 
     const credential = await resolveProviderCredential(config, prisma);
     const provider = getProvider(providerId, credential.options);
-    if (!provider) return { ok: false, error: "Provider not available" };
+    if (!provider) return { ok: false, error: 'Provider not available' };
 
     await provider.chat(
       {
-        messages: [{ role: "user", content: "Hi" }],
-        model: provider.getCapabilities()[0]?.modelId ?? "",
+        messages: [{ role: 'user', content: 'Hi' }],
+        model: provider.getCapabilities()[0]?.modelId ?? '',
       },
       credential.apiKey
     );
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Health check failed" };
+    return { ok: false, error: err instanceof Error ? err.message : 'Health check failed' };
   }
 };
 

@@ -41,15 +41,26 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # Prettier check sin writes. Atrapa drift de formato que `pnpm build` no
+      # detecta (build solo verifica tsc + bundle). Sin este gate el formateo
+      # puede degradarse entre commits sin que CI lo marque.
+      - name: Format check
+        run: pnpm format:check
+
       # Genera el Prisma Client (sin conexión a DB) — necesario porque @chat/db
       # reexporta tipos de @prisma/client y tsc falla si no está generado.
       - name: Generate Prisma Client
         run: pnpm db:generate
 
-      # build = `tsc` (api) y `tsc && vite build` (web): hace de typecheck.
-      # `pnpm typecheck` existe como gate dedicado (`tsc --noEmit` por app) para
-      # DX local rápido — no se corre acá porque ya es subset del build de arriba.
-      - name: Build (typecheck)
+      # Typecheck dedicado (`tsc --noEmit` por app) — corre SIN caché de turbo
+      # para que la regresión de tipos no quede enmascarada por un `dist/` viejo.
+      # Si falla acá, falla el job aunque `pnpm build` (cacheado) siga verde.
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # build = `tsc` (api) y `tsc && vite build` (web): produce los artefactos
+      # que consume `pnpm test` (turbo declara `test.dependsOn: ["build"]`).
+      - name: Build
         run: pnpm build
 
       # Baja el binario CPython-WASI (pinned + SHA-256) que usa el sandbox
@@ -149,7 +160,7 @@ jobs:
         working-directory: apps/web
         env:
           PLAYWRIGHT_BASE_URL: http://localhost
-          PLAYWRIGHT_PORT: "80"
+          PLAYWRIGHT_PORT: '80'
         run: npx playwright test
 
       - name: Upload screenshots on failure

@@ -1,6 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { ACCESS_TTL } from "../lib/refresh-token";
+import type { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { ACCESS_TTL } from '../lib/refresh-token';
 
 /**
  * Resolves the JWT signing secret at call time. There is NO insecure default:
@@ -11,7 +11,7 @@ import { ACCESS_TTL } from "../lib/refresh-token";
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length < 32) {
-    throw new Error("JWT_SECRET must be set and at least 32 characters");
+    throw new Error('JWT_SECRET must be set and at least 32 characters');
   }
   return secret;
 }
@@ -20,14 +20,10 @@ export interface AuthenticatedRequest extends Request {
   userId?: string;
 }
 
-export function authMiddleware(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): void {
+export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
   const header = req.headers.authorization;
-  if (!header?.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Missing or invalid token" });
+  if (!header?.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Missing or invalid token' });
     return;
   }
 
@@ -37,7 +33,7 @@ export function authMiddleware(
     req.userId = payload.userId;
     next();
   } catch {
-    res.status(401).json({ error: "Invalid token" });
+    res.status(401).json({ error: 'Invalid token' });
   }
 }
 

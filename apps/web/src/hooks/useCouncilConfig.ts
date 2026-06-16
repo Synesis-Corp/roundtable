@@ -1,12 +1,12 @@
-import { storage } from "../lib/storage";
-import { useState, useEffect, useCallback } from "react";
-import { apiGet, apiPut, apiDelete } from "../lib/api-client";
+import { storage } from '../lib/storage';
+import { useState, useEffect, useCallback } from 'react';
+import { apiGet, apiPut, apiDelete } from '../lib/api-client';
 
 export interface CouncilConfig {
   id: string;
   userId: string;
   modelIds: string[];
-  mode: "auto" | "manual";
+  mode: 'auto' | 'manual';
   createdAt: string;
   updatedAt: string;
 }
@@ -15,7 +15,7 @@ interface UseCouncilConfigReturn {
   config: CouncilConfig | null;
   loading: boolean;
   error: string | null;
-  updateConfig: (modelIds: string[], mode: "auto" | "manual") => Promise<void>;
+  updateConfig: (modelIds: string[], mode: 'auto' | 'manual') => Promise<void>;
   deleteConfig: () => Promise<void>;
 }
 
@@ -28,14 +28,14 @@ export function useCouncilConfig(): UseCouncilConfigReturn {
     setLoading(true);
     setError(null);
 
-    const token = storage.get("token");
+    const token = storage.get('token');
     if (!token) {
       setConfig(null);
       setLoading(false);
       return;
     }
 
-    apiGet<CouncilConfig | undefined>("/council/config")
+    apiGet<CouncilConfig | undefined>('/council/config')
       .then((data) => {
         if (data === undefined) {
           setConfig(null);
@@ -44,7 +44,7 @@ export function useCouncilConfig(): UseCouncilConfigReturn {
         }
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Failed to load council config");
+        setError(err instanceof Error ? err.message : 'Failed to load council config');
         setConfig(null);
       })
       .finally(() => {
@@ -56,28 +56,25 @@ export function useCouncilConfig(): UseCouncilConfigReturn {
     fetchConfig();
   }, [fetchConfig]);
 
-  const updateConfig = useCallback(
-    async (modelIds: string[], mode: "auto" | "manual") => {
-      setError(null);
-      try {
-        const data = await apiPut<CouncilConfig>("/council/config", { modelIds, mode });
-        setConfig(data);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to update council config";
-        setError(msg);
-        throw new Error(msg);
-      }
-    },
-    []
-  );
+  const updateConfig = useCallback(async (modelIds: string[], mode: 'auto' | 'manual') => {
+    setError(null);
+    try {
+      const data = await apiPut<CouncilConfig>('/council/config', { modelIds, mode });
+      setConfig(data);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to update council config';
+      setError(msg);
+      throw new Error(msg);
+    }
+  }, []);
 
   const deleteConfig = useCallback(async () => {
     setError(null);
     try {
-      await apiDelete("/council/config");
+      await apiDelete('/council/config');
       setConfig(null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to delete council config";
+      const msg = err instanceof Error ? err.message : 'Failed to delete council config';
       setError(msg);
       throw new Error(msg);
     }

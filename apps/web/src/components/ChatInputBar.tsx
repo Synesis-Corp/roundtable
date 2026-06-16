@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, type DragEvent } from "react";
-import { Link } from "react-router-dom";
-import type { UserProvider } from "@chat/sdk";
-import type { EffortSpec, ModelOption } from "../types/chat";
-import { filterAllowedFiles } from "../lib/file-types";
+import { useState, useEffect, useCallback, type DragEvent } from 'react';
+import { Link } from 'react-router-dom';
+import type { UserProvider } from '@chat/sdk';
+import type { EffortSpec, ModelOption } from '../types/chat';
+import { filterAllowedFiles } from '../lib/file-types';
 
 export interface ChatInputBarProps {
   inputText: string;
@@ -53,7 +53,13 @@ export interface ChatInputBarProps {
 
 function PersonIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+    >
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>
@@ -62,7 +68,13 @@ function PersonIcon({ className }: { className?: string }) {
 
 function NetworkIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+    >
       <circle cx="5" cy="6" r="3" />
       <circle cx="19" cy="6" r="3" />
       <circle cx="12" cy="18" r="3" />
@@ -74,7 +86,13 @@ function NetworkIcon({ className }: { className?: string }) {
 
 function ChevronDownIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
     </svg>
   );
@@ -82,25 +100,31 @@ function ChevronDownIcon({ className }: { className?: string }) {
 
 function ArrowRightIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
     </svg>
   );
 }
 
 /* File-type icons (SVG, stroke-based — no emojis per the design system). */
-function FileTypeIcon({ file, className = "w-5 h-5" }: { file: File; className?: string }) {
+function FileTypeIcon({ file, className = 'w-5 h-5' }: { file: File; className?: string }) {
   const common = {
     className,
-    fill: "none",
-    stroke: "currentColor",
-    viewBox: "0 0 24 24",
+    fill: 'none',
+    stroke: 'currentColor',
+    viewBox: '0 0 24 24',
     strokeWidth: 1.6,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
   };
   const t = file.type;
-  if (t.startsWith("image/")) {
+  if (t.startsWith('image/')) {
     return (
       <svg {...common}>
         <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -109,7 +133,7 @@ function FileTypeIcon({ file, className = "w-5 h-5" }: { file: File; className?:
       </svg>
     );
   }
-  if (t.includes("pdf")) {
+  if (t.includes('pdf')) {
     return (
       <svg {...common}>
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -118,7 +142,7 @@ function FileTypeIcon({ file, className = "w-5 h-5" }: { file: File; className?:
       </svg>
     );
   }
-  if (t.includes("spreadsheet") || t.includes("excel") || t.includes("csv")) {
+  if (t.includes('spreadsheet') || t.includes('excel') || t.includes('csv')) {
     return (
       <svg {...common}>
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -127,7 +151,7 @@ function FileTypeIcon({ file, className = "w-5 h-5" }: { file: File; className?:
       </svg>
     );
   }
-  if (t.includes("word") || t.includes("document") || t.startsWith("text/")) {
+  if (t.includes('word') || t.includes('document') || t.startsWith('text/')) {
     return (
       <svg {...common}>
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -145,21 +169,48 @@ function FileTypeIcon({ file, className = "w-5 h-5" }: { file: File; className?:
 
 export function ChatInputBar(props: ChatInputBarProps) {
   const {
-    inputText, setInputText, streaming, handleSubmit, stopStream, fileInputRef, files, setFiles,
-    selectedLabel, selectedProvider, selectedModel, setSelectedModel, models, modelsLoading,
-    multiMode, setMultiMode, incognito, setIncognito,
+    inputText,
+    setInputText,
+    streaming,
+    handleSubmit,
+    stopStream,
+    fileInputRef,
+    files,
+    setFiles,
+    selectedLabel,
+    selectedProvider,
+    selectedModel,
+    setSelectedModel,
+    models,
+    modelsLoading,
+    multiMode,
+    setMultiMode,
+    incognito,
+    setIncognito,
     userProviders,
-    isModelDropdownOpen, setIsModelDropdownOpen,
-    modelDropdownRef, modelSearch, setModelSearch,
-    effortSpec, effortLoading, selectedEffort,
-    isEffortDropdownOpen, setIsEffortDropdownOpen, effortDropdownRef, effortSearch, setEffortSearch,
-    textareaRef, hasMessages, councilModelCount = 0,
+    isModelDropdownOpen,
+    setIsModelDropdownOpen,
+    modelDropdownRef,
+    modelSearch,
+    setModelSearch,
+    effortSpec,
+    effortLoading,
+    selectedEffort,
+    isEffortDropdownOpen,
+    setIsEffortDropdownOpen,
+    effortDropdownRef,
+    effortSearch,
+    setEffortSearch,
+    textareaRef,
+    hasMessages,
+    councilModelCount = 0,
     onRejectedFiles,
   } = props;
 
-  const councilCountLabel = councilModelCount <= 0
-    ? "Sin modelos disponibles"
-    : `${councilModelCount} modelo${councilModelCount === 1 ? "" : "s"} en consejo`;
+  const councilCountLabel =
+    councilModelCount <= 0
+      ? 'Sin modelos disponibles'
+      : `${councilModelCount} modelo${councilModelCount === 1 ? '' : 's'} en consejo`;
 
   // Mode is freely switchable: Único ⇄ Consejo only changes how the NEXT message
   // is processed; a conversation can mix single and council turns without issue.
@@ -184,25 +235,27 @@ export function ChatInputBar(props: ChatInputBarProps) {
         onRejectedFiles?.(rejected);
       }
     },
-    [setFiles, onRejectedFiles],
+    [setFiles, onRejectedFiles]
   );
 
   useEffect(() => {
     const previews: Record<string, string> = {};
     files.forEach((f) => {
-      if (f.type.startsWith("image/")) previews[f.name] = URL.createObjectURL(f);
+      if (f.type.startsWith('image/')) previews[f.name] = URL.createObjectURL(f);
     });
     setImagePreviews(previews);
-    return () => { Object.values(previews).forEach((url) => URL.revokeObjectURL(url)); };
+    return () => {
+      Object.values(previews).forEach((url) => URL.revokeObjectURL(url));
+    };
   }, [files]);
 
   const placeholderText = incognito
-    ? "Escribe sin guardar…"
+    ? 'Escribe sin guardar…'
     : multiMode
-    ? "Pregunta al consejo…"
-    : hasMessages
-      ? "Responde…"
-      : "Escribe un mensaje…";
+      ? 'Pregunta al consejo…'
+      : hasMessages
+        ? 'Responde…'
+        : 'Escribe un mensaje…';
 
   // Onboarding UX gate (2026-06-14): disable the send button when the user
   // can't actually send. Without this, the input bar is enabled with 0
@@ -226,13 +279,13 @@ export function ChatInputBar(props: ChatInputBarProps) {
   // Human-readable reason for the disabled state. Surfaced as the
   // `title` attr on the send button so the user gets context on hover.
   const sendBlockedReason = noProviders
-    ? "Conectá un proveedor para empezar"
+    ? 'Conectá un proveedor para empezar'
     : notEnoughForCouncil
-      ? "El Consejo necesita al menos 2 providers"
+      ? 'El Consejo necesita al menos 2 providers'
       : modelsLoading
-        ? "Cargando modelos…"
+        ? 'Cargando modelos…'
         : noModelsLoaded
-          ? "No hay modelos disponibles"
+          ? 'No hay modelos disponibles'
           : null;
 
   // Drag-and-drop handlers — gate everything on `!streaming` so a user
@@ -247,7 +300,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
     if (streaming) return;
     // preventDefault is REQUIRED for `drop` to fire on most browsers.
     e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
+    e.dataTransfer.dropEffect = 'copy';
   };
   const handleDragLeave = (e: DragEvent<HTMLFormElement>) => {
     if (streaming) return;
@@ -273,25 +326,25 @@ export function ChatInputBar(props: ChatInputBarProps) {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      data-dragging={isDragging ? "true" : "false"}
+      data-dragging={isDragging ? 'true' : 'false'}
       className="relative"
     >
       <div
         className="transition-colors"
         style={{
-          backgroundColor: "var(--bg-input)",
-          border: isDragging ? "1px dashed var(--accent)" : "1px solid var(--border-strong)",
-          borderRadius: "var(--r-lg)",
-          boxShadow: isDragging ? "0 0 0 3px var(--accent-quiet)" : "var(--shadow-md)",
-          padding: "16px 16px 12px",
-          transition: "border-color 120ms, box-shadow 120ms",
+          backgroundColor: 'var(--bg-input)',
+          border: isDragging ? '1px dashed var(--accent)' : '1px solid var(--border-strong)',
+          borderRadius: 'var(--r-lg)',
+          boxShadow: isDragging ? '0 0 0 3px var(--accent-quiet)' : 'var(--shadow-md)',
+          padding: '16px 16px 12px',
+          transition: 'border-color 120ms, box-shadow 120ms',
         }}
       >
         {incognito && (
           <div
             role="status"
             className="mb-2 flex items-center gap-2 px-2 text-xs"
-            style={{ color: "var(--m-amber)" }}
+            style={{ color: 'var(--m-amber)' }}
           >
             <span aria-hidden="true">◌</span>
             <span>Este chat no se guardará. Solo se registrarán métricas de uso.</span>
@@ -301,16 +354,16 @@ export function ChatInputBar(props: ChatInputBarProps) {
         {isDragging && (
           <div
             className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
-            style={{ borderRadius: "var(--r-lg)" }}
+            style={{ borderRadius: 'var(--r-lg)' }}
           >
             <div
               className="text-sm font-medium"
               style={{
-                color: "var(--accent-text)",
-                backgroundColor: "var(--bg-elevated)",
-                padding: "6px 12px",
-                borderRadius: "var(--r-md)",
-                boxShadow: "var(--shadow-md)",
+                color: 'var(--accent-text)',
+                backgroundColor: 'var(--bg-elevated)',
+                padding: '6px 12px',
+                borderRadius: 'var(--r-md)',
+                boxShadow: 'var(--shadow-md)',
               }}
             >
               Suelta para adjuntar
@@ -327,9 +380,9 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 style={{
                   width: imagePreviews[f.name] ? 112 : 200,
                   minHeight: 72,
-                  backgroundColor: "var(--bg-surface)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "var(--r-md)",
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--r-md)',
                 }}
               >
                 {imagePreviews[f.name] ? (
@@ -342,19 +395,30 @@ export function ChatInputBar(props: ChatInputBarProps) {
                     <div
                       className="absolute inset-x-0 bottom-0 p-2"
                       style={{
-                        background: "linear-gradient(180deg, rgba(20,21,24,0) 0%, rgba(20,21,24,0.86) 72%)",
+                        background:
+                          'linear-gradient(180deg, rgba(20,21,24,0) 0%, rgba(20,21,24,0.86) 72%)',
                       }}
                     >
-                      <p className="text-[11px] truncate" style={{ color: "#fff" }}>{f.name}</p>
-                      <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.72)" }}>{(f.size / 1024).toFixed(0)} KB</p>
+                      <p className="text-[11px] truncate" style={{ color: '#fff' }}>
+                        {f.name}
+                      </p>
+                      <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.72)' }}>
+                        {(f.size / 1024).toFixed(0)} KB
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 p-3 h-full">
-                    <span style={{ color: "var(--text-3)" }}><FileTypeIcon file={f} /></span>
+                    <span style={{ color: 'var(--text-3)' }}>
+                      <FileTypeIcon file={f} />
+                    </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs truncate" style={{ color: "var(--text-2)" }}>{f.name}</p>
-                      <p className="text-[10px]" style={{ color: "var(--text-4)" }}>{(f.size / 1024).toFixed(0)} KB</p>
+                      <p className="text-xs truncate" style={{ color: 'var(--text-2)' }}>
+                        {f.name}
+                      </p>
+                      <p className="text-[10px]" style={{ color: 'var(--text-4)' }}>
+                        {(f.size / 1024).toFixed(0)} KB
+                      </p>
                     </div>
                   </div>
                 )}
@@ -362,9 +426,15 @@ export function ChatInputBar(props: ChatInputBarProps) {
                   type="button"
                   onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
                   className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
-                  style={{ backgroundColor: "rgba(17, 18, 22, 0.84)", color: "#fff", backdropFilter: "blur(6px)" }}
+                  style={{
+                    backgroundColor: 'rgba(17, 18, 22, 0.84)',
+                    color: '#fff',
+                    backdropFilter: 'blur(6px)',
+                  }}
                   aria-label="Quitar archivo"
-                >×</button>
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>
@@ -376,13 +446,18 @@ export function ChatInputBar(props: ChatInputBarProps) {
             ref={textareaRef}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(e as unknown as React.FormEvent); } }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e as unknown as React.FormEvent);
+              }
+            }}
             placeholder={placeholderText}
             disabled={streaming}
             rows={1}
             className="flex-1 bg-transparent placeholder-gray-500 resize-none outline-none py-2 min-h-[24px] max-h-[200px] transition-opacity duration-100"
             style={{
-              color: "var(--text-1)",
+              color: 'var(--text-1)',
               fontSize: 15,
               lineHeight: 1.62,
             }}
@@ -399,12 +474,23 @@ export function ChatInputBar(props: ChatInputBarProps) {
             title="Adjuntar archivos"
             aria-label="Adjuntar archivos"
             className="p-2 rounded-full transition-colors shrink-0 disabled:opacity-40 active:scale-95 transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
-            style={{ color: "var(--text-3)" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-1)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--hover)"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+            style={{ color: 'var(--text-3)' }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--hover)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+              />
             </svg>
           </button>
 
@@ -414,8 +500,8 @@ export function ChatInputBar(props: ChatInputBarProps) {
             role="group"
             aria-label="Modo de chat"
             style={{
-              backgroundColor: "var(--bg-surface)",
-              borderRadius: "var(--r-pill)",
+              backgroundColor: 'var(--bg-surface)',
+              borderRadius: 'var(--r-pill)',
               padding: 3,
               gap: 2,
             }}
@@ -427,9 +513,9 @@ export function ChatInputBar(props: ChatInputBarProps) {
               title="Un solo modelo"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:cursor-not-allowed active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
               style={{
-                backgroundColor: !multiMode ? "var(--accent-quiet)" : "transparent",
-                color: !multiMode ? "var(--accent-text)" : "var(--text-3)",
-                boxShadow: !multiMode ? "inset 0 0 0 1px var(--accent-line)" : "none",
+                backgroundColor: !multiMode ? 'var(--accent-quiet)' : 'transparent',
+                color: !multiMode ? 'var(--accent-text)' : 'var(--text-3)',
+                boxShadow: !multiMode ? 'inset 0 0 0 1px var(--accent-line)' : 'none',
                 opacity: streaming ? 0.4 : 1,
               }}
             >
@@ -442,9 +528,9 @@ export function ChatInputBar(props: ChatInputBarProps) {
               disabled={streaming}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:opacity-40 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
               style={{
-                backgroundColor: multiMode ? "var(--accent-quiet)" : "transparent",
-                color: multiMode ? "var(--accent-text)" : "var(--text-3)",
-                boxShadow: multiMode ? "inset 0 0 0 1px var(--accent-line)" : "none",
+                backgroundColor: multiMode ? 'var(--accent-quiet)' : 'transparent',
+                color: multiMode ? 'var(--accent-text)' : 'var(--text-3)',
+                boxShadow: multiMode ? 'inset 0 0 0 1px var(--accent-line)' : 'none',
               }}
             >
               <NetworkIcon className="w-3.5 h-3.5" />
@@ -459,12 +545,12 @@ export function ChatInputBar(props: ChatInputBarProps) {
             aria-checked={incognito}
             onClick={() => setIncognito(!incognito)}
             disabled={streaming}
-            title={incognito ? "Desactivar modo incógnito" : "Activar modo incógnito"}
+            title={incognito ? 'Desactivar modo incógnito' : 'Activar modo incógnito'}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors shrink-0 disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
             style={{
-              backgroundColor: incognito ? "rgba(245, 158, 11, 0.12)" : "var(--hover)",
-              color: incognito ? "var(--m-amber)" : "var(--text-3)",
-              border: incognito ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid transparent",
+              backgroundColor: incognito ? 'rgba(245, 158, 11, 0.12)' : 'var(--hover)',
+              color: incognito ? 'var(--m-amber)' : 'var(--text-3)',
+              border: incognito ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid transparent',
             }}
           >
             <svg
@@ -494,27 +580,42 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 setIsModelDropdownOpen((v) => !v);
               }}
               disabled={modelsLoading || models.length === 0 || multiMode}
-              title={multiMode ? "Modelo auto-seleccionado en modo Consejo" : "Elegir modelo"}
+              title={multiMode ? 'Modelo auto-seleccionado en modo Consejo' : 'Elegir modelo'}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-colors max-w-[180px] sm:max-w-[260px] active:scale-95 transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)] disabled:opacity-40"
               style={{
-                backgroundColor: multiMode ? "transparent" : "var(--hover)",
-                color: multiMode ? "var(--text-4)" : "var(--text-2)",
-                cursor: multiMode ? "not-allowed" : "pointer",
+                backgroundColor: multiMode ? 'transparent' : 'var(--hover)',
+                color: multiMode ? 'var(--text-4)' : 'var(--text-2)',
+                cursor: multiMode ? 'not-allowed' : 'pointer',
               }}
             >
               {!multiMode && (
-                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                <svg
+                  className="w-3.5 h-3.5 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
                 </svg>
               )}
-              <span className="truncate">
-                {multiMode ? councilCountLabel : selectedLabel}
-              </span>
+              <span className="truncate">{multiMode ? councilCountLabel : selectedLabel}</span>
               {!multiMode && selectedProvider && (
-                <span className="hidden sm:inline shrink-0 font-mono-ui" style={{ color: "var(--text-4)" }}>{selectedProvider}</span>
+                <span
+                  className="hidden sm:inline shrink-0 font-mono-ui"
+                  style={{ color: 'var(--text-4)' }}
+                >
+                  {selectedProvider}
+                </span>
               )}
               {!multiMode && (
-                <ChevronDownIcon className={`w-3 h-3 shrink-0 transition-transform ${isModelDropdownOpen ? "rotate-180" : ""}`} />
+                <ChevronDownIcon
+                  className={`w-3 h-3 shrink-0 transition-transform ${isModelDropdownOpen ? 'rotate-180' : ''}`}
+                />
               )}
             </button>
 
@@ -522,13 +623,13 @@ export function ChatInputBar(props: ChatInputBarProps) {
               <div
                 className="absolute bottom-full right-0 mb-2 w-80 overflow-hidden z-50"
                 style={{
-                  backgroundColor: "var(--bg-surface)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "var(--r-md)",
-                  boxShadow: "var(--shadow-md)",
+                  backgroundColor: 'var(--bg-surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--r-md)',
+                  boxShadow: 'var(--shadow-md)',
                 }}
               >
-                <div className="p-2" style={{ borderBottom: "1px solid var(--border)" }}>
+                <div className="p-2" style={{ borderBottom: '1px solid var(--border)' }}>
                   <input
                     type="text"
                     value={modelSearch}
@@ -536,17 +637,26 @@ export function ChatInputBar(props: ChatInputBarProps) {
                     placeholder="Buscar modelos…"
                     className="w-full rounded-lg px-3 py-1.5 outline-none text-sm transition-colors focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                     style={{
-                      backgroundColor: "var(--bg-input)",
-                      color: "var(--text-1)",
-                      border: "1px solid var(--border)",
+                      backgroundColor: 'var(--bg-input)',
+                      color: 'var(--text-1)',
+                      border: '1px solid var(--border)',
                     }}
                   />
                 </div>
                 <div className="max-h-72 overflow-y-auto py-1">
-                  {modelsLoading && <div className="p-4 text-sm text-center" style={{ color: "var(--text-3)" }}>Cargando…</div>}
+                  {modelsLoading && (
+                    <div className="p-4 text-sm text-center" style={{ color: 'var(--text-3)' }}>
+                      Cargando…
+                    </div>
+                  )}
                   {!modelsLoading && models.length === 0 && (
-                    <div className="p-4 text-sm text-center" style={{ color: "var(--text-2)" }}>
-                      <Link to="/settings" className="underline hover:opacity-80" style={{ color: "var(--accent-text)" }} onClick={() => setIsModelDropdownOpen(false)}>
+                    <div className="p-4 text-sm text-center" style={{ color: 'var(--text-2)' }}>
+                      <Link
+                        to="/settings"
+                        className="underline hover:opacity-80"
+                        style={{ color: 'var(--accent-text)' }}
+                        onClick={() => setIsModelDropdownOpen(false)}
+                      >
                         Conectar proveedores en Configuración
                       </Link>
                     </div>
@@ -558,48 +668,82 @@ export function ChatInputBar(props: ChatInputBarProps) {
                       <button
                         key={key}
                         type="button"
-                        onClick={() => { setSelectedModel(isSel ? null : key); setIsModelDropdownOpen(false); }}
+                        onClick={() => {
+                          setSelectedModel(isSel ? null : key);
+                          setIsModelDropdownOpen(false);
+                        }}
                         className="w-full text-left px-3 py-2.5 flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                         style={{
-                          backgroundColor: isSel ? "var(--accent-quiet)" : "transparent",
+                          backgroundColor: isSel ? 'var(--accent-quiet)' : 'transparent',
                         }}
-                        onMouseEnter={(e) => { if (!isSel) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--hover)"; }}
-                        onMouseLeave={(e) => { if (!isSel) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+                        onMouseEnter={(e) => {
+                          if (!isSel)
+                            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                              'var(--hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSel)
+                            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                              'transparent';
+                        }}
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium truncate" style={{ color: "var(--text-1)" }}>{m.name}</span>
+                            <span
+                              className="text-sm font-medium truncate"
+                              style={{ color: 'var(--text-1)' }}
+                            >
+                              {m.name}
+                            </span>
                             <span
                               className="shrink-0 text-[10px] px-1.5 py-0.5 rounded"
                               style={{
-                                backgroundColor: "var(--bg-elevated)",
-                                color: "var(--text-2)",
+                                backgroundColor: 'var(--bg-elevated)',
+                                color: 'var(--text-2)',
                               }}
                             >
                               {m.provider}
                             </span>
                           </div>
-                          <div className="text-xs mt-0.5 truncate" style={{ color: "var(--text-4)" }}>{m.description}</div>
+                          <div
+                            className="text-xs mt-0.5 truncate"
+                            style={{ color: 'var(--text-4)' }}
+                          >
+                            {m.description}
+                          </div>
                           {m.capabilities && (
                             <div className="flex gap-1 mt-1">
-                              {m.capabilities.filter(Boolean).slice(0, 4).map((c) => (
-                                <span
-                                  key={c}
-                                  className="text-[9px] px-1 py-0.5 rounded"
-                                  style={{
-                                    backgroundColor: "var(--bg-app)",
-                                    color: "var(--text-3)",
-                                  }}
-                                >
-                                  {c}
-                                </span>
-                              ))}
+                              {m.capabilities
+                                .filter(Boolean)
+                                .slice(0, 4)
+                                .map((c) => (
+                                  <span
+                                    key={c}
+                                    className="text-[9px] px-1 py-0.5 rounded"
+                                    style={{
+                                      backgroundColor: 'var(--bg-app)',
+                                      color: 'var(--text-3)',
+                                    }}
+                                  >
+                                    {c}
+                                  </span>
+                                ))}
                             </div>
                           )}
                         </div>
                         {isSel && (
-                          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          <svg
+                            className="w-4 h-4 shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
                           </svg>
                         )}
                       </button>
@@ -624,30 +768,44 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 title="Variante de modelo"
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-colors shrink-0 disabled:opacity-40 active:scale-95 transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                 style={{
-                  backgroundColor: selectedEffort === "default" ? "var(--hover)" : "var(--accent-quiet)",
-                  color: selectedEffort === "default" ? "var(--text-2)" : "var(--accent-text)",
+                  backgroundColor:
+                    selectedEffort === 'default' ? 'var(--hover)' : 'var(--accent-quiet)',
+                  color: selectedEffort === 'default' ? 'var(--text-2)' : 'var(--accent-text)',
                 }}
               >
-                <span className="hidden sm:inline" style={{ color: "var(--text-4)" }}>variant</span>
-                <span className="font-semibold">{effortLoading ? "…" : selectedEffort}</span>
-                {effortSpec && <ChevronDownIcon className={`w-3 h-3 transition-transform ${isEffortDropdownOpen ? "rotate-180" : ""}`} />}
+                <span className="hidden sm:inline" style={{ color: 'var(--text-4)' }}>
+                  variant
+                </span>
+                <span className="font-semibold">{effortLoading ? '…' : selectedEffort}</span>
+                {effortSpec && (
+                  <ChevronDownIcon
+                    className={`w-3 h-3 transition-transform ${isEffortDropdownOpen ? 'rotate-180' : ''}`}
+                  />
+                )}
               </button>
 
               {isEffortDropdownOpen && effortSpec && (
                 <div
                   className="absolute bottom-full right-0 mb-2 w-64 overflow-hidden z-50"
                   style={{
-                    backgroundColor: "var(--bg-surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--r-md)",
-                    boxShadow: "var(--shadow-md)",
+                    backgroundColor: 'var(--bg-surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--r-md)',
+                    boxShadow: 'var(--shadow-md)',
                   }}
                 >
-                  <div className="px-3 py-2" style={{ borderBottom: "1px solid var(--border)" }}>
-                    <div className="text-[11px] uppercase tracking-wide" style={{ color: "var(--text-4)" }}>Seleccionar variante</div>
-                    <div className="text-xs mt-0.5" style={{ color: "var(--text-3)" }}>Opciones de modelo por request</div>
+                  <div className="px-3 py-2" style={{ borderBottom: '1px solid var(--border)' }}>
+                    <div
+                      className="text-[11px] uppercase tracking-wide"
+                      style={{ color: 'var(--text-4)' }}
+                    >
+                      Seleccionar variante
+                    </div>
+                    <div className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
+                      Opciones de modelo por request
+                    </div>
                   </div>
-                  <div className="p-2" style={{ borderBottom: "1px solid var(--border)" }}>
+                  <div className="p-2" style={{ borderBottom: '1px solid var(--border)' }}>
                     <input
                       type="text"
                       value={effortSearch}
@@ -655,15 +813,15 @@ export function ChatInputBar(props: ChatInputBarProps) {
                       placeholder="Buscar variante…"
                       className="w-full rounded-lg px-3 py-1.5 outline-none text-sm transition-colors focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                       style={{
-                        backgroundColor: "var(--bg-input)",
-                        color: "var(--text-1)",
-                        border: "1px solid var(--border)",
+                        backgroundColor: 'var(--bg-input)',
+                        color: 'var(--text-1)',
+                        border: '1px solid var(--border)',
                       }}
                     />
                   </div>
                   <div className="max-h-64 overflow-y-auto py-1">
                     {/* effort options would go here — kept minimal since hidden */}
-                    <div className="p-4 text-sm text-center" style={{ color: "var(--text-3)" }}>
+                    <div className="p-4 text-sm text-center" style={{ color: 'var(--text-3)' }}>
                       Variante: {selectedEffort}
                     </div>
                   </div>
@@ -683,17 +841,19 @@ export function ChatInputBar(props: ChatInputBarProps) {
               style={{
                 width: 38,
                 height: 38,
-                backgroundColor: "var(--m-rose)",
-                color: "#fff",
+                backgroundColor: 'var(--m-rose)',
+                color: '#fff',
               }}
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="6" y="6" width="12" height="12" rx="1" />
+              </svg>
             </button>
           ) : (
             <button
               type="submit"
               disabled={!canSend}
-              title={sendBlockedReason ?? "Enviar mensaje"}
+              title={sendBlockedReason ?? 'Enviar mensaje'}
               aria-label="Enviar mensaje"
               onClick={() => {
                 setSendPulsing(true);
@@ -703,13 +863,13 @@ export function ChatInputBar(props: ChatInputBarProps) {
               style={{
                 width: 38,
                 height: 38,
-                backgroundColor: canSend ? "var(--accent)" : "var(--bg-elevated)",
-                color: canSend ? "#fff" : "var(--text-3)",
-                boxShadow: canSend ? "0 2px 8px rgba(111,123,242,0.25)" : "none",
+                backgroundColor: canSend ? 'var(--accent)' : 'var(--bg-elevated)',
+                color: canSend ? '#fff' : 'var(--text-3)',
+                boxShadow: canSend ? '0 2px 8px rgba(111,123,242,0.25)' : 'none',
                 opacity: canSend ? 1 : 0.6,
               }}
             >
-              <ArrowRightIcon className={`w-4 h-4 ${sendPulsing ? "animate-send-pulse" : ""}`} />
+              <ArrowRightIcon className={`w-4 h-4 ${sendPulsing ? 'animate-send-pulse' : ''}`} />
             </button>
           )}
         </div>
@@ -729,7 +889,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
           const picked = Array.from(e.target.files ?? []);
           if (picked.length > 0) ingestFiles(picked);
           // Reset the input so picking the same file twice still triggers `change`.
-          e.target.value = "";
+          e.target.value = '';
         }}
       />
     </form>

@@ -4,9 +4,9 @@ import {
   GoogleProvider,
   OpenAICompatibleProvider,
   getModelsDevProvider,
-} from "@chat/providers";
-import type { ProviderPlugin } from "@chat/sdk";
-import { createCodexFetch } from "./codex-auth";
+} from '@chat/providers';
+import type { ProviderPlugin } from '@chat/sdk';
+import { createCodexFetch } from './codex-auth';
 
 const providers = new Map<string, ProviderPlugin>();
 
@@ -16,16 +16,21 @@ const providers = new Map<string, ProviderPlugin>();
 export class LruCache<K, V> {
   private map = new Map<K, V>();
   constructor(private max: number) {}
-  get(key: K): V | undefined { return this.map.get(key); }
+  get(key: K): V | undefined {
+    return this.map.get(key);
+  }
   set(key: K, value: V): void {
-    if (this.map.has(key)) { this.map.delete(key); }
-    else if (this.map.size >= this.max) {
+    if (this.map.has(key)) {
+      this.map.delete(key);
+    } else if (this.map.size >= this.max) {
       const oldest = this.map.keys().next().value;
       if (oldest !== undefined) this.map.delete(oldest);
     }
     this.map.set(key, value);
   }
-  get size(): number { return this.map.size; }
+  get size(): number {
+    return this.map.size;
+  }
 }
 
 const MAX_DYNAMIC_PROVIDERS = 128;
@@ -39,18 +44,18 @@ export function stableStringify(obj: Record<string, unknown>): string {
 
 /** Known OpenAI-compatible provider base URLs (fallback when Models.dev doesn't provide one) */
 const KNOWN_BASE_URLS: Record<string, string> = {
-  groq: "https://api.groq.com/openai/v1",
-  mistral: "https://api.mistral.ai/v1",
-  togetherai: "https://api.together.xyz/v1",
-  "fireworks-ai": "https://api.fireworks.ai/inference/v1",
-  deepseek: "https://api.deepseek.com/v1",
-  openrouter: "https://openrouter.ai/api/v1",
-  perplexity: "https://api.perplexity.ai",
-  cohere: "https://api.cohere.ai/compatibility/v1",
-  xai: "https://api.x.ai/v1",
-  minimax: "https://api.minimax.chat/v1",
-  "minimax-coding-plan": "https://api.minimax.chat/v1",
-  azure: "https://api.openai.azure.com",
+  groq: 'https://api.groq.com/openai/v1',
+  mistral: 'https://api.mistral.ai/v1',
+  togetherai: 'https://api.together.xyz/v1',
+  'fireworks-ai': 'https://api.fireworks.ai/inference/v1',
+  deepseek: 'https://api.deepseek.com/v1',
+  openrouter: 'https://openrouter.ai/api/v1',
+  perplexity: 'https://api.perplexity.ai',
+  cohere: 'https://api.cohere.ai/compatibility/v1',
+  xai: 'https://api.x.ai/v1',
+  minimax: 'https://api.minimax.chat/v1',
+  'minimax-coding-plan': 'https://api.minimax.chat/v1',
+  azure: 'https://api.openai.azure.com',
 };
 
 /** Maps Models.dev npm packages to provider adapter factory */
@@ -61,20 +66,20 @@ function createProviderByNpm(
   options?: Record<string, unknown>
 ): ProviderPlugin | undefined {
   // Anthropic SDK providers
-  if (npm.includes("@ai-sdk/anthropic")) {
+  if (npm.includes('@ai-sdk/anthropic')) {
     return new AnthropicProvider({ id, name: id, baseURL });
   }
 
   // OpenAI SDK providers
-  if (npm.includes("@ai-sdk/openai") && !npm.includes("compatible")) {
-    const isCodex = options && options.authType === "codex";
+  if (npm.includes('@ai-sdk/openai') && !npm.includes('compatible')) {
+    const isCodex = options && options.authType === 'codex';
     return new OpenAIProvider({
       id,
       name: id,
       baseURL,
       headers: {
         ...(options?.headers as Record<string, string> | undefined),
-        ...(isCodex ? { originator: "roundtable" } : {}),
+        ...(isCodex ? { originator: 'roundtable' } : {}),
       },
       useResponsesApi: isCodex,
       // Codex (ChatGPT Plus/Pro) is reached through the ChatGPT backend's
@@ -94,7 +99,7 @@ function createProviderByNpm(
   }
 
   // Google SDK providers
-  if (npm.includes("@ai-sdk/google")) {
+  if (npm.includes('@ai-sdk/google')) {
     return new GoogleProvider({ id, name: id, baseURL });
   }
 
@@ -102,17 +107,22 @@ function createProviderByNpm(
   return new OpenAICompatibleProvider({
     id,
     name: id,
-    baseURL: baseURL ?? "https://api.openai.com/v1",
-    apiEndpoint: typeof options?.endpoint === "string" ? options.endpoint : undefined,
+    baseURL: baseURL ?? 'https://api.openai.com/v1',
+    apiEndpoint: typeof options?.endpoint === 'string' ? options.endpoint : undefined,
     headers:
-      typeof options?.headers === "object" && options.headers !== null && !Array.isArray(options.headers)
+      typeof options?.headers === 'object' &&
+      options.headers !== null &&
+      !Array.isArray(options.headers)
         ? (options.headers as Record<string, string>)
         : undefined,
     capabilities: [],
   });
 }
 
-export function getProvider(id: string, options?: Record<string, unknown>): ProviderPlugin | undefined {
+export function getProvider(
+  id: string,
+  options?: Record<string, unknown>
+): ProviderPlugin | undefined {
   // 1. Check direct registration (built-in providers without options)
   const direct = providers.get(id);
   if (direct && !options) return direct;
@@ -124,11 +134,12 @@ export function getProvider(id: string, options?: Record<string, unknown>): Prov
 
   // 3. Look up provider in Models.dev for npm package and API URL
   const modelsDevInfo = getModelsDevProvider(id);
-  const npm = modelsDevInfo?.npm ?? "@ai-sdk/openai-compatible";
-  const baseURL = (options?.baseURL as string)
-    ?? modelsDevInfo?.api
-    ?? KNOWN_BASE_URLS[id]
-    ?? "https://api.openai.com/v1";
+  const npm = modelsDevInfo?.npm ?? '@ai-sdk/openai-compatible';
+  const baseURL =
+    (options?.baseURL as string) ??
+    modelsDevInfo?.api ??
+    KNOWN_BASE_URLS[id] ??
+    'https://api.openai.com/v1';
 
   // 4. Create provider based on npm package
   const provider = createProviderByNpm(id, npm, baseURL, options);

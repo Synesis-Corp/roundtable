@@ -7,14 +7,14 @@ import type {
   ToolSet,
   StructuredResponse,
   Modality,
-} from "@chat/sdk";
-import type { ZodType } from "zod";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { streamText, generateText, generateObject } from "ai";
-import { getModel } from "@chat/router";
-import { convertMessages, throwIfErrorPart } from "./utils";
-import { buildProviderOptions } from "./effort";
-import { MAX_TOOL_STEPS } from "./constants";
+} from '@chat/sdk';
+import type { ZodType } from 'zod';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { streamText, generateText, generateObject } from 'ai';
+import { getModel } from '@chat/router';
+import { convertMessages, throwIfErrorPart } from './utils';
+import { buildProviderOptions } from './effort';
+import { MAX_TOOL_STEPS } from './constants';
 
 /**
  * The @ai-sdk/openai-compatible transport cannot carry `file` content parts: it
@@ -27,7 +27,7 @@ import { MAX_TOOL_STEPS } from "./constants";
  * Regression: uploading a PDF to a Kimi/Minimax-style model crashed the turn.
  */
 export function transportModalities(modalities: Modality[]): Modality[] {
-  return modalities.filter((m) => m !== "pdf" && m !== "file");
+  return modalities.filter((m) => m !== 'pdf' && m !== 'file');
 }
 
 export interface OpenAICompatibleConfig {
@@ -61,31 +61,32 @@ export class OpenAICompatibleProvider implements ProviderPlugin {
   }
 
   private getClient(apiKey: string) {
-    const customFetch = this.apiEndpoint || this.headers
-      ? async (input: string | URL | Request, init?: RequestInit) => {
-          const url = input.toString();
-          let modifiedUrl = url;
-          let modifiedInit = init;
+    const customFetch =
+      this.apiEndpoint || this.headers
+        ? async (input: string | URL | Request, init?: RequestInit) => {
+            const url = input.toString();
+            let modifiedUrl = url;
+            let modifiedInit = init;
 
-          // Replace standard endpoint with custom endpoint
-          if (this.apiEndpoint) {
-            modifiedUrl = url.replace("/chat/completions", this.apiEndpoint);
+            // Replace standard endpoint with custom endpoint
+            if (this.apiEndpoint) {
+              modifiedUrl = url.replace('/chat/completions', this.apiEndpoint);
+            }
+
+            // Merge custom headers
+            if (this.headers) {
+              modifiedInit = {
+                ...init,
+                headers: {
+                  ...(init?.headers ?? {}),
+                  ...this.headers,
+                },
+              };
+            }
+
+            return fetch(modifiedUrl, modifiedInit);
           }
-
-          // Merge custom headers
-          if (this.headers) {
-            modifiedInit = {
-              ...init,
-              headers: {
-                ...(init?.headers ?? {}),
-                ...this.headers,
-              },
-            };
-          }
-
-          return fetch(modifiedUrl, modifiedInit);
-        }
-      : undefined;
+        : undefined;
 
     return createOpenAICompatible({
       name: this.id,
@@ -103,11 +104,11 @@ export class OpenAICompatibleProvider implements ProviderPlugin {
   ): Promise<ChatResponse> {
     const client = this.getClient(apiKey);
     const start = Date.now();
-    const providerOptions = buildProviderOptions(this.id, "openai-compatible", request);
+    const providerOptions = buildProviderOptions(this.id, 'openai-compatible', request);
     // Resolve the target model's modalities so convertMessages can route PDFs
     // natively when supported, or inline extracted text otherwise.
     const targetModalities = transportModalities(
-      getModel(this.id, request.model)?.modalities ?? ["text"],
+      getModel(this.id, request.model)?.modalities ?? ['text']
     );
 
     try {
@@ -147,9 +148,9 @@ export class OpenAICompatibleProvider implements ProviderPlugin {
   ): Promise<StructuredResponse<T>> {
     const client = this.getClient(apiKey);
     const start = Date.now();
-    const providerOptions = buildProviderOptions(this.id, "openai-compatible", request);
+    const providerOptions = buildProviderOptions(this.id, 'openai-compatible', request);
     const targetModalities = transportModalities(
-      getModel(this.id, request.model)?.modalities ?? ["text"],
+      getModel(this.id, request.model)?.modalities ?? ['text']
     );
     try {
       const result = await generateObject({
@@ -182,11 +183,11 @@ export class OpenAICompatibleProvider implements ProviderPlugin {
     tools?: ToolSet
   ): AsyncIterable<ChatChunk> {
     const client = this.getClient(apiKey);
-    const providerOptions = buildProviderOptions(this.id, "openai-compatible", request);
+    const providerOptions = buildProviderOptions(this.id, 'openai-compatible', request);
     // Resolve the target model's modalities so convertMessages can route PDFs
     // natively when supported, or inline extracted text otherwise.
     const targetModalities = transportModalities(
-      getModel(this.id, request.model)?.modalities ?? ["text"],
+      getModel(this.id, request.model)?.modalities ?? ['text']
     );
 
     try {
@@ -207,33 +208,33 @@ export class OpenAICompatibleProvider implements ProviderPlugin {
       for await (const part of result.fullStream) {
         const p = part as unknown as { type: string; [k: string]: unknown };
         throwIfErrorPart(p);
-        if (p.type === "text-delta") {
+        if (p.type === 'text-delta') {
           yield {
-            token: p["textDelta"] as string,
+            token: p['textDelta'] as string,
             model: request.model,
             provider: this.id,
             isFinished: false,
           };
-        } else if (p.type === "reasoning") {
+        } else if (p.type === 'reasoning') {
           yield {
-            token: "",
-            reasoning: p["textDelta"] as string,
+            token: '',
+            reasoning: p['textDelta'] as string,
             model: request.model,
             provider: this.id,
             isFinished: false,
           };
-        } else if (p.type === "tool-call") {
+        } else if (p.type === 'tool-call') {
           yield {
-            token: "",
-            toolCall: { name: p["toolName"] as string, args: p["args"] },
+            token: '',
+            toolCall: { name: p['toolName'] as string, args: p['args'] },
             model: request.model,
             provider: this.id,
             isFinished: false,
           };
-        } else if (p.type === "tool-result") {
+        } else if (p.type === 'tool-result') {
           yield {
-            token: "",
-            toolResult: { name: p["toolName"] as string, result: p["result"] },
+            token: '',
+            toolResult: { name: p['toolName'] as string, result: p['result'] },
             model: request.model,
             provider: this.id,
             isFinished: false,
@@ -244,7 +245,7 @@ export class OpenAICompatibleProvider implements ProviderPlugin {
       const usage = await result.usage;
 
       yield {
-        token: "",
+        token: '',
         model: request.model,
         provider: this.id,
         isFinished: true,

@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import type { Conversation } from "@chat/sdk";
-import { storage } from "../lib/storage";
-import { apiGet, apiDelete, apiPatch, apiPost } from "../lib/api-client";
+import { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import type { Conversation } from '@chat/sdk';
+import { storage } from '../lib/storage';
+import { apiGet, apiDelete, apiPatch, apiPost } from '../lib/api-client';
 
 /**
  * Owns the sidebar conversation history and every mutation on it: fetch (on
@@ -24,15 +24,15 @@ export function useConversations(activeConversationId: string | null) {
   const [deleting, setDeleting] = useState(false);
   // Rename: holds the conversation being renamed (or null) + the draft title.
   const [pendingRename, setPendingRename] = useState<{ id: string; title: string } | null>(null);
-  const [renameValue, setRenameValue] = useState("");
+  const [renameValue, setRenameValue] = useState('');
   const [renaming, setRenaming] = useState(false);
   const [regeneratingTitle, setRegeneratingTitle] = useState(false);
 
   const fetchConversations = useCallback(() => {
-    const t = storage.get("token");
+    const t = storage.get('token');
     if (!t) return;
     setLoadingConversations(true);
-    apiGet<Conversation[]>("/conversations")
+    apiGet<Conversation[]>('/conversations')
       .then((data) => setConversations(Array.isArray(data) ? data : []))
       .catch(() => setConversations([]))
       .finally(() => setLoadingConversations(false));
@@ -46,8 +46,8 @@ export function useConversations(activeConversationId: string | null) {
   // sidebar can refresh without forcing a page navigation.
   useEffect(() => {
     const handler = () => fetchConversations();
-    window.addEventListener("conversation:updated", handler);
-    return () => window.removeEventListener("conversation:updated", handler);
+    window.addEventListener('conversation:updated', handler);
+    return () => window.removeEventListener('conversation:updated', handler);
   }, [fetchConversations]);
 
   const handleDeleteConfirmed = async () => {
@@ -57,7 +57,7 @@ export function useConversations(activeConversationId: string | null) {
       await apiDelete(`/conversations/${pendingDelete.id}`);
       setConversations((prev) => prev.filter((c) => c.id !== pendingDelete.id));
       // If the deleted conversation is open, leave it.
-      if (activeConversationId === pendingDelete.id) navigate("/");
+      if (activeConversationId === pendingDelete.id) navigate('/');
       setPendingDelete(null);
     } catch {
       // Keep the dialog open so the user can retry; deletion just didn't happen.

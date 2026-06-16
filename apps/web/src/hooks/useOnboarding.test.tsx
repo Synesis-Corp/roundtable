@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { IS_NEW_KEY } from "../lib/onboarding-helpers";
-import { useOnboarding } from "./useOnboarding";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { IS_NEW_KEY } from '../lib/onboarding-helpers';
+import { useOnboarding } from './useOnboarding';
 
 // ─── In-memory store ──────────────────────────────────────────────────────────
 
@@ -15,10 +15,14 @@ const { storeRef, storageStub } = vi.hoisted(() => {
   let currentStore: Store = new Map();
 
   const ref = {
-    reset: () => { currentStore = new Map(); },
+    reset: () => {
+      currentStore = new Map();
+    },
     set: (k: string, v: string) => currentStore.set(k, v),
     get: (k: string): string | null => currentStore.get(k) ?? null,
-    remove: (k: string) => { currentStore.delete(k); },
+    remove: (k: string) => {
+      currentStore.delete(k);
+    },
   };
 
   const stub = {
@@ -30,8 +34,8 @@ const { storeRef, storageStub } = vi.hoisted(() => {
   return { storeRef: ref, storageStub: stub };
 });
 
-vi.mock("../lib/storage", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../lib/storage")>();
+vi.mock('../lib/storage', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../lib/storage')>();
   return {
     ...original,
     storage: storageStub,
@@ -44,11 +48,11 @@ vi.mock("../lib/storage", async (importOriginal) => {
 
 // ─── Sample provider ──────────────────────────────────────────────────────────
 
-const oneProvider = [{ id: "p1", providerId: "openai", maskedKey: "sk-...1234", isActive: true }];
+const oneProvider = [{ id: 'p1', providerId: 'openai', maskedKey: 'sk-...1234', isActive: true }];
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
-describe("useOnboarding", () => {
+describe('useOnboarding', () => {
   beforeEach(() => {
     storeRef.reset();
   });
@@ -57,8 +61,8 @@ describe("useOnboarding", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns kind=new when IS_NEW_KEY is set, providers empty, not loading", () => {
-    storeRef.set(IS_NEW_KEY, "1");
+  it('returns kind=new when IS_NEW_KEY is set, providers empty, not loading', () => {
+    storeRef.set(IS_NEW_KEY, '1');
 
     const { result } = renderHook(() =>
       useOnboarding({
@@ -68,11 +72,11 @@ describe("useOnboarding", () => {
       })
     );
 
-    expect(result.current.onboarding.kind).toBe("new");
+    expect(result.current.onboarding.kind).toBe('new');
   });
 
-  it("clearIsNew() transitions kind to returning and removes the flag from storage", () => {
-    storeRef.set(IS_NEW_KEY, "1");
+  it('clearIsNew() transitions kind to returning and removes the flag from storage', () => {
+    storeRef.set(IS_NEW_KEY, '1');
 
     const { result } = renderHook(() =>
       useOnboarding({
@@ -82,18 +86,18 @@ describe("useOnboarding", () => {
       })
     );
 
-    expect(result.current.onboarding.kind).toBe("new");
+    expect(result.current.onboarding.kind).toBe('new');
 
     act(() => {
       result.current.clearIsNew();
     });
 
-    expect(result.current.onboarding.kind).toBe("returning");
+    expect(result.current.onboarding.kind).toBe('returning');
     expect(storeRef.get(IS_NEW_KEY)).toBeNull();
   });
 
-  it("returns kind=hidden when providers are non-empty (flag irrelevant)", () => {
-    storeRef.set(IS_NEW_KEY, "1");
+  it('returns kind=hidden when providers are non-empty (flag irrelevant)', () => {
+    storeRef.set(IS_NEW_KEY, '1');
 
     const { result } = renderHook(() =>
       useOnboarding({
@@ -103,11 +107,11 @@ describe("useOnboarding", () => {
       })
     );
 
-    expect(result.current.onboarding.kind).toBe("hidden");
+    expect(result.current.onboarding.kind).toBe('hidden');
   });
 
-  it("returns kind=loading when userProvidersLoading is true", () => {
-    storeRef.set(IS_NEW_KEY, "1");
+  it('returns kind=loading when userProvidersLoading is true', () => {
+    storeRef.set(IS_NEW_KEY, '1');
 
     const { result } = renderHook(() =>
       useOnboarding({
@@ -117,10 +121,10 @@ describe("useOnboarding", () => {
       })
     );
 
-    expect(result.current.onboarding.kind).toBe("loading");
+    expect(result.current.onboarding.kind).toBe('loading');
   });
 
-  it("returns kind=returning when flag is absent and providers empty", () => {
+  it('returns kind=returning when flag is absent and providers empty', () => {
     // storeRef was reset in beforeEach — IS_NEW_KEY is absent
 
     const { result } = renderHook(() =>
@@ -131,11 +135,11 @@ describe("useOnboarding", () => {
       })
     );
 
-    expect(result.current.onboarding.kind).toBe("returning");
+    expect(result.current.onboarding.kind).toBe('returning');
   });
 
-  it("clearIsNew() is idempotent — calling twice does not throw", () => {
-    storeRef.set(IS_NEW_KEY, "1");
+  it('clearIsNew() is idempotent — calling twice does not throw', () => {
+    storeRef.set(IS_NEW_KEY, '1');
 
     const { result } = renderHook(() =>
       useOnboarding({

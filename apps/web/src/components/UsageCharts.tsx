@@ -84,7 +84,9 @@ export function ChartCard({
   className?: string;
 }) {
   return (
-    <div className={`rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 ${className}`}>
+    <div
+      className={`rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-5 ${className}`}
+    >
       <h3 className="text-sm font-semibold text-[var(--text-1)] mb-4">{title}</h3>
       {children}
     </div>
@@ -130,8 +132,20 @@ export function TokensByProviderChart({ providerData }: { providerData: Provider
             iconSize={8}
             wrapperStyle={{ fontSize: 12, color: 'var(--text-2)', paddingTop: '16px' }}
           />
-          <Bar dataKey="inputTokens" name="Input" stackId="a" fill="#6366f1" radius={[0, 0, 0, 0]} />
-          <Bar dataKey="outputTokens" name="Output" stackId="a" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+          <Bar
+            dataKey="inputTokens"
+            name="Input"
+            stackId="a"
+            fill="#6366f1"
+            radius={[0, 0, 0, 0]}
+          />
+          <Bar
+            dataKey="outputTokens"
+            name="Output"
+            stackId="a"
+            fill="#8b5cf6"
+            radius={[4, 4, 0, 0]}
+          />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
