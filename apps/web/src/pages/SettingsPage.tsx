@@ -17,9 +17,10 @@ import UsagePage from './UsagePage';
 import { useTranslation, Trans } from 'react-i18next';
 
 type ProviderFilter = 'all' | 'connected' | 'popular';
-type SettingsTab = 'providers' | 'usage' | 'council' | 'memory';
+type SettingsTab = 'profile' | 'providers' | 'usage' | 'council' | 'memory';
 
 const TABS: { key: SettingsTab; labelKey: string }[] = [
+  { key: 'profile', labelKey: 'settings.tabs.profile' },
   { key: 'providers', labelKey: 'settings.tabs.providers' },
   { key: 'usage', labelKey: 'settings.tabs.usage' },
   { key: 'council', labelKey: 'settings.tabs.council' },
@@ -199,8 +200,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <ProfileForm />
-
         <h1
           style={{
             fontSize: 26,
@@ -214,7 +213,7 @@ export default function SettingsPage() {
 
         {/* Tabs — equal width for a consistent, balanced segmented control */}
         <div
-          className="mt-4 mb-6 grid grid-cols-4 gap-1 p-1 rounded-xl w-full max-w-xl"
+          className="mt-4 mb-6 grid grid-cols-5 gap-1 p-1 rounded-xl w-full max-w-xl"
           role="tablist"
           aria-label={t('settings.sectionsAria')}
           style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
@@ -278,6 +277,13 @@ export default function SettingsPage() {
                 </svg>
               </button>
             </div>
+          </div>
+        )}
+
+        {/* ── PROFILE TAB ── */}
+        {activeTab === 'profile' && (
+          <div role="tabpanel">
+            <ProfileForm />
           </div>
         )}
 

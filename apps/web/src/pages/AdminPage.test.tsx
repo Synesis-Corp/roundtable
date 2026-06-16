@@ -26,18 +26,80 @@ vi.mock('recharts', () => {
   };
 });
 
-const sampleOverview = { totalUsers: 42, activeToday: 7, totalTokens: 1500000, totalRequests: 340, registeredToday: 2 };
+const sampleOverview = {
+  totalUsers: 42,
+  activeToday: 7,
+  totalTokens: 1500000,
+  totalRequests: 340,
+  registeredToday: 2,
+};
 const sampleRegistrations = { period: '30d', days: [{ date: '2026-06-01', count: 3 }] };
 const sampleActiveUsers = { period: '30d', days: [{ date: '2026-06-01', count: 5 }] };
-const sampleUsage = { period: '30d', byProvider: [{ providerId: 'openai', totalTokens: 8000, totalRequests: 10 }], byModel: [{ providerId: 'openai', modelId: 'gpt-4o', totalTokens: 8000, totalRequests: 10 }] };
-const sampleModes = { period: '30d', modes: [{ mode: 'single', count: 200 }, { mode: 'council', count: 30 }] };
-const sampleLatency = { period: '30d', providers: [{ providerId: 'openai', avgLatencyMs: 250, requestCount: 10 }] };
-const sampleCosts = { period: '30d', totalCostUsd: 2.5, byProvider: [{ providerId: 'openai', totalCostUsd: 2.5, totalTokens: 8000, requestCount: 10 }], byModel: [{ providerId: 'openai', modelId: 'gpt-4o', inputTokens: 0, outputTokens: 0, totalTokens: 8000, requestCount: 10, estimatedCostUsd: 2.5 }] };
-const sampleAdoption = { totalUsers: 42, activeUsers: 30, usersWithProviders: 20, councilUsers: 5, activationRate: 71, providerConnectionRate: 48, councilAdoptionRate: 17 };
+const sampleUsage = {
+  period: '30d',
+  byProvider: [{ providerId: 'openai', totalTokens: 8000, totalRequests: 10 }],
+  byModel: [{ providerId: 'openai', modelId: 'gpt-4o', totalTokens: 8000, totalRequests: 10 }],
+};
+const sampleModes = {
+  period: '30d',
+  modes: [
+    { mode: 'single', count: 200 },
+    { mode: 'council', count: 30 },
+  ],
+};
+const sampleLatency = {
+  period: '30d',
+  providers: [{ providerId: 'openai', avgLatencyMs: 250, requestCount: 10 }],
+};
+const sampleCosts = {
+  period: '30d',
+  totalCostUsd: 2.5,
+  byProvider: [{ providerId: 'openai', totalCostUsd: 2.5, totalTokens: 8000, requestCount: 10 }],
+  byModel: [
+    {
+      providerId: 'openai',
+      modelId: 'gpt-4o',
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 8000,
+      requestCount: 10,
+      estimatedCostUsd: 2.5,
+    },
+  ],
+};
+const sampleAdoption = {
+  totalUsers: 42,
+  activeUsers: 30,
+  usersWithProviders: 20,
+  councilUsers: 5,
+  activationRate: 71,
+  providerConnectionRate: 48,
+  councilAdoptionRate: 17,
+};
 const sampleRetention = { activeLastWeek: 20, activeThisWeek: 25, retained: 15, retentionRate: 75 };
-const sampleTokenRatio = { period: '30d', providers: [{ providerId: 'openai', inputTokens: 5000, outputTokens: 3000, ratio: 1.67, requestCount: 10 }] };
-const sampleTimeToFirstChat = { averageHours: 2, medianHours: 1, totalUsersWithChat: 30, buckets: [{ label: '< 1 hour', max: 1, count: 20 }, { label: '< 24 hours', max: 24, count: 8 }, { label: '> 24 hours', max: Infinity, count: 2 }] };
-const sampleDemographics = { countries: [{ country: 'AR', count: 10 }, { country: 'US', count: 5 }], timezones: [{ timezone: 'America/Argentina/Buenos_Aires', count: 10 }] };
+const sampleTokenRatio = {
+  period: '30d',
+  providers: [
+    { providerId: 'openai', inputTokens: 5000, outputTokens: 3000, ratio: 1.67, requestCount: 10 },
+  ],
+};
+const sampleTimeToFirstChat = {
+  averageHours: 2,
+  medianHours: 1,
+  totalUsersWithChat: 30,
+  buckets: [
+    { label: '< 1 hour', max: 1, count: 20 },
+    { label: '< 24 hours', max: 24, count: 8 },
+    { label: '> 24 hours', max: Infinity, count: 2 },
+  ],
+};
+const sampleDemographics = {
+  countries: [
+    { country: 'AR', count: 10 },
+    { country: 'US', count: 5 },
+  ],
+  timezones: [{ timezone: 'America/Argentina/Buenos_Aires', count: 10 }],
+};
 
 function mockAllSuccess() {
   mockApiGet.mockImplementation((url: string) => {
@@ -89,12 +151,21 @@ describe('AdminPage', () => {
   it('shows error state on failure', async () => {
     mockApiGet.mockRejectedValue(new Error('Failed'));
     render(<AdminPage />);
-    await waitFor(() => expect(screen.getByText('Failed to load admin metrics')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('Failed to load admin metrics')).toBeInTheDocument()
+    );
   });
 
   it('shows empty state when totalUsers is 0', async () => {
     mockApiGet.mockImplementation((url: string) => {
-      if (url.includes('overview')) return Promise.resolve({ totalUsers: 0, activeToday: 0, totalTokens: 0, totalRequests: 0, registeredToday: 0 });
+      if (url.includes('overview'))
+        return Promise.resolve({
+          totalUsers: 0,
+          activeToday: 0,
+          totalTokens: 0,
+          totalRequests: 0,
+          registeredToday: 0,
+        });
       return Promise.resolve(sampleRegistrations);
     });
     render(<AdminPage />);

@@ -279,7 +279,8 @@
     "title": "Ajustes",
     "sectionsAria": "Secciones de ajustes",
     "tabs": {
-      "providers": "Proveedores",
+      "profile": "Perfil",
+      "providers": "Providers",
       "usage": "Uso",
       "council": "Consejo",
       "memory": "Memoria"
@@ -651,10 +652,10 @@
     "subtitle": "Personalizá tu experiencia",
     "displayName": "Nombre Visible",
     "displayNamePlaceholder": "¿Cómo querés que te llamemos?",
+    "displayNameHelp": "Este nombre aparecerá en tu perfil y en el chat.",
     "country": "País",
-    "countryPlaceholder": "ej. AR, US, ES",
     "timezone": "Zona Horaria",
-    "timezonePlaceholder": "ej. America/Argentina/Buenos_Aires",
+    "notDetected": "No detectado",
     "save": "Guardar",
     "saving": "Guardando…",
     "saved": "¡Guardado!"

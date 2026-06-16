@@ -602,8 +602,8 @@ function AdminLoading() {
   return (
     <div className="p-6 max-w-7xl mx-auto" role="status" aria-live="polite">
       <div className="animate-pulse space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
               className="h-24 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border)]"
@@ -705,40 +705,52 @@ export default function AdminPage() {
 
       <AdminKPIs overview={overview} adoption={adoption} />
 
-      {registrations && activeUsers && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <AdminRegistrationsChart data={registrations.days} />
-          <AdminActiveUsersChart data={activeUsers.days} />
-        </div>
-      )}
+      <div className="space-y-6">
+        {registrations && activeUsers && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AdminRegistrationsChart data={registrations.days} />
+            <AdminActiveUsersChart data={activeUsers.days} />
+          </div>
+        )}
 
-      {usage && modes && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <AdminTokensChart data={usage} />
-          <AdminModesChart data={modes.modes} />
-        </div>
-      )}
+        {usage && modes && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AdminTokensChart data={usage} />
+            <AdminModesChart data={modes.modes} />
+          </div>
+        )}
 
-      {latency && tokenRatio && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <AdminLatencyChart data={latency} />
-          <AdminTokenRatioChart data={tokenRatio} />
-        </div>
-      )}
+        {latency && tokenRatio && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AdminLatencyChart data={latency} />
+            <AdminTokenRatioChart data={tokenRatio} />
+          </div>
+        )}
 
-      {costs && <AdminCostChart data={costs} />}
+        {costs && retention && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AdminCostChart data={costs} />
+            <AdminRetentionSection data={retention} />
+          </div>
+        )}
 
-      {retention && timeToFirstChat && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <AdminRetentionSection data={retention} />
-          <AdminTimeToFirstChatSection data={timeToFirstChat} />
-        </div>
-      )}
+        {timeToFirstChat && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AdminTimeToFirstChatSection data={timeToFirstChat} />
+            {demographics && <AdminDemographicsSection data={demographics} />}
+          </div>
+        )}
 
-      {demographics && <AdminDemographicsSection data={demographics} />}
+        {timeToFirstChat && !demographics && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <AdminTimeToFirstChatSection data={timeToFirstChat} />
+            <div />
+          </div>
+        )}
 
-      {usage && <AdminUsageTable usage={usage} />}
-      {costs && <AdminCostTable costs={costs} />}
+        {usage && <AdminUsageTable usage={usage} />}
+        {costs && <AdminCostTable costs={costs} />}
+      </div>
     </div>
   );
 }

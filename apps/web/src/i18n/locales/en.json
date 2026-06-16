@@ -281,6 +281,7 @@
     "title": "Settings",
     "sectionsAria": "Settings sections",
     "tabs": {
+      "profile": "Profile",
       "providers": "Providers",
       "usage": "Usage",
       "council": "Council",
@@ -653,10 +654,10 @@
     "subtitle": "Personalize your experience",
     "displayName": "Display Name",
     "displayNamePlaceholder": "How should we call you?",
+    "displayNameHelp": "This name will appear in your profile and chat.",
     "country": "Country",
-    "countryPlaceholder": "e.g. AR, US, ES",
     "timezone": "Timezone",
-    "timezonePlaceholder": "e.g. America/Argentina/Buenos_Aires",
+    "notDetected": "Not detected",
     "save": "Save",
     "saving": "Saving…",
     "saved": "Saved!"
