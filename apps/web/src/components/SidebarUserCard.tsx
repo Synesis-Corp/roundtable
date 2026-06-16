@@ -1,23 +1,26 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from './LanguageSwitcher';
 import { useAdmin } from '../hooks/useAdmin';
 
 interface SidebarUserCardProps {
   userName: string;
+  displayName: string | null;
   onCloseMobile: () => void;
   onLogout: () => void;
 }
 
-/** Sidebar footer card: avatar, username, conversation count, logout. */
-export function SidebarUserCard({ userName, onCloseMobile, onLogout }: SidebarUserCardProps) {
+/** Sidebar footer card: avatar displayed with displayName, fallback to userName. */
+export function SidebarUserCard({
+  userName,
+  displayName,
+  onCloseMobile,
+  onLogout,
+}: SidebarUserCardProps) {
   const { t } = useTranslation();
   const { isAdmin } = useAdmin();
+  const name = displayName || userName || t('shell.userFallback');
   return (
     <div className="space-y-2">
-      <div className="flex justify-end px-1">
-        <LanguageSwitcher />
-      </div>
       {isAdmin && (
         <Link
           to="/admin"
@@ -91,14 +94,14 @@ export function SidebarUserCard({ userName, onCloseMobile, onLogout }: SidebarUs
             background: 'linear-gradient(150deg, #5b91d6, #7c6cf0 70%)',
           }}
         >
-          {userName ? userName[0].toUpperCase() : 'U'}
+          {name ? name[0].toUpperCase() : 'U'}
         </div>
         <div className="min-w-0 flex-1">
           <div
             className="truncate"
             style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)' }}
           >
-            {userName || t('shell.userFallback')}
+            {name}
           </div>
         </div>
         {/* Logout icon button */}

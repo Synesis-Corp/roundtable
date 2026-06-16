@@ -290,6 +290,8 @@
     "connectedCount_other": "{{count}} conectados",
     "ofTotalCouncil": "de {{total}} · participan en el Consejo",
     "searchProviders": "Buscar proveedores...",
+    "noProvidersConnected": "No hay proveedores conectados. Conectá en Configuración.",
+    "noModelsMatchSearch": "Ningún modelo coincide con tu búsqueda.",
     "filter": { "all": "Todos", "connected": "Conectados", "popular": "Populares" },
     "empty": {
       "title": "Sin proveedores conectados",
@@ -658,6 +660,8 @@
     "notDetected": "No detectado",
     "language": "Idioma",
     "languageHelp": "Elegí tu idioma preferido.",
+    "langEN": "English",
+    "langES": "Español",
     "sessions": "Sesiones Activas",
     "sessionsHelp": "Dispositivos donde tu cuenta está activa.",
     "noSessions": "No hay sesiones activas.",

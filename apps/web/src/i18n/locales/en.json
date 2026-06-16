@@ -292,6 +292,8 @@
     "connectedCount_other": "{{count}} connected",
     "ofTotalCouncil": "of {{total}} · take part in the Council",
     "searchProviders": "Search providers...",
+    "noProvidersConnected": "No connected providers. Connect in Settings.",
+    "noModelsMatchSearch": "No models match your search.",
     "filter": { "all": "All", "connected": "Connected", "popular": "Popular" },
     "empty": {
       "title": "No providers connected",
@@ -660,6 +662,8 @@
     "notDetected": "Not detected",
     "language": "Language",
     "languageHelp": "Choose your preferred language.",
+    "langEN": "English",
+    "langES": "Español",
     "sessions": "Active Sessions",
     "sessionsHelp": "Devices that are currently signed in to your account.",
     "noSessions": "No active sessions found.",

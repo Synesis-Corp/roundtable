@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StreamingContext } from '../lib/streaming-context';
 import { NEW_CHAT_EVENT } from '../lib/layout-helpers';
 import { useAuthSession } from '../hooks/useAuthSession';
+import { useProfile } from '../hooks/useProfile';
 import { useConversations } from '../hooks/useConversations';
 import { useSidebarUi } from '../hooks/useSidebarUi';
 import { useStreamingGuard } from '../hooks/useStreamingGuard';
@@ -21,6 +22,7 @@ export default function Layout() {
   const { t } = useTranslation();
 
   const { token, userName, handleLogout } = useAuthSession();
+  const { profile } = useProfile();
   const { streaming, setStreaming, confirmLeaveIfStreaming } = useStreamingGuard();
   const {
     mobileOpen,
@@ -162,6 +164,7 @@ export default function Layout() {
           {token ? (
             <SidebarUserCard
               userName={userName}
+              displayName={profile?.displayName ?? null}
               onCloseMobile={() => setMobileOpen(false)}
               onLogout={handleLogout}
             />

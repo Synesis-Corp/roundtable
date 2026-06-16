@@ -240,8 +240,8 @@ export function ProfileForm() {
         <div className="mt-4 flex gap-2">
           {(
             [
-              { key: 'en', label: 'English' },
-              { key: 'es', label: 'Español' },
+              { key: 'en', label: t('profile.langEN') },
+              { key: 'es', label: t('profile.langES') },
             ] as const
           ).map(({ key, label }) => (
             <button

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useModels } from '../hooks/useModels';
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function ProviderSelector({ selected, onSelect }: Props) {
+  const { t } = useTranslation();
   const { models, loading } = useModels();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -81,8 +83,8 @@ export default function ProviderSelector({ selected, onSelect }: Props) {
             {!loading && filteredModels.length === 0 && (
               <div className="p-4 text-sm text-gray-400 text-center">
                 {models.length === 0
-                  ? 'No connected providers. Connect in Settings.'
-                  : 'No models match your search.'}
+                  ? t('settings.noProvidersConnected')
+                  : t('settings.noModelsMatchSearch')}
               </div>
             )}
 
