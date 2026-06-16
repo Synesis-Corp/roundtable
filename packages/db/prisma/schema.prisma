@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String           @id @default(uuid())
+  email          String           @unique
+  passwordHash   String?          // null for OAuth-only accounts (e.g. Google, GitHub)
+  googleId       String?          @unique // Google account subject (sub claim)
+  githubId       String?          @unique // GitHub account id (numeric, stored as decimal string for SQLite compat — Postgres keeps it as text)
+  name           String?          // display name from the OAuth profile
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  conversations  Conversation[]
+  providers      ProviderConfig[]
+  councilConfig  CouncilConfig?
+  refreshTokens  RefreshToken[]
+  activeModels   ActiveModelsConfig[]
+  usageEvents    UsageEvent[]
+  memories       Memory[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique // sha256 of the opaque token — never store the raw value
+  expiresAt DateTime
+  revokedAt DateTime? // set on rotation or logout
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ProviderConfig {
+  id             String   @id @default(uuid())
+  userId         String
+  providerId     String
+  encryptedApiKey String
+  maskedKey       String
+  isActive       Boolean  @default(true)
+  options        String?  // JSON string with provider options (baseURL, headers, endpoint, etc.)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerId])
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  userId    String
+  title     String
+  modelUsed String?
+  deletedAt DateTime? // soft delete — null = active, set = hidden from the user
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId, deletedAt])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  role           String
+  content        String
+  attachments    Json?
+  reasoning      String?
+  toolCalls      Json?
+  modality       String       @default("text")
+  providerId     String?
+  modelId        String?
+  inputTokens    Int?
+  outputTokens   Int?
+  tokensUsed     Int?
+  latencyMs      Int?
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  councilTurn    CouncilTurn?
+}
+
+model CapabilityEntry {
+  id            String   @id @default(uuid())
+  modelId       String
+  providerId    String
+  modalities    String[]
+  features      String[]
+  contextWindow Int?
+  pricing       Json?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([modelId, providerId])
+}
+
+// Council (Consejo) deliberation persistence
+model CouncilTurn {
+  id             String         @id @default(uuid())
+  messageId      String         @unique
+  conversationId String
+  winnerModelId  String
+  tallyFor       Int
+  tallyTotal     Int
+  consensus      Boolean
+  answer         String
+  confidence     String?        // aggregated confidence: 'high' | 'medium' | 'low'
+  searchSources  Json?          // shared web_search results across the council
+  deliberationMs Int?           // total wall time of the deliberation
+  createdAt      DateTime       @default(now())
+
+  voices         CouncilVoice[]
+  message        Message        @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+model CouncilVoice {
+  id              String      @id @default(uuid())
+  turnId          String
+  modelId         String
+  provider        String
+  displayName     String
+  approachLabel   String
+  angle           String?     // assigned perspective for Round 1 (e.g. 'pragmatic', 'robust')
+  vote            String      // 'for' | 'changed' | 'against'
+  proposalText    String?     // Round 1: full proposal markdown
+  sources         Json?       // Round 1: cited web_search sources
+  debateText      String?     // Round 2: comparative evaluation of all proposals
+  voteReason      String?     // Round 3: why this model voted as it did
+  voteImprovement String?     // Round 3: improvement this model wants in the final answer
+  confidence      String?     // Round 3: 'high' | 'medium' | 'low'
+  risk            String?     // Round 3: main risk of the chosen base
+  reasoning       String?     // thinking trace captured during proposal generation
+  createdAt       DateTime    @default(now())
+
+  turn            CouncilTurn @relation(fields: [turnId], references: [id], onDelete: Cascade)
+}
+
+model CouncilConfig {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  modelIds  String[] // ["openai:gpt-4o", "anthropic:claude-3-sonnet"]
+  mode      String   @default("auto") // "auto" | "manual"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Per-user, per-provider allowlist of which models are shown across the UI
+// (mejora #1). No row for a provider = ALL its models are shown (default).
+// A row with modelIds = only those model ids are shown for that provider.
+model ActiveModelsConfig {
+  id         String   @id @default(uuid())
+  userId     String
+  providerId String
+  modelIds   String[] // model ids shown for this provider (subset of its available models)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, providerId])
+}
+
+model UsageEvent {
+  id           String   @id @default(uuid())
+  userId       String
+  providerId   String
+  modelId      String
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  latencyMs    Int?
+  mode         String   @default("single") // "single" | "council"
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Memory {
+  id                   String   @id @default(uuid())
+  userId               String
+  content              String
+  sourceType           String?
+  sourceConversationId String?
+  tags                 String[]
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+}

@@ -1,0 +1,21 @@
+Roundtable
+Copyright (C) 2026 Synesis Corp.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. See the LICENSE file for the full text.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+---
+
+"Roundtable" and "r8e" are trademarks of Synesis Corp. The AGPL-3.0 license
+applies to the source code and does NOT grant any rights to use these names or
+logos. See TRADEMARKS.md for details.
+
+This product bundles third-party open-source software, each under its own
+license. See the dependency manifests (package.json and pnpm-lock.yaml) for the
+authoritative list of dependencies and their licenses.

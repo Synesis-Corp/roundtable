@@ -1,0 +1,71 @@
+#!/bin/sh
+# harness pre-push — enforcement configurable, agnostico al flujo del proyecto.
+#
+# === CONFIG (adaptada a este proyecto) ===
+PROTECTED_BRANCH="main"     # rama de produccion a proteger
+BLOCK_MODE="off"            # "always"     -> bloquea push directo SIEMPRE
+                            # "if-develop" -> bloquea solo si existe rama develop
+                            # "off"        -> no bloquea push directo (solo cuida force push)
+# ================================================================================
+#
+# Overrides de emergencia (dejan rastro en el comando, documentalos donde lleves trazas):
+#   ALLOW_MAIN=1  git push ...       -> permite push directo a la rama protegida
+#   ALLOW_FORCE=1 git push --force   -> permite force push a ramas criticas
+#
+# Corre igual para cualquier agente AI y para humanos.
+
+PROTECTED="${PROTECTED_BRANCH:-main}"
+
+# La regla de bloqueo de push directo esta activa?
+block_active=0
+case "$BLOCK_MODE" in
+  always) block_active=1 ;;
+  if-develop)
+    if git rev-parse --verify --quiet refs/heads/develop >/dev/null 2>&1 \
+       || git rev-parse --verify --quiet refs/remotes/origin/develop >/dev/null 2>&1; then
+      block_active=1
+    fi
+    ;;
+  off) block_active=0 ;;
+esac
+
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -z "$remote_ref" ] && continue   # borrado de rama: ignorar
+  branch=$(printf '%s' "$remote_ref" | sed 's#^refs/heads/##')
+
+  # --- Bloqueo: push directo a la rama protegida ---
+  if [ "$branch" = "$PROTECTED" ] && [ "$block_active" = "1" ]; then
+    if [ "$ALLOW_MAIN" = "1" ]; then
+      echo "[harness] WARN: push a '$PROTECTED' permitido por override (ALLOW_MAIN=1)" >&2
+    else
+      echo "[harness] BLOQUEADO: push directo a '$PROTECTED'." >&2
+      echo "[harness]   Flujo correcto: rama -> PR -> $PROTECTED" >&2
+      echo "[harness]   Emergencia real:  ALLOW_MAIN=1 git push ..." >&2
+      status=1
+    fi
+  fi
+
+  # --- Bloqueo: force / non-fast-forward en ramas criticas ---
+  if [ "$remote_sha" != "0000000000000000000000000000000000000000" ] && [ -n "$remote_sha" ]; then
+    if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+      case "$branch" in
+        "$PROTECTED"|main|master)
+          if [ "$ALLOW_FORCE" = "1" ]; then
+            echo "[harness] WARN: force push a '$branch' permitido por override (ALLOW_FORCE=1)" >&2
+          else
+            echo "[harness] BLOQUEADO: force/non-fast-forward push a rama critica '$branch'." >&2
+            echo "[harness]   Reescribir historia rompe el historial compartido y el rollback." >&2
+            echo "[harness]   Rollback de emergencia:  ALLOW_FORCE=1 git push --force ..." >&2
+            status=1
+          fi
+          ;;
+        *)
+          echo "[harness] WARN: force push a '$branch'. Si es rollback de emergencia, documentalo." >&2
+          ;;
+      esac
+    fi
+  fi
+done
+
+exit $status

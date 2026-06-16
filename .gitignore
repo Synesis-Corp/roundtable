@@ -1,0 +1,19 @@
+node_modules
+dist
+*.log
+.env
+.env.local
+.DS_Store
+coverage
+*.tsbuildinfo
+playwright-report/
+.turbo/
+openapi.json
+
+# Dropped-in agent skills / tooling — not part of the app, do not track
+.cursor/
+.github/skills/
+.opencode/
+
+# Local DB backups (scripts/backup-db.sh)
+backups/

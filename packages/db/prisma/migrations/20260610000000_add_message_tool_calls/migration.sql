@@ -1,0 +1,11 @@
+-- AlterTable
+-- Persist the assistant's tool invocations (e.g. web_search) and their results,
+-- stored as a JSONB array of { name, args, result }. Previously Message had no
+-- column for tool calls, so the "Busqué en la web" chip and its sources were
+-- dropped the moment a new conversation reloaded after the stream finished
+-- (onFinish navigates to /c/:id which refetches from the DB). Nullable for
+-- backward compat: existing rows keep working with no tool calls.
+--
+-- Rollback:
+--   ALTER TABLE "Message" DROP COLUMN "toolCalls";
+ALTER TABLE "Message" ADD COLUMN     "toolCalls" JSONB;

@@ -1,0 +1,3 @@
+# Vendored sandbox runtime — fetched on build via `pnpm fetch:python-wasm`,
+# never committed (large binary; see openspec/DECISIONS.md → Seguridad).
+vendor/

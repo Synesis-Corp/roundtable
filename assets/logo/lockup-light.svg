@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="330" height="96" viewBox="0 0 330 96" fill="none" role="img" aria-label="Roundtable">
+  <title>Roundtable — horizontal lockup (light backgrounds)</title>
+  <g transform="translate(8,18) scale(0.5)">
+    <g stroke="rgba(111,123,242,0.45)" stroke-width="2.4">
+      <line x1="60" y1="24" x2="60" y2="60"></line>
+      <line x1="94.2" y1="48.9" x2="60" y2="60"></line>
+      <line x1="81.2" y1="89.1" x2="60" y2="60"></line>
+      <line x1="38.8" y1="89.1" x2="60" y2="60"></line>
+      <line x1="25.8" y1="48.9" x2="60" y2="60"></line>
+    </g>
+    <g fill="#6f7bf2">
+      <circle cx="60" cy="24" r="6.6"></circle>
+      <circle cx="94.2" cy="48.9" r="6.6"></circle>
+      <circle cx="81.2" cy="89.1" r="6.6"></circle>
+      <circle cx="38.8" cy="89.1" r="6.6"></circle>
+      <circle cx="25.8" cy="48.9" r="6.6"></circle>
+      <circle cx="60" cy="60" r="13.5"></circle>
+    </g>
+  </g>
+  <text x="86" y="51" font-family="Geist, system-ui, -apple-system, &#39;Segoe UI&#39;, sans-serif" font-size="36" font-weight="600" letter-spacing="-1.2" fill="#16181b">Roundtable</text>
+  <text x="87" y="72" font-family="Geist, system-ui, sans-serif" font-size="11" font-weight="500" letter-spacing="2.4" fill="#9a9ea6">AI COUNCIL</text>
+</svg>

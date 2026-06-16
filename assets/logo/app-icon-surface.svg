@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none" role="img" aria-label="Roundtable">
+  <title>Roundtable — app icon (surface, for in-UI use)</title>
+  <defs>
+    <radialGradient id="rtCore2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#aab2f9"></stop>
+      <stop offset="100%" stop-color="#6f7bf2"></stop>
+    </radialGradient>
+  </defs>
+  <rect x="0.5" y="0.5" width="511" height="511" rx="116" fill="#191b1e" stroke="rgba(255,255,255,0.09)"></rect>
+  <g transform="translate(106,106) scale(2.5)">
+    <g stroke="rgba(255,255,255,0.16)" stroke-width="2.4">
+      <line x1="60" y1="24" x2="60" y2="60"></line>
+      <line x1="94.2" y1="48.9" x2="60" y2="60"></line>
+      <line x1="81.2" y1="89.1" x2="60" y2="60"></line>
+      <line x1="38.8" y1="89.1" x2="60" y2="60"></line>
+      <line x1="25.8" y1="48.9" x2="60" y2="60"></line>
+    </g>
+    <circle cx="60" cy="24" r="6.6" fill="#5cb08b"></circle>
+    <circle cx="94.2" cy="48.9" r="6.6" fill="#5b91d6"></circle>
+    <circle cx="81.2" cy="89.1" r="6.6" fill="#9079ec"></circle>
+    <circle cx="38.8" cy="89.1" r="6.6" fill="#cf9a5e"></circle>
+    <circle cx="25.8" cy="48.9" r="6.6" fill="#d077a0"></circle>
+    <circle cx="60" cy="60" r="13.5" fill="url(#rtCore2)"></circle>
+    <circle cx="60" cy="60" r="13.5" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"></circle>
+  </g>
+</svg>

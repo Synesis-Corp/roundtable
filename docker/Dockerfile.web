@@ -1,0 +1,77 @@
+# ============================================================================
+# Dockerfile.web — Multi-stage build for the React frontend
+# ============================================================================
+# Stage 1: Build the Vite React app inside the full monorepo context.
+# Stage 2: Serve the static build with nginx:alpine.
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Stage 1: Builder
+# ----------------------------------------------------------------------------
+FROM node:20-slim AS builder
+
+# Install pnpm globally
+RUN npm install -g pnpm@9.0.0
+
+# Install OpenSSL and ca-certificates for Prisma and other native deps
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy workspace definition and lock files first for layer caching
+COPY pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
+COPY turbo.json ./
+
+# Copy all package manifests to leverage Docker layer caching
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY packages/crypto/package.json packages/crypto/
+COPY packages/db/package.json packages/db/
+COPY packages/providers/package.json packages/providers/
+COPY packages/router/package.json packages/router/
+COPY packages/sdk/package.json packages/sdk/
+COPY packages/tsconfig/package.json packages/tsconfig/
+
+# Install all dependencies (including devDeps needed for the Vite build)
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the source code
+COPY . .
+
+# Generate Prisma Client (needed if any workspace package depends on @chat/db)
+RUN cd packages/db && npx prisma generate
+
+# Build-time env vars for Vite (VITE_* prefix). Set via compose build args or
+# --build-arg. Without them the Google and GitHub buttons hide themselves
+# gracefully (degraded UI), so missing values never crash the build.
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+ARG VITE_GITHUB_ENABLED
+ENV VITE_GITHUB_ENABLED=${VITE_GITHUB_ENABLED}
+# Codex / ChatGPT Plus OAuth. Disabled on hosted instances (loopback callback
+# only works on the user's own machine). Set VITE_CODEX_ENABLED=false to hide.
+ARG VITE_CODEX_ENABLED
+ENV VITE_CODEX_ENABLED=${VITE_CODEX_ENABLED}
+
+# Build the web app. Turbo ensures workspace dependencies are built first.
+RUN pnpm turbo run build --filter @chat/web
+
+# ----------------------------------------------------------------------------
+# Stage 2: Production (nginx)
+# ----------------------------------------------------------------------------
+FROM nginx:alpine AS production
+
+# Remove the default nginx static assets
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy the built Vite output into nginx's web root
+COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
+
+# Copy custom nginx configuration
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+# The nginx:alpine image exposes port 80 by default, but we make it explicit.
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

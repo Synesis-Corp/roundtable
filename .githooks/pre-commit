@@ -1,0 +1,89 @@
+#!/bin/sh
+# harness pre-commit — enforcement agnostico a la herramienta
+#
+# Bloquea:
+#   - archivos .env reales (permite plantillas *.example / *.docker)
+#   - dumps / backups / comprimidos
+#   - secretos reales en el contenido (permite placeholders)
+# Avisa (no bloquea):
+#   - cambios de infraestructura -> recorda sincronizar docs
+#
+# Bypass intencional y documentado:  git commit --no-verify
+#
+# Corre igual para cualquier agente AI y para humanos.
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# --- Bloquear archivos .env reales ---
+env_offenders=""
+for f in $staged; do
+  base=$(basename "$f")
+  case "$base" in
+    *.example|*.docker|*.sample|*.template|*.example.local) : ;;          # plantillas: OK
+    .env|.env.*|*.env)        env_offenders="$env_offenders $f" ;;
+  esac
+done
+if [ -n "$env_offenders" ]; then
+  echo "[harness] BLOQUEADO: estas intentando commitear archivos .env reales:" >&2
+  for f in $env_offenders; do echo "[harness]   - $f" >&2; done
+  echo "[harness]   Las variables de entorno son secretas. Versiona solo .env.example / .env.template." >&2
+  echo "[harness]   Si es intencional:  git commit --no-verify" >&2
+  exit 1
+fi
+
+# --- Bloquear dumps / backups / comprimidos ---
+dump_offenders=""
+for f in $staged; do
+  case "$(basename "$f")" in
+    *.dump|*.sql.gz|*.backup|*.bak|*.tar.gz|*.tgz|*.zip) dump_offenders="$dump_offenders $f" ;;
+  esac
+done
+if [ -n "$dump_offenders" ]; then
+  echo "[harness] BLOQUEADO: dumps/backups/comprimidos no van al repo:" >&2
+  for f in $dump_offenders; do echo "[harness]   - $f" >&2; done
+  echo "[harness]   Si es intencional (fixture chico):  git commit --no-verify" >&2
+  exit 1
+fi
+
+# --- Bloquear secretos reales en el contenido (no solo nombres) ---
+# Permite placeholders: REPLACE_ME, CHANGE_ME, example, dummy, xxx, your-, <...>, ${...}
+#
+# Allowlist de falsos positivos (afinada 2026-06-12): la palabra "token" aparece
+# como SUBSTRING en vocabulario de conteo de tokens de LLM (inputTokens,
+# outputTokens, tokensUsed, maxTokens, tokenBudget…), como tipo (`token: string`),
+# como variable leída de storage (`storage.get("token")`), y en fixtures de test
+# (gho_test, e2e-test-*, sk-test-*). Nada de eso es un secreto real. Se excluyen
+# de forma específica: `gho_test` (NO `gho_`, que es prefijo de token real de
+# GitHub) y `sk-test` (clave de PRUEBA). Un secreto real con valor concreto (una
+# api key sk-live, un jwt secret real, un gho real distinto de gho_test, una db
+# url con password) sigue bloqueado. Override puntual: git commit --no-verify.
+secret_hits=""
+for f in $staged; do
+  case "$(basename "$f")" in
+    *.example|*.docker|*.sample|*.template|*.md|*.lock) continue ;;
+  esac
+  hit=$(git show ":$f" 2>/dev/null | grep -nEi \
+    '(sk-[a-z0-9]{16,}|(API_KEY|ACCESS_TOKEN|SECRET|DATABASE_URL|PASSWORD|PRIVATE_KEY|TOKEN)[a-z_]*[[:space:]]*[=:][[:space:]]*[^[:space:]"'"'"']+)' \
+    | grep -vEi 'REPLACE_ME|CHANGE_ME|example|dummy|placeholder|xxx|your-|<[a-z_]+>|\$\{|inputTokens|outputTokens|totalTokens|tokensUsed|maxTokens|tokenBudget|tokenCount|estimatedTokens|promptTokens|completionTokens|token[[:space:]]*[?:][[:space:]]*(string|number)|storage\.get|gho_test|e2e-test|sk-test' || true)
+  if [ -n "$hit" ]; then
+    secret_hits="$secret_hits\n  $f:\n$(printf '%s' "$hit" | sed 's/^/      /')"
+  fi
+done
+if [ -n "$secret_hits" ]; then
+  echo "[harness] BLOQUEADO: posible secreto real en el contenido:" >&2
+  printf '%b\n' "$secret_hits" >&2
+  echo "[harness]   Usa placeholders (REPLACE_ME, CHANGE_ME) o variables de entorno." >&2
+  echo "[harness]   Falso positivo:  git commit --no-verify" >&2
+  exit 1
+fi
+
+# --- Avisar ante cambios de infraestructura (no bloquea) ---
+infra=$(printf '%s\n' "$staged" | grep -Ei 'docker-compose|Dockerfile|\.github/workflows|nginx\.conf|terraform|\.tf$' || true)
+if [ -n "$infra" ]; then
+  echo "[harness] AVISO: cambio de infraestructura detectado:" >&2
+  printf '%s\n' "$infra" | sed 's/^/[harness]   - /' >&2
+  echo "[harness]   Recorda sincronizar README / docs / openspec." >&2
+fi
+
+exit 0

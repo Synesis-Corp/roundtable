@@ -1,0 +1,116 @@
+# ============================================================================
+# Dockerfile.api — Multi-stage build for the API backend
+# ============================================================================
+# The monorepo uses pnpm workspaces. We copy the ENTIRE repo, install deps,
+# build all packages, then copy only the compiled artifacts into the final
+# production image.
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Stage 1: Builder
+# ----------------------------------------------------------------------------
+FROM node:20-slim AS builder
+
+# Install pnpm globally (matches packageManager field in root package.json)
+RUN npm install -g pnpm@9.0.0
+
+# Install OpenSSL and other dependencies required by Prisma
+RUN apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy workspace definition files first for layer caching
+COPY pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
+COPY turbo.json ./
+
+# Copy all package manifests to leverage Docker layer caching
+# We copy these before the source so that npm install is only invalidated
+# when dependencies change, not on every source edit.
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY packages/crypto/package.json packages/crypto/
+COPY packages/db/package.json packages/db/
+COPY packages/providers/package.json packages/providers/
+COPY packages/router/package.json packages/router/
+COPY packages/sdk/package.json packages/sdk/
+COPY packages/tsconfig/package.json packages/tsconfig/
+
+# Install dependencies for the entire workspace
+# --frozen-lockfile ensures reproducible builds
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the source code
+COPY . .
+
+# Generate Prisma Client before building (required by @chat/db build)
+RUN cd packages/db && npx prisma generate
+
+# Build all workspace packages in dependency order (turbo handles the graph)
+RUN pnpm build
+
+# Fetch the CPython-WASI sandbox runtime (pinned URL + SHA-256 verified; aborts
+# on mismatch). Not committed — see apps/api/.gitignore + DECISIONS.md.
+RUN cd apps/api && pnpm fetch:python-wasm
+
+# ----------------------------------------------------------------------------
+# Stage 2: Production
+# ----------------------------------------------------------------------------
+FROM node:20-slim AS production
+
+# Install pnpm (needed for running prisma via npx in entrypoint)
+RUN npm install -g pnpm@9.0.0
+
+# Install OpenSSL, netcat (for entrypoint wait), and ca-certificates
+RUN apt-get update && apt-get install -y openssl netcat-openbsd ca-certificates && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy only the compiled artifacts and necessary runtime files
+# The api app and all workspace packages it depends on
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+# CPython-WASI sandbox runtime fetched in the builder stage.
+COPY --from=builder /app/apps/api/vendor ./apps/api/vendor
+
+COPY --from=builder /app/packages/crypto/dist ./packages/crypto/dist
+COPY --from=builder /app/packages/crypto/package.json ./packages/crypto/
+
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+COPY --from=builder /app/packages/db/package.json ./packages/db/
+COPY --from=builder /app/packages/db/prisma ./packages/db/prisma
+
+COPY --from=builder /app/packages/providers/dist ./packages/providers/dist
+COPY --from=builder /app/packages/providers/package.json ./packages/providers/
+
+COPY --from=builder /app/packages/router/dist ./packages/router/dist
+COPY --from=builder /app/packages/router/package.json ./packages/router/
+
+COPY --from=builder /app/packages/sdk/dist ./packages/sdk/dist
+COPY --from=builder /app/packages/sdk/package.json ./packages/sdk/
+
+COPY --from=builder /app/packages/tsconfig ./packages/tsconfig
+
+# Copy root workspace files so pnpm understands the workspace layout
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+
+# Reinstall ONLY production dependencies in the production image.
+# --prod installs only dependencies (not devDependencies) for all workspace
+# packages. The lockfile guarantees versions match the builder stage.
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy the entrypoint script and make it executable
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Prisma needs to be able to generate the client at runtime for migrate deploy.
+# Install prisma CLI globally using npm (avoids pnpm global bin dir issues).
+RUN npm install -g prisma@^5.14.0
+
+WORKDIR /app/apps/api
+
+EXPOSE 4000
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

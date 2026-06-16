@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" aria-label="Roundtable">
+  <title>Roundtable — symbol (ink, for light backgrounds, single color)</title>
+  <g stroke="rgba(20,21,24,0.22)" stroke-width="2.4">
+    <line x1="60" y1="24" x2="60" y2="60"></line>
+    <line x1="94.2" y1="48.9" x2="60" y2="60"></line>
+    <line x1="81.2" y1="89.1" x2="60" y2="60"></line>
+    <line x1="38.8" y1="89.1" x2="60" y2="60"></line>
+    <line x1="25.8" y1="48.9" x2="60" y2="60"></line>
+  </g>
+  <g fill="#16181b">
+    <circle cx="60" cy="24" r="6.6"></circle>
+    <circle cx="94.2" cy="48.9" r="6.6"></circle>
+    <circle cx="81.2" cy="89.1" r="6.6"></circle>
+    <circle cx="38.8" cy="89.1" r="6.6"></circle>
+    <circle cx="25.8" cy="48.9" r="6.6"></circle>
+    <circle cx="60" cy="60" r="13.5"></circle>
+  </g>
+</svg>

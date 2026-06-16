@@ -1,0 +1,118 @@
+import { storage } from "../lib/storage";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { apiPost } from "../lib/api-client";
+import GoogleSignInButton from "../components/GoogleSignInButton";
+import GitHubSignInButton from "../components/GitHubSignInButton";
+
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await apiPost<{ token?: string }>("/auth/login", { email, password });
+
+      if (data.token) {
+        storage.set("token", data.token);
+        navigate("/");
+      } else {
+        setError("No token received");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex-1 flex items-center justify-center px-4 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.14),transparent_30rem)]">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <img
+            src="/logo/app-icon-gradient.svg"
+            alt="Roundtable"
+            className="mx-auto mb-4 h-14 w-14 rounded-3xl shadow-2xl"
+          />
+          <h1 className="heading text-3xl">Welcome back</h1>
+          <p className="text-sm text-gray-500 mt-2">Sign in to continue to Roundtable</p>
+        </div>
+
+        {error && (
+          <div className="card-dark border-red-500/30 bg-red-900/5 mb-6">
+            <p className="text-red-400 text-sm">{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              className="input-dark w-full"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              className="input-dark w-full"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full text-base py-2.5"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="dot-pulse"><span /><span /><span /></span>
+                Signing in...
+              </span>
+            ) : (
+              "Sign in"
+            )}
+          </button>
+        </form>
+
+        <div className="my-6 flex items-center gap-3 text-xs text-gray-500">
+          <div className="h-px flex-1 bg-gray-700/60" />
+          <span>or</span>
+          <div className="h-px flex-1 bg-gray-700/60" />
+        </div>
+
+        <GoogleSignInButton onError={setError} />
+        <div className="mt-3">
+          <GitHubSignInButton onError={setError} />
+        </div>
+
+        <p className="mt-6 text-center text-sm text-gray-500">
+          Don't have an account?{" "}
+          <Link to="/register" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 font-medium">
+            Create account
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}

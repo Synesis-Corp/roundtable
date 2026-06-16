@@ -1,0 +1,128 @@
+services:
+  # --------------------------------------------------------------------------
+  # PostgreSQL — primary data store
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: roundtable-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      # Legacy default kept after the Roundtable rebrand so existing dev volumes
+      # keep working. Set POSTGRES_DB=roundtable for fresh installs if desired.
+      POSTGRES_DB: ${POSTGRES_DB:-chatia}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Bound to 127.0.0.1 ONLY: the DB must never be reachable from the public
+      # internet. nginx/api reach it over the compose network at postgres:5432.
+      # For admin access from the host, use an SSH tunnel to 127.0.0.1:5433.
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-chatia}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --------------------------------------------------------------------------
+  # API — Node.js backend
+  # --------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: roundtable-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      # Public origin of the app. CORS allowlist + OAuth redirect base + cookie
+      # scope. MUST be the real https domain in production (set in .env).
+      WEB_URL: ${WEB_URL:-http://localhost}
+      # DB URL assembled from env vars (with dev defaults). The compose network
+      # resolves "postgres" to the container; override in prod via secrets.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-chatia}?schema=public
+      # Google OAuth — public Client ID (visible in the browser OAuth flow).
+      # Not a secret, but OAuth is OPT-IN: unset by default so no broken
+      # "Sign in with Google" button ships. Set GOOGLE_CLIENT_ID in .env (with
+      # your own OAuth app whose redirect URIs include your domain) to enable.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      # GitHub OAuth — public Client ID (safe to ship in compose).
+      # The SECRET is NOT set here; pass it via .env (gitignored) or
+      # Docker secrets in prod. Without it the /auth/github route returns 503.
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+    ports:
+      # Bound to 127.0.0.1 ONLY. In production the web nginx proxies /api to
+      # api:4000 over the compose network, so the API never needs a public host
+      # port. Kept on localhost for debugging / SSH-tunnel access. 1455 is the
+      # Codex OAuth loopback callback (desktop flow; localhost-only by design).
+      - "127.0.0.1:4000:4000"
+      - "127.0.0.1:1455:1455"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+
+  # --------------------------------------------------------------------------
+  # Web — nginx serving the React SPA
+  # --------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+      args:
+        # OAuth is opt-in (see api GOOGLE_CLIENT_ID). Empty default → the Google
+        # button is not rendered. Set VITE_GOOGLE_CLIENT_ID in .env to enable.
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+        VITE_GITHUB_ENABLED: ${VITE_GITHUB_ENABLED:-true}
+        # Codex/ChatGPT Plus OAuth — opt-out for hosted (set false in .env).
+        VITE_CODEX_ENABLED: ${VITE_CODEX_ENABLED:-true}
+    container_name: roundtable-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      # Where the web container's nginx is published on the host. Default 80 for
+      # a standalone box. On a shared server behind a host nginx (TLS), set
+      # WEB_BIND=127.0.0.1:8081 in .env so it is reachable only via that proxy.
+      - "${WEB_BIND:-80}:80"
+
+  # --------------------------------------------------------------------------
+  # SearXNG — self-hosted metasearch engine (web search tool backend)
+  # Bound to localhost only; the API talks to it over the compose network.
+  # Adds zero cost (no API key, no signup) and zero vendor lock-in.
+  # --------------------------------------------------------------------------
+  searxng:
+    image: searxng/searxng:latest
+    container_name: roundtable-searxng
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8888:8080"
+    volumes:
+      # Custom settings enable JSON output (disabled by default for anti-
+      # scraping reasons). The web_search tool needs ?format=json.
+      - ./docker/searxng/settings.yml:/etc/searxng/settings.yml:ro
+      - searxng_data:/var/cache/searxng
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+# ----------------------------------------------------------------------------
+# Named volumes for persistent data
+# ----------------------------------------------------------------------------
+volumes:
+  postgres_data:
+  searxng_data:

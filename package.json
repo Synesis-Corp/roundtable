@@ -1,0 +1,54 @@
+{
+  "name": "roundtable",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Roundtable — fullstack TypeScript multiprovider AI chat monorepo",
+  "packageManager": "pnpm@9.0.0",
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "zod": "4"
+      }
+    }
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "coverage": "turbo run coverage",
+    "test:e2e": "pnpm --filter @chat/web test:e2e",
+    "docs:openapi": "pnpm --filter @chat/api docs:openapi",
+    "db:migrate": "pnpm --filter @chat/db migrate",
+    "db:migrate:deploy": "pnpm --filter @chat/db migrate:deploy",
+    "db:migrate:status": "pnpm --filter @chat/db migrate:status",
+    "db:push": "pnpm --filter @chat/db db:push",
+    "db:generate": "pnpm --filter @chat/db generate",
+    "db:studio": "pnpm --filter @chat/db studio",
+    "deploy:build": "docker-compose build",
+    "deploy:up": "docker-compose up -d",
+    "deploy:down": "docker-compose down",
+    "deploy:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.20.0",
+    "zod-to-json-schema": "^3.25.2"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

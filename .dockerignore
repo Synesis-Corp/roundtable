@@ -1,0 +1,51 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/dist
+
+# Vendored sandbox runtime — fetched (with checksum) inside the image build,
+# never shipped via context. Keeps the build lean and the download path honest
+# (identical local/CI). See apps/api/scripts/fetch-python-wasm.mjs.
+**/vendor
+
+# Version control
+.git
+.gitignore
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs
+
+# Testing
+e2e
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage
+
+# Playwright
+playwright-report
+test-results
+
+# IDE & OS
+.DS_Store
+.vscode
+.idea
+*.swp
+*.swo
+
+# Misc
+*.md
+!.github/**/*.md
+turbo
+.turbo
+*.tsbuildinfo

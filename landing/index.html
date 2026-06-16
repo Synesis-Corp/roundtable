@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Roundtable — Many models. One table. The best answer.</title>
+  <meta name="description" content="Roundtable is a multi-provider AI chat with The Council: several models deliberate in rounds — propose, debate, vote and synthesize — to give you the best answer." />
+  <meta name="theme-color" content="#0d0e10" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Roundtable — multi-model AI chat with deliberation" />
+  <meta property="og:description" content="Several models deliberate around one table: propose, debate, vote and synthesize. The best answer, not a single opinion." />
+  <meta property="og:url" content="https://r8e.org" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-app: #0d0e10;
+      --bg-soft: #141518;
+      --bg-panel: #1c1e22;
+      --border: rgba(255, 255, 255, 0.075);
+      --border-strong: rgba(255, 255, 255, 0.12);
+      --text-1: #ededef;
+      --text-2: #9a9ea6;
+      --text-3: #686c74;
+      --accent: #6f7bf2;
+      --accent-hover: #818cf6;
+      --accent-quiet: rgba(111, 123, 242, 0.14);
+      --accent-line: rgba(111, 123, 242, 0.32);
+      --accent-text: #aab2f9;
+      --r-sm: 10px;
+      --r-md: 16px;
+      --r-lg: 24px;
+      --maxw: 1120px;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: var(--bg-app);
+      color: var(--text-1);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    ::selection { background: var(--accent-line); color: #fff; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+    .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+    .glow {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(60% 50% at 50% -5%, rgba(111, 123, 242, 0.22), transparent 70%),
+        radial-gradient(40% 40% at 85% 10%, rgba(111, 123, 242, 0.08), transparent 70%);
+    }
+
+    /* Nav */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      background: rgba(13, 14, 16, 0.72); border-bottom: 1px solid var(--border);
+    }
+    nav { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+    .brand .mark { color: var(--accent); display: grid; place-items: center; }
+    .nav-right { display: flex; align-items: center; gap: 22px; }
+    .nav-links { display: flex; align-items: center; gap: 26px; }
+    .nav-links a.link { color: var(--text-2); font-size: 14px; font-weight: 500; transition: color 0.2s var(--ease); }
+    .nav-links a.link:hover { color: var(--text-1); }
+
+    /* Language toggle */
+    .lang {
+      display: inline-flex; align-items: center; gap: 2px;
+      border: 1px solid var(--border-strong); border-radius: 999px; padding: 3px;
+      background: var(--bg-soft);
+    }
+    .lang button {
+      font: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+      color: var(--text-3); background: transparent; border: none; cursor: pointer;
+      padding: 4px 10px; border-radius: 999px; transition: color .2s var(--ease), background .2s var(--ease);
+    }
+    .lang button[aria-pressed="true"] { color: #fff; background: var(--accent); }
+    .lang button:hover:not([aria-pressed="true"]) { color: var(--text-1); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: 14px; border-radius: var(--r-sm);
+      padding: 10px 18px; cursor: pointer; border: 1px solid transparent;
+      transition: background 0.2s var(--ease), transform 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 0 0 rgba(111, 123, 242, 0); }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(111, 123, 242, 0.32); }
+    .btn-ghost { background: transparent; color: var(--text-1); border-color: var(--border-strong); }
+    .btn-ghost:hover { border-color: var(--accent-line); background: var(--accent-quiet); }
+    .btn-lg { padding: 14px 26px; font-size: 15px; }
+
+    /* Hero */
+    section { position: relative; z-index: 1; }
+    .hero { padding: 96px 0 72px; }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500; color: var(--accent-text);
+      background: var(--accent-quiet); border: 1px solid var(--accent-line);
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 26px;
+    }
+    .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    h1 { font-size: clamp(2.4rem, 5.2vw, 4rem); line-height: 1.04; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 22px; }
+    h1 .accent {
+      background: linear-gradient(120deg, var(--accent-text), var(--accent));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .lede { font-size: clamp(1.05rem, 1.6vw, 1.22rem); color: var(--text-2); max-width: 52ch; margin-bottom: 34px; }
+    .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+    .hero-note { margin-top: 18px; font-size: 13px; color: var(--text-3); display: flex; align-items: center; gap: 8px; }
+
+    /* Council ring */
+    .ring-stage { position: relative; aspect-ratio: 1; max-width: 440px; margin-inline: auto; width: 100%; }
+    .ring { position: absolute; inset: 12%; border: 1px solid var(--border-strong); border-radius: 50%; }
+    .ring::after { content: ""; position: absolute; inset: 16%; border: 1px dashed var(--accent-line); border-radius: 50%; animation: spin 40s linear infinite; }
+    .ring-core {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 34%; aspect-ratio: 1; border-radius: 50%;
+      display: grid; place-items: center; text-align: center;
+      background: radial-gradient(circle at 50% 35%, rgba(111,123,242,0.28), rgba(28,30,34,0.9));
+      border: 1px solid var(--accent-line);
+      box-shadow: 0 0 60px rgba(111, 123, 242, 0.25), inset 0 0 30px rgba(111,123,242,0.12);
+    }
+    .ring-core span { font-size: 12px; color: var(--accent-text); font-weight: 600; line-height: 1.3; }
+    .ring-core strong { display: block; font-size: 15px; color: var(--text-1); }
+    .node {
+      position: absolute; top: 50%; left: 50%; width: 56px; height: 56px; margin: -28px;
+      border-radius: 14px; background: var(--bg-panel); border: 1px solid var(--border-strong);
+      display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--text-2);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4); animation: float 6s ease-in-out infinite;
+    }
+    .node:nth-child(1) { transform: translate(0, -150px); }
+    .node:nth-child(2) { transform: translate(142px, -46px); animation-delay: .8s; }
+    .node:nth-child(3) { transform: translate(88px, 121px); animation-delay: 1.6s; }
+    .node:nth-child(4) { transform: translate(-88px, 121px); animation-delay: 2.4s; }
+    .node:nth-child(5) { transform: translate(-142px, -46px); animation-delay: 3.2s; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes float { 0%,100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+
+    /* Logos */
+    .logos { padding: 28px 0 8px; }
+    .logos p { text-align: center; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 18px; }
+    .logos-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 14px; }
+    .chip {
+      font-size: 13px; font-weight: 600; color: var(--text-2);
+      padding: 7px 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-soft);
+      transition: color .2s var(--ease), border-color .2s var(--ease);
+    }
+    .chip:hover { color: var(--text-1); border-color: var(--accent-line); }
+
+    /* Section headers */
+    .section-pad { padding: 88px 0; }
+    .sec-head { max-width: 620px; margin: 0 auto 56px; text-align: center; }
+    .kicker { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 14px; }
+    h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); line-height: 1.1; letter-spacing: -0.025em; font-weight: 700; margin-bottom: 16px; }
+    .sec-head p { color: var(--text-2); font-size: 1.05rem; }
+
+    /* Council steps */
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .step {
+      position: relative; background: linear-gradient(180deg, var(--bg-panel), var(--bg-soft));
+      border: 1px solid var(--border); border-radius: var(--r-md); padding: 26px 22px;
+      transition: border-color .25s var(--ease), transform .25s var(--ease);
+    }
+    .step:hover { border-color: var(--accent-line); transform: translateY(-3px); }
+    .step .num {
+      width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+      background: var(--accent-quiet); color: var(--accent-text); font-size: 13px; font-weight: 700;
+      margin-bottom: 16px; border: 1px solid var(--accent-line);
+    }
+    .step h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .step p { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+    .step .arrow { position: absolute; top: 38px; right: -14px; color: var(--text-3); z-index: 2; }
+    .step:last-child .arrow { display: none; }
+
+    /* Feature grid */
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card {
+      background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--r-md); padding: 28px 26px;
+      transition: border-color .25s var(--ease), transform .25s var(--ease), background .25s var(--ease);
+    }
+    .card:hover { border-color: var(--accent-line); transform: translateY(-3px); background: var(--bg-panel); }
+    .card .ico {
+      width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+      background: var(--accent-quiet); color: var(--accent-text); border: 1px solid var(--accent-line); margin-bottom: 18px;
+    }
+    .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .card p { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+
+    /* Closing CTA */
+    .cta-band {
+      text-align: center; border: 1px solid var(--accent-line); border-radius: var(--r-lg); padding: 64px 32px;
+      background: radial-gradient(80% 120% at 50% 0%, rgba(111,123,242,0.18), transparent 70%), var(--bg-soft);
+    }
+    .cta-band h2 { margin-bottom: 14px; }
+    .cta-band p { color: var(--text-2); max-width: 46ch; margin: 0 auto 30px; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 40px 0; margin-top: 24px; position: relative; z-index: 1; }
+    .foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .foot .brand { font-size: 15px; }
+    .foot small { color: var(--text-3); font-size: 13px; }
+    .foot-links { display: flex; gap: 22px; }
+    .foot-links a { color: var(--text-2); font-size: 14px; transition: color .2s var(--ease); }
+    .foot-links a:hover { color: var(--text-1); }
+
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+    .reveal.in { opacity: 1; transform: none; }
+
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+      .ring-stage { max-width: 340px; order: -1; }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .step .arrow { display: none; }
+      .features { grid-template-columns: repeat(2, 1fr); }
+      .nav-links a.link { display: none; }
+    }
+    @media (max-width: 560px) {
+      .hero { padding: 64px 0 48px; }
+      .section-pad { padding: 64px 0; }
+      .steps, .features { grid-template-columns: 1fr; }
+      .foot { flex-direction: column; text-align: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; scroll-behavior: auto; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .ring::after { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow" aria-hidden="true"></div>
+
+  <header>
+    <div class="wrap">
+      <nav>
+        <a class="brand" href="/" aria-label="Roundtable home">
+          <span class="mark" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <ellipse cx="12" cy="14" rx="9" ry="5"/>
+              <circle cx="12" cy="6" r="1.6" fill="currentColor" stroke="none"/>
+              <circle cx="4" cy="13" r="1.4" fill="currentColor" stroke="none"/>
+              <circle cx="20" cy="13" r="1.4" fill="currentColor" stroke="none"/>
+              <circle cx="8" cy="18.5" r="1.4" fill="currentColor" stroke="none"/>
+              <circle cx="16" cy="18.5" r="1.4" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          Roundtable
+        </a>
+        <div class="nav-right">
+          <div class="nav-links">
+            <a class="link" href="#council" data-i18n="nav.council"></a>
+            <a class="link" href="#features" data-i18n="nav.features"></a>
+          </div>
+          <div class="lang" role="group" aria-label="Language">
+            <button type="button" data-lang="es">ES</button>
+            <button type="button" data-lang="en">EN</button>
+          </div>
+          <a class="btn btn-primary" href="https://cloud.r8e.org" data-i18n="nav.openApp"></a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow"><span class="dot"></span> <span data-i18n="hero.eyebrow"></span></span>
+          <h1 data-i18n="hero.h1"></h1>
+          <p class="lede" data-i18n="hero.lede"></p>
+          <div class="hero-cta">
+            <a class="btn btn-primary btn-lg" href="https://cloud.r8e.org">
+              <span data-i18n="hero.ctaPrimary"></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a class="btn btn-ghost btn-lg" href="#council" data-i18n="hero.ctaSecondary"></a>
+          </div>
+          <p class="hero-note">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <span data-i18n="hero.note"></span>
+          </p>
+        </div>
+
+        <div class="ring-stage" aria-hidden="true">
+          <div class="ring"></div>
+          <div class="node">GPT</div>
+          <div class="node">Claude</div>
+          <div class="node">Gemini</div>
+          <div class="node">DeepSeek</div>
+          <div class="node">Mistral</div>
+          <div class="ring-core"><span><strong data-i18n="ring.core"></strong><span data-i18n="ring.coreSub"></span></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="logos">
+    <div class="wrap">
+      <p data-i18n="logos.title"></p>
+      <div class="logos-row">
+        <span class="chip">OpenAI</span>
+        <span class="chip">Anthropic</span>
+        <span class="chip">Google</span>
+        <span class="chip">DeepSeek</span>
+        <span class="chip">Mistral</span>
+        <span class="chip">Groq</span>
+        <span class="chip">Perplexity</span>
+        <span class="chip">OpenRouter</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad" id="council">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="kicker" data-i18n="council.kicker"></div>
+        <h2 data-i18n="council.h2"></h2>
+        <p data-i18n="council.p"></p>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="num">1</div>
+          <h3 data-i18n="step1.h3"></h3>
+          <p data-i18n="step1.p"></p>
+          <span class="arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="step reveal">
+          <div class="num">2</div>
+          <h3 data-i18n="step2.h3"></h3>
+          <p data-i18n="step2.p"></p>
+          <span class="arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="step reveal">
+          <div class="num">3</div>
+          <h3 data-i18n="step3.h3"></h3>
+          <p data-i18n="step3.p"></p>
+          <span class="arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+        <div class="step reveal">
+          <div class="num">4</div>
+          <h3 data-i18n="step4.h3"></h3>
+          <p data-i18n="step4.p"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad" id="features" style="background: linear-gradient(180deg, transparent, rgba(20,21,24,0.6), transparent);">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="kicker" data-i18n="features.kicker"></div>
+        <h2 data-i18n="features.h2"></h2>
+        <p data-i18n="features.p"></p>
+      </div>
+      <div class="features">
+        <div class="card reveal">
+          <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg></div>
+          <h3 data-i18n="card1.h3"></h3>
+          <p data-i18n="card1.p"></p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <h3 data-i18n="card2.h3"></h3>
+          <p data-i18n="card2.p"></p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <h3 data-i18n="card3.h3"></h3>
+          <p data-i18n="card3.p"></p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/></svg></div>
+          <h3 data-i18n="card4.h3"></h3>
+          <p data-i18n="card4.p"></p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></svg></div>
+          <h3 data-i18n="card5.h3"></h3>
+          <p data-i18n="card5.p"></p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+          <h3 data-i18n="card6.h3"></h3>
+          <p data-i18n="card6.p"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pad">
+    <div class="wrap">
+      <div class="cta-band reveal">
+        <h2 data-i18n="cta.h2"></h2>
+        <p data-i18n="cta.p"></p>
+        <a class="btn btn-primary btn-lg" href="https://cloud.r8e.org">
+          <span data-i18n="cta.btn"></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot">
+        <a class="brand" href="/">
+          <span class="mark" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <ellipse cx="12" cy="14" rx="9" ry="5"/>
+              <circle cx="12" cy="6" r="1.6" fill="currentColor" stroke="none"/>
+              <circle cx="4" cy="13" r="1.4" fill="currentColor" stroke="none"/>
+              <circle cx="20" cy="13" r="1.4" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          Roundtable
+        </a>
+        <div class="foot-links">
+          <a href="#council" data-i18n="nav.council"></a>
+          <a href="#features" data-i18n="nav.features"></a>
+          <a href="https://cloud.r8e.org" data-i18n="nav.openApp"></a>
+        </div>
+        <small data-i18n="foot.copyright"></small>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const I18N = {
+      en: {
+        "nav.council": "The Council",
+        "nav.features": "Capabilities",
+        "nav.openApp": "Open the app",
+        "hero.eyebrow": "Multi-model chat with deliberation",
+        "hero.h1": 'Many models.<br>One table.<br><span class="accent">The best answer.</span>',
+        "hero.lede": "Roundtable brings the best AI models into one conversation. And when a question demands it, it convenes <strong>The Council</strong>: they propose, debate, vote and synthesize — for a deliberated answer, not a single opinion.",
+        "hero.ctaPrimary": "Start free",
+        "hero.ctaSecondary": "See how it works",
+        "hero.note": "Your API keys, encrypted. No data shared between conversations.",
+        "ring.core": "The Council",
+        "ring.coreSub": "deliberates",
+        "logos.title": "Connect the providers you already use",
+        "council.kicker": "The difference",
+        "council.h2": "The Council: deliberation, not a single opinion",
+        "council.p": "For the questions that matter, several models work together across three rounds. Each brings its angle; the system synthesizes the best of all.",
+        "step1.h3": "Proposals",
+        "step1.p": "Each model answers separately, with its own perspective and verified sources.",
+        "step2.h3": "Debate",
+        "step2.p": "They weigh each other's ideas, flag contradictions and rescue the strongest arguments.",
+        "step3.h3": "Vote",
+        "step3.p": "Each votes with a confidence level and points out the main risk of the decision.",
+        "step4.h3": "Synthesis",
+        "step4.p": "A final answer that incorporates the best of the table — clear and actionable.",
+        "features.kicker": "Capabilities",
+        "features.h2": "Everything you expect from a serious chat",
+        "features.p": "Real streaming, attachments, web search and memory — with privacy as the foundation.",
+        "card1.h3": "Streaming with resume",
+        "card1.p": "Answers arrive token by token. And generation survives navigation: leave and come back, it's still there.",
+        "card2.h3": "Encrypted API keys",
+        "card2.p": "Your keys are stored with AES-256-GCM encryption. Connect the providers you already pay for, no middlemen.",
+        "card3.h3": "Web search",
+        "card3.p": "Models consult the web when needed and cite their sources, like the best tools out there.",
+        "card4.h3": "Images and PDF",
+        "card4.p": "Attach images and documents. Routing sends each file to the model that handles it best.",
+        "card5.h3": "Memory and incognito",
+        "card5.p": "Remembers what matters across chats — or switch on incognito and nothing from that conversation is saved.",
+        "card6.h3": "Capability routing",
+        "card6.p": "Each request goes to the right model, with automatic fallbacks. You choose; the system optimizes.",
+        "cta.h2": "Take a seat at the table",
+        "cta.p": "Connect your first provider in a minute and start chatting. No card, no hassle.",
+        "cta.btn": "Open Roundtable",
+        "foot.copyright": "© 2026 Roundtable"
+      },
+      es: {
+        "nav.council": "El Consejo",
+        "nav.features": "Capacidades",
+        "nav.openApp": "Abrir la app",
+        "hero.eyebrow": "Chat multimodelo con deliberación",
+        "hero.h1": 'Varios modelos.<br>Una mesa.<br><span class="accent">La mejor respuesta.</span>',
+        "hero.lede": "Roundtable reúne a los mejores modelos de IA en una misma conversación. Y cuando la pregunta lo amerita, convoca a <strong>El Consejo</strong>: proponen, debaten, votan y sintetizan — para darte una respuesta deliberada, no una sola opinión.",
+        "hero.ctaPrimary": "Empezar gratis",
+        "hero.ctaSecondary": "Ver cómo funciona",
+        "hero.note": "Tus API keys, cifradas. Sin compartir datos entre conversaciones.",
+        "ring.core": "El Consejo",
+        "ring.coreSub": "delibera",
+        "logos.title": "Conecta los proveedores que ya usas",
+        "council.kicker": "El diferencial",
+        "council.h2": "El Consejo: deliberación, no una sola opinión",
+        "council.p": "Para las preguntas que importan, varios modelos trabajan juntos en tres rondas. Cada uno aporta su ángulo; el sistema sintetiza lo mejor de todos.",
+        "step1.h3": "Propuestas",
+        "step1.p": "Cada modelo responde por separado, con su perspectiva y fuentes verificadas.",
+        "step2.h3": "Debate",
+        "step2.p": "Evalúan las ideas ajenas, marcan contradicciones y rescatan los mejores argumentos.",
+        "step3.h3": "Voto",
+        "step3.p": "Cada uno vota con un nivel de confianza y señala el riesgo principal de la decisión.",
+        "step4.h3": "Síntesis",
+        "step4.p": "Una respuesta final que incorpora lo mejor de la mesa — clara y accionable.",
+        "features.kicker": "Capacidades",
+        "features.h2": "Todo lo que esperas de un chat serio",
+        "features.p": "Streaming real, adjuntos, búsqueda web y memoria — con la privacidad como base.",
+        "card1.h3": "Streaming con resume",
+        "card1.p": "Las respuestas llegan token a token. Y la generación sobrevive a la navegación: te vas y vuelves, y sigue ahí.",
+        "card2.h3": "API keys cifradas",
+        "card2.p": "Tus claves se guardan con cifrado AES-256-GCM. Conecta los proveedores que ya pagas, sin intermediarios.",
+        "card3.h3": "Búsqueda web",
+        "card3.p": "Los modelos consultan la web cuando hace falta y citan las fuentes, al estilo de las mejores herramientas.",
+        "card4.h3": "Imágenes y PDF",
+        "card4.p": "Adjunta imágenes y documentos. El routing manda cada archivo al modelo que mejor lo procesa.",
+        "card5.h3": "Memoria e incógnito",
+        "card5.p": "Recuerda lo importante entre chats — o activa el modo incógnito y no guarda nada de esa conversación.",
+        "card6.h3": "Routing por capacidades",
+        "card6.p": "Cada pedido va al modelo adecuado, con fallbacks automáticos. Tú eliges; el sistema optimiza.",
+        "cta.h2": "Siéntate a la mesa",
+        "cta.p": "Conecta tu primer proveedor en un minuto y empieza a chatear. Sin tarjeta, sin complicaciones.",
+        "cta.btn": "Abrir Roundtable",
+        "foot.copyright": "© 2026 Roundtable"
+      }
+    };
+
+    const TITLES = {
+      en: "Roundtable — Many models. One table. The best answer.",
+      es: "Roundtable — Varios modelos. Una mesa. La mejor respuesta."
+    };
+
+    function applyLang(lang) {
+      const dict = I18N[lang] || I18N.en;
+      document.documentElement.lang = lang;
+      document.title = TITLES[lang];
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const val = dict[el.getAttribute("data-i18n")];
+        if (val != null) el.innerHTML = val;
+      });
+      document.querySelectorAll(".lang button").forEach((b) => {
+        b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+      });
+      try { localStorage.setItem("r8e-lang", lang); } catch (e) {}
+    }
+
+    const saved = (() => { try { return localStorage.getItem("r8e-lang"); } catch (e) { return null; } })();
+    const initial = saved || ((navigator.language || "en").toLowerCase().startsWith("es") ? "es" : "en");
+    applyLang(initial);
+
+    document.querySelectorAll(".lang button").forEach((b) => {
+      b.addEventListener("click", () => applyLang(b.dataset.lang));
+    });
+
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e, i) => {
+          if (e.isIntersecting) {
+            e.target.style.transitionDelay = (i % 4) * 60 + "ms";
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+    } else {
+      document.querySelectorAll(".reveal").forEach((el) => el.classList.add("in"));
+    }
+  </script>
+</body>
+</html>
