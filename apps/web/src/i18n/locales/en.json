@@ -596,7 +596,7 @@
   },
   "admin": {
     "title": "Admin Dashboard",
-    "subtitle": "Aggregated platform metrics — zero PII",
+    "subtitle": "Aggregated platform metrics",
     "kpi": {
       "totalUsers": "Total Users",
       "activeToday": "Active Today",

@@ -52,24 +52,8 @@ function ChatPageRoute() {
 
 /** Full-height shell for the standalone auth pages (no chat sidebar). */
 function AuthShell({ children }: { children: React.ReactNode }) {
-  const { i18n } = useTranslation();
   return (
     <div className="min-h-dvh flex flex-col" style={{ backgroundColor: 'var(--bg-app)' }}>
-      <div className="absolute top-4 right-4 z-10 flex gap-1">
-        {(['en', 'es'] as const).map((lang) => (
-          <button
-            key={lang}
-            onClick={() => i18n.changeLanguage(lang)}
-            className="px-2 py-1 rounded text-xs font-medium transition-colors"
-            style={{
-              color: i18n.language === lang ? 'var(--text-1)' : 'var(--text-4)',
-              backgroundColor: i18n.language === lang ? 'var(--hover)' : 'transparent',
-            }}
-          >
-            {lang.toUpperCase()}
-          </button>
-        ))}
-      </div>
       {children}
     </div>
   );

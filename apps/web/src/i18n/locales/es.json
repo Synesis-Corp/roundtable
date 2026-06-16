@@ -594,7 +594,7 @@
   },
   "admin": {
     "title": "Panel de Administración",
-    "subtitle": "Métricas agregadas de la plataforma — cero PII",
+    "subtitle": "Métricas agregadas de la plataforma",
     "kpi": {
       "totalUsers": "Usuarios Totales",
       "activeToday": "Activos Hoy",

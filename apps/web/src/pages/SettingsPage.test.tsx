@@ -284,6 +284,7 @@ describe('SettingsPage — Council tab', () => {
     } as any);
 
     renderSettingsPage();
+    fireEvent.click(screen.getByRole('tab', { name: 'Providers' }));
     const disconnectButtons = screen.getAllByText('Disconnect');
     fireEvent.click(disconnectButtons[0]);
 

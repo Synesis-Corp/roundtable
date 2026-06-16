@@ -23,12 +23,7 @@ describe('SidebarUserCard', () => {
 
     render(
       <MemoryRouter>
-        <SidebarUserCard
-          userName="Admin"
-          conversationCount={5}
-          onCloseMobile={vi.fn()}
-          onLogout={vi.fn()}
-        />
+        <SidebarUserCard userName="Admin" onCloseMobile={vi.fn()} onLogout={vi.fn()} />
       </MemoryRouter>
     );
 
@@ -42,12 +37,7 @@ describe('SidebarUserCard', () => {
 
     render(
       <MemoryRouter>
-        <SidebarUserCard
-          userName="User"
-          conversationCount={1}
-          onCloseMobile={vi.fn()}
-          onLogout={vi.fn()}
-        />
+        <SidebarUserCard userName="User" onCloseMobile={vi.fn()} onLogout={vi.fn()} />
       </MemoryRouter>
     );
 

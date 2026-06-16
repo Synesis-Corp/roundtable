@@ -57,8 +57,8 @@ export default function SettingsPage() {
     setCodexNotice,
   } = useSettings();
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>(
-    location.pathname.endsWith('/usage') ? 'usage' : 'providers'
+  const [activeTab, setActiveTab] = useState<SettingsTab>(() =>
+    location.pathname.endsWith('/usage') ? 'usage' : 'profile'
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [providerFilter, setProviderFilter] = useState<ProviderFilter>('all');

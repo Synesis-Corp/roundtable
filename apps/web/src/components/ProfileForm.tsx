@@ -88,7 +88,22 @@ export function ProfileForm() {
     }
   }, [profile, i18n]);
 
+  useEffect(() => {
+    if (
+      profile &&
+      (!profile.country || !profile.timezone) &&
+      (detected.country || detected.timezone)
+    ) {
+      updateProfile({
+        country: detected.country || null,
+        timezone: detected.timezone || null,
+      });
+    }
+  }, [profile, detected.country, detected.timezone, updateProfile]);
+
   if (!profile) return null;
+
+  const dirty = displayName !== (profile.displayName ?? '');
 
   const handleSave = async () => {
     setSaved(false);
@@ -189,9 +204,13 @@ export function ProfileForm() {
           <div className="flex items-center gap-3 pt-2">
             <button
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || !dirty}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-              style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
+              style={{
+                backgroundColor: dirty ? 'var(--accent)' : 'var(--bg-elevated)',
+                color: dirty ? '#fff' : 'var(--text-4)',
+                cursor: dirty ? 'pointer' : 'default',
+              }}
             >
               {saving ? t('profile.saving') : t('profile.save')}
             </button>

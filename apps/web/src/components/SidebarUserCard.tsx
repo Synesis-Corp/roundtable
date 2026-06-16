@@ -5,18 +5,12 @@ import { useAdmin } from '../hooks/useAdmin';
 
 interface SidebarUserCardProps {
   userName: string;
-  conversationCount: number;
   onCloseMobile: () => void;
   onLogout: () => void;
 }
 
 /** Sidebar footer card: avatar, username, conversation count, logout. */
-export function SidebarUserCard({
-  userName,
-  conversationCount,
-  onCloseMobile,
-  onLogout,
-}: SidebarUserCardProps) {
+export function SidebarUserCard({ userName, onCloseMobile, onLogout }: SidebarUserCardProps) {
   const { t } = useTranslation();
   const { isAdmin } = useAdmin();
   return (
@@ -105,9 +99,6 @@ export function SidebarUserCard({
             style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)' }}
           >
             {userName || t('shell.userFallback')}
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
-            {t('shell.conversationCount', { count: conversationCount })}
           </div>
         </div>
         {/* Logout icon button */}

@@ -162,7 +162,6 @@ export default function Layout() {
           {token ? (
             <SidebarUserCard
               userName={userName}
-              conversationCount={conversations.length}
               onCloseMobile={() => setMobileOpen(false)}
               onLogout={handleLogout}
             />
