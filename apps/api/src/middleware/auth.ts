@@ -18,6 +18,7 @@ function getJwtSecret(): string {
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
+  userEmail?: string;
 }
 
 export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
@@ -29,8 +30,12 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
 
   const token = header.slice(7);
   try {
-    const payload = jwt.verify(token, getJwtSecret()) as { userId: string };
+    const payload = jwt.verify(token, getJwtSecret()) as {
+      userId: string;
+      email?: string;
+    };
     req.userId = payload.userId;
+    req.userEmail = payload.email;
     next();
   } catch {
     res.status(401).json({ error: 'Invalid token' });

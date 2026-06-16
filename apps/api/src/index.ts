@@ -31,6 +31,7 @@ import conversationRoutes from './routes/conversations';
 import providerRoutes, { capabilityRegistryReady } from './routes/providers';
 import usageRoutes from './routes/usage';
 import memoryRoutes from './routes/memory';
+import adminRoutes from './routes/admin';
 import { initializePricing } from './lib/model-pricing';
 
 export const app = express();
@@ -105,6 +106,7 @@ app.use('/conversations', conversationRoutes);
 app.use('/providers', providerRoutes);
 app.use('/usage', usageRoutes);
 app.use('/memory', memoryRoutes);
+app.use('/admin', adminRoutes);
 
 // Terminal handlers — must come after all routes.
 app.use(notFoundHandler);

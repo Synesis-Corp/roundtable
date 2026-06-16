@@ -59,6 +59,7 @@
     "closeSearch": "Cerrar búsqueda",
     "userFallback": "Usuario",
     "logout": "Cerrar sesión",
+    "adminLink": "Admin",
     "conversationCount_one": "{{count}} conversación",
     "conversationCount_other": "{{count}} conversaciones",
     "emptyConversations": "Todavía no hay conversaciones.",
@@ -589,5 +590,39 @@
     "insights": {
       "title": "Insights"
     }
+  },
+  "admin": {
+    "title": "Panel de Administración",
+    "subtitle": "Métricas agregadas de la plataforma — cero PII",
+    "kpi": {
+      "totalUsers": "Usuarios Totales",
+      "activeToday": "Activos Hoy",
+      "totalTokens": "Tokens Totales",
+      "totalRequests": "Requests Totales",
+      "registeredToday": "Nuevos Hoy"
+    },
+    "chart": {
+      "registrations": "Registros por Día",
+      "activeUsers": "Usuarios Activos por Día",
+      "tokensByProvider": "Tokens por Proveedor",
+      "tokens": "Tokens",
+      "modes": "Individual vs Consejo"
+    },
+    "table": {
+      "provider": "Proveedor",
+      "model": "Modelo",
+      "tokens": "Tokens",
+      "requests": "Requests",
+      "empty": "Sin datos de uso aún"
+    },
+    "period": {
+      "days30": "30 días",
+      "days90": "90 días",
+      "total": "Total"
+    },
+    "error": {
+      "retry": "Reintentar"
+    },
+    "empty": "Sin datos aún — las métricas aparecen cuando los usuarios interactúan con la plataforma."
   }
 }

@@ -58,6 +58,9 @@ services:
       # Docker secrets in prod. Without it the /auth/github route returns 503.
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      # Admin dashboard — comma-separated list of emails with access to /admin.
+      # When unset or empty, no user is admin. Set in .env for production.
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
     ports:
       # Bound to 127.0.0.1 ONLY. In production the web nginx proxies /api to
       # api:4000 over the compose network, so the API never needs a public host

@@ -10,6 +10,14 @@ process.env.JWT_SECRET = 'test-jwt-secret-at-least-32-chars-long';
 process.env.GOOGLE_CLIENT_ID = 'test-client-id.apps.googleusercontent.com';
 const TEST_TOKEN = jwt.sign({ userId: 'test-user' }, process.env.JWT_SECRET);
 const TEST_TOKEN_2 = jwt.sign({ userId: 'test-user-2' }, process.env.JWT_SECRET);
+const TEST_ADMIN_TOKEN = jwt.sign(
+  { userId: 'admin-user', email: 'admin@example.com' },
+  process.env.JWT_SECRET
+);
+const TEST_NON_ADMIN_TOKEN = jwt.sign(
+  { userId: 'regular-user', email: 'user@example.com' },
+  process.env.JWT_SECRET
+);
 
 /** Parse raw SSE text into an array of JSON payloads. */
 function parseSSE(text: string): Array<Record<string, unknown>> {
@@ -35,6 +43,7 @@ const mockPrisma = {
     findUnique: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    count: vi.fn(),
   },
   providerConfig: {
     findUnique: vi.fn(),
@@ -49,6 +58,8 @@ const mockPrisma = {
   usageEvent: {
     create: vi.fn(() => Promise.resolve({ id: 'usage-1' })),
     groupBy: vi.fn(),
+    count: vi.fn(),
+    aggregate: vi.fn(),
   },
   conversation: {
     findMany: vi.fn(),
@@ -85,6 +96,7 @@ const mockPrisma = {
     createMany: vi.fn(() => Promise.resolve({ count: 0 })),
   },
   $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
+  $queryRaw: vi.fn(),
 };
 
 vi.mock('@chat/db', () => ({
@@ -2702,6 +2714,243 @@ describe('Onboarding — auth endpoints report created', () => {
       const msg = JSON.parse(match![1]);
       expect(msg.type).toBe('oauth-success');
       expect(msg.created).toBe(false);
+    });
+  });
+});
+
+describe('Admin Dashboard', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.ADMIN_EMAILS = 'admin@example.com';
+  });
+
+  afterEach(() => {
+    delete process.env.ADMIN_EMAILS;
+  });
+
+  describe('requireAdmin middleware', () => {
+    it('returns 403 for non-admin user', async () => {
+      const res = await request(app)
+        .get('/admin/metrics/overview')
+        .set('Authorization', `Bearer ${TEST_NON_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('Forbidden');
+    });
+
+    it('returns 401 for missing token', async () => {
+      const res = await request(app).get('/admin/metrics/overview');
+
+      expect(res.status).toBe(401);
+    });
+
+    it('allows admin user', async () => {
+      mockPrisma.user.count.mockResolvedValue(10);
+      mockPrisma.usageEvent.groupBy.mockResolvedValue([]);
+      mockPrisma.usageEvent.aggregate.mockResolvedValue({
+        _sum: { inputTokens: 0, outputTokens: 0 },
+      });
+      mockPrisma.usageEvent.count.mockResolvedValue(0);
+
+      const res = await request(app)
+        .get('/admin/metrics/overview')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+    });
+  });
+
+  describe('GET /admin/metrics/overview', () => {
+    it('returns KPIs with correct aggregates', async () => {
+      mockPrisma.user.count.mockResolvedValue(42);
+      mockPrisma.usageEvent.groupBy.mockResolvedValue([
+        { userId: 'a' },
+        { userId: 'b' },
+        { userId: 'c' },
+      ]);
+      mockPrisma.usageEvent.aggregate.mockResolvedValue({
+        _sum: { inputTokens: 50000, outputTokens: 30000 },
+      });
+      mockPrisma.usageEvent.count.mockResolvedValue(150);
+
+      const res = await request(app)
+        .get('/admin/metrics/overview')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.totalUsers).toBe(42);
+      expect(res.body.activeToday).toBe(3);
+      expect(res.body.totalTokens).toBe(80000);
+      expect(res.body.totalRequests).toBe(150);
+    });
+
+    it('does not expose any PII', async () => {
+      mockPrisma.user.count.mockResolvedValue(1);
+      mockPrisma.usageEvent.groupBy.mockResolvedValue([]);
+      mockPrisma.usageEvent.aggregate.mockResolvedValue({
+        _sum: { inputTokens: 0, outputTokens: 0 },
+      });
+      mockPrisma.usageEvent.count.mockResolvedValue(0);
+
+      const res = await request(app)
+        .get('/admin/metrics/overview')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body).not.toHaveProperty('users');
+      expect(res.body).not.toHaveProperty('emails');
+      expect(res.body).not.toHaveProperty('userIds');
+      expect(res.body).not.toHaveProperty('messages');
+      expect(JSON.stringify(res.body)).not.toContain('@');
+    });
+  });
+
+  describe('GET /admin/metrics/registrations', () => {
+    it('returns daily registration counts', async () => {
+      mockPrisma.$queryRaw.mockResolvedValue([
+        { date: new Date('2026-06-01T00:00:00Z'), count: BigInt(3) },
+      ]);
+
+      const res = await request(app)
+        .get('/admin/metrics/registrations?period=30d')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.period).toBe('30d');
+      expect(res.body.days).toBeInstanceOf(Array);
+      expect(res.body.days.length).toBe(30);
+      expect(res.body.days[0]).toHaveProperty('date');
+      expect(res.body.days[0]).toHaveProperty('count');
+    });
+
+    it('defaults to 30d when no period specified', async () => {
+      mockPrisma.$queryRaw.mockResolvedValue([]);
+
+      const res = await request(app)
+        .get('/admin/metrics/registrations')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.period).toBe('30d');
+    });
+
+    it('supports 90d period', async () => {
+      mockPrisma.$queryRaw.mockResolvedValue([]);
+
+      const res = await request(app)
+        .get('/admin/metrics/registrations?period=90d')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.period).toBe('90d');
+      expect(res.body.days.length).toBe(90);
+    });
+  });
+
+  describe('GET /admin/metrics/active-users', () => {
+    it('returns daily active users', async () => {
+      mockPrisma.$queryRaw.mockResolvedValue([
+        { date: new Date('2026-06-01T00:00:00Z'), count: BigInt(5) },
+        { date: new Date('2026-06-02T00:00:00Z'), count: BigInt(3) },
+      ]);
+
+      const res = await request(app)
+        .get('/admin/metrics/active-users?period=30d')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.period).toBe('30d');
+      expect(res.body.days).toBeInstanceOf(Array);
+      expect(res.body.days[0]).toMatchObject({ date: '2026-06-01', count: 5 });
+      expect(res.body.days[1]).toMatchObject({ date: '2026-06-02', count: 3 });
+    });
+
+    it('does not expose userIds', async () => {
+      mockPrisma.$queryRaw.mockResolvedValue([
+        { date: new Date('2026-06-01T00:00:00Z'), count: BigInt(1) },
+      ]);
+
+      const res = await request(app)
+        .get('/admin/metrics/active-users')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(JSON.stringify(res.body)).not.toContain('userId');
+    });
+  });
+
+  describe('GET /admin/metrics/usage', () => {
+    it('returns usage grouped by provider and model', async () => {
+      mockPrisma.usageEvent.groupBy
+        .mockResolvedValueOnce([
+          {
+            providerId: 'openai',
+            _sum: { inputTokens: 5000, outputTokens: 3000 },
+            _count: { id: 10 },
+          },
+          {
+            providerId: 'anthropic',
+            _sum: { inputTokens: 2000, outputTokens: 1000 },
+            _count: { id: 5 },
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            providerId: 'openai',
+            modelId: 'gpt-4o',
+            _sum: { inputTokens: 5000, outputTokens: 3000 },
+            _count: { id: 10 },
+          },
+        ]);
+
+      const res = await request(app)
+        .get('/admin/metrics/usage?period=30d')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.period).toBe('30d');
+      expect(res.body.byProvider).toHaveLength(2);
+      expect(res.body.byProvider[0]).toMatchObject({
+        providerId: 'openai',
+        totalTokens: 8000,
+        totalRequests: 10,
+      });
+      expect(res.body.byModel).toHaveLength(1);
+      expect(res.body.byModel[0]).toMatchObject({
+        providerId: 'openai',
+        modelId: 'gpt-4o',
+      });
+    });
+
+    it('does not expose userIds', async () => {
+      mockPrisma.usageEvent.groupBy.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+
+      const res = await request(app)
+        .get('/admin/metrics/usage?period=30d')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(JSON.stringify(res.body)).not.toContain('userId');
+    });
+  });
+
+  describe('GET /admin/metrics/modes', () => {
+    it('returns single vs council counts', async () => {
+      mockPrisma.usageEvent.groupBy.mockResolvedValue([
+        { mode: 'single', _count: { id: 200 } },
+        { mode: 'council', _count: { id: 30 } },
+      ]);
+
+      const res = await request(app)
+        .get('/admin/metrics/modes?period=30d')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.period).toBe('30d');
+      expect(res.body.modes).toEqual([
+        { mode: 'single', count: 200 },
+        { mode: 'council', count: 30 },
+      ]);
     });
   });
 });

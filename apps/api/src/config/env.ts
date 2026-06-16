@@ -7,6 +7,9 @@ import { z } from 'zod';
  * crypto/auth remain as defense-in-depth.
  */
 const EnvSchema = z.object({
+  // Comma-separated list of emails with admin access to the metrics dashboard.
+  // When unset or empty, no user is admin. Emails are trimmed and lowercased.
+  ADMIN_EMAILS: z.string().optional(),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   JWT_SECRET: z.string().min(32, 'must be at least 32 characters'),
   ENCRYPTION_SECRET: z.string().min(32, 'must be at least 32 characters'),
@@ -51,6 +54,22 @@ export function validateEnv(): Env {
     process.exit(1);
   }
   return parsed.data;
+}
+
+/**
+ * Parsed admin email allowlist from ADMIN_EMAILS. Trims whitespace, lowercases,
+ * and filters empty strings. Returns an empty Set when the env var is unset.
+ * Reads process.env directly so tests can set ADMIN_EMAILS at runtime.
+ */
+export function getAdminEmails(): Set<string> {
+  const raw = process.env.ADMIN_EMAILS;
+  if (!raw) return new Set();
+  return new Set(
+    raw
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+  );
 }
 
 /**

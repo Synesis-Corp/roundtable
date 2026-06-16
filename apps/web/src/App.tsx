@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 import ChatPage from './pages/ChatPage';
 
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 
@@ -133,6 +134,14 @@ function App() {
             element={
               <Suspense fallback={<RouteFallback />}>
                 <SettingsPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="admin"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <AdminPage />
               </Suspense>
             }
           />

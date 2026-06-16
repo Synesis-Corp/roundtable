@@ -61,6 +61,7 @@
     "closeSearch": "Close search",
     "userFallback": "User",
     "logout": "Log out",
+    "adminLink": "Admin",
     "conversationCount_one": "{{count}} conversation",
     "conversationCount_other": "{{count}} conversations",
     "emptyConversations": "No conversations yet.",
@@ -591,5 +592,39 @@
     "insights": {
       "title": "Insights"
     }
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "subtitle": "Aggregated platform metrics — zero PII",
+    "kpi": {
+      "totalUsers": "Total Users",
+      "activeToday": "Active Today",
+      "totalTokens": "Total Tokens",
+      "totalRequests": "Total Requests",
+      "registeredToday": "New Today"
+    },
+    "chart": {
+      "registrations": "Registrations per Day",
+      "activeUsers": "Active Users per Day",
+      "tokensByProvider": "Tokens by Provider",
+      "tokens": "Tokens",
+      "modes": "Single vs Council"
+    },
+    "table": {
+      "provider": "Provider",
+      "model": "Model",
+      "tokens": "Tokens",
+      "requests": "Requests",
+      "empty": "No usage data yet"
+    },
+    "period": {
+      "days30": "30 days",
+      "days90": "90 days",
+      "total": "All time"
+    },
+    "error": {
+      "retry": "Retry"
+    },
+    "empty": "No data available yet — metrics appear as users interact with the platform."
   }
 }
