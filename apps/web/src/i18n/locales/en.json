@@ -658,6 +658,12 @@
     "country": "Country",
     "timezone": "Timezone",
     "notDetected": "Not detected",
+    "language": "Language",
+    "languageHelp": "Choose your preferred language.",
+    "sessions": "Active Sessions",
+    "sessionsHelp": "Devices that are currently signed in to your account.",
+    "noSessions": "No active sessions found.",
+    "revokeSession": "Revoke",
     "save": "Save",
     "saving": "Saving…",
     "saved": "Saved!"

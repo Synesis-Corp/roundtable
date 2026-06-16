@@ -2276,7 +2276,7 @@ describe('API Integration', () => {
       // Rotation: old token revoked + a brand-new one issued.
       expect(mockPrisma.refreshToken.update).toHaveBeenCalledWith({
         where: { id: 'rt-1' },
-        data: { revokedAt: expect.any(Date) },
+        data: { revokedAt: expect.any(Date), lastSeenAt: expect.any(Date) },
       });
       expect(mockPrisma.refreshToken.create).toHaveBeenCalled();
       const setCookie = res.headers['set-cookie']?.[0] ?? '';

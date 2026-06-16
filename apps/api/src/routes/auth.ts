@@ -24,10 +24,14 @@ import {
 const router = Router();
 const googleClient = new OAuth2Client();
 
-/** Persists a new refresh token (hashed) and sets it as an httpOnly cookie. */
-async function issueRefreshCookie(res: Response, userId: string): Promise<void> {
+/** Persists a new refresh token (hashed), captures session metadata, and sets the cookie. */
+async function issueRefreshCookie(res: Response, userId: string, req?: Request): Promise<void> {
   const { raw, hash, expiresAt } = generateRefreshToken();
-  await prisma.refreshToken.create({ data: { userId, tokenHash: hash, expiresAt } });
+  const userAgent = req?.headers?.['user-agent']?.slice(0, 500) ?? null;
+  const ip = req?.ip ?? null;
+  await prisma.refreshToken.create({
+    data: { userId, tokenHash: hash, expiresAt, userAgent, ip },
+  });
   setRefreshCookie(res, raw);
 }
 
@@ -91,7 +95,7 @@ router.post('/register', validateBody(RegisterSchema), async (req, res) => {
     });
 
     const token = signToken(user.id, user.email);
-    await issueRefreshCookie(res, user.id);
+    await issueRefreshCookie(res, user.id, req);
     res.status(201).json({ token, user: { id: user.id, email: user.email }, created: true });
   } catch (err) {
     req.log.error({ err }, 'registration failed');
@@ -117,7 +121,7 @@ router.post('/login', validateBody(LoginSchema), async (req, res) => {
     }
 
     const token = signToken(user.id, user.email);
-    await issueRefreshCookie(res, user.id);
+    await issueRefreshCookie(res, user.id, req);
     res.json({ token, user: { id: user.id, email: user.email }, created: false });
   } catch (err) {
     req.log.error({ err }, 'login failed');
@@ -166,7 +170,7 @@ router.post('/google', validateBody(GoogleAuthSchema), async (req, res) => {
     }
 
     const token = signToken(user.id, user.email);
-    await issueRefreshCookie(res, user.id);
+    await issueRefreshCookie(res, user.id, req);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name }, created });
   } catch (err) {
     req.log.error({ err }, 'google authentication failed');
@@ -201,11 +205,12 @@ router.post('/refresh', async (req, res) => {
     }
 
     // Rotation: revoke the consumed token, then mint a new pair.
+    // Also update lastSeenAt on the old session so it reflects activity.
     await prisma.refreshToken.update({
       where: { id: stored.id },
-      data: { revokedAt: new Date() },
+      data: { revokedAt: new Date(), lastSeenAt: new Date() },
     });
-    await issueRefreshCookie(res, user.id);
+    await issueRefreshCookie(res, user.id, req);
 
     const token = signToken(user.id, user.email);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
@@ -352,7 +357,7 @@ router.get('/github/callback', async (req: Request, res: Response) => {
     }
 
     const token = signToken(user.id, user.email);
-    await issueRefreshCookie(res, user.id);
+    await issueRefreshCookie(res, user.id, req);
     res
       .status(200)
       .type('html')
@@ -372,19 +377,69 @@ router.get('/github/callback', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/sessions', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  try {
+    const sessions = await prisma.refreshToken.findMany({
+      where: {
+        userId: req.userId!,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: {
+        id: true,
+        userAgent: true,
+        ip: true,
+        lastSeenAt: true,
+        createdAt: true,
+        expiresAt: true,
+      },
+      orderBy: { lastSeenAt: 'desc' },
+    });
+
+    res.json({ sessions });
+  } catch (err) {
+    req.log.error({ err }, 'sessions fetch failed');
+    res.status(500).json({ error: 'Failed to fetch sessions' });
+  }
+});
+
+router.delete('/sessions/:id', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  try {
+    const session = await prisma.refreshToken.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!session || session.userId !== req.userId!) {
+      res.status(404).json({ error: 'Session not found' });
+      return;
+    }
+
+    await prisma.refreshToken.update({
+      where: { id: session.id },
+      data: { revokedAt: new Date() },
+    });
+
+    res.status(204).send();
+  } catch (err) {
+    req.log.error({ err }, 'session revoke failed');
+    res.status(500).json({ error: 'Failed to revoke session' });
+  }
+});
+
 router.patch('/profile', authMiddleware, async (req: AuthenticatedRequest, res) => {
   try {
     const userId = req.userId!;
-    const { displayName, country, timezone } = req.body as {
+    const { displayName, country, timezone, language } = req.body as {
       displayName?: string | null;
       country?: string | null;
       timezone?: string | null;
+      language?: string | null;
     };
 
     const data: Record<string, string | null> = {};
     if (displayName !== undefined) data.displayName = displayName || null;
     if (country !== undefined) data.country = country || null;
     if (timezone !== undefined) data.timezone = timezone || null;
+    if (language !== undefined) data.language = language || null;
 
     if (Object.keys(data).length === 0) {
       res.status(400).json({ error: 'No fields to update' });
@@ -400,6 +455,7 @@ router.patch('/profile', authMiddleware, async (req: AuthenticatedRequest, res) 
       displayName: user.displayName,
       country: user.country,
       timezone: user.timezone,
+      language: user.language,
     });
   } catch (err) {
     req.log.error({ err }, 'profile update failed');
@@ -418,6 +474,7 @@ router.get('/profile', authMiddleware, async (req: AuthenticatedRequest, res) =>
         displayName: true,
         country: true,
         timezone: true,
+        language: true,
       },
     });
     if (!user) {

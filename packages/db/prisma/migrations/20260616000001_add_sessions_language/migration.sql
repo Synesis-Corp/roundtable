@@ -1,0 +1,4 @@
+ALTER TABLE "User" ADD COLUMN "language" TEXT;
+ALTER TABLE "RefreshToken" ADD COLUMN "userAgent" TEXT;
+ALTER TABLE "RefreshToken" ADD COLUMN "ip" TEXT;
+ALTER TABLE "RefreshToken" ADD COLUMN "lastSeenAt" TIMESTAMP(3) NOT NULL DEFAULT NOW();

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiGet, apiPatch } from '../lib/api-client';
+import { apiGet, apiPatch, apiDelete } from '../lib/api-client';
 
 export interface UserProfile {
   id: string;
@@ -8,21 +8,35 @@ export interface UserProfile {
   displayName: string | null;
   country: string | null;
   timezone: string | null;
+  language: string | null;
 }
 
-/**
- * Loads and saves user profile fields (displayName, country, timezone).
- */
+export interface UserSession {
+  id: string;
+  userAgent: string | null;
+  ip: string | null;
+  lastSeenAt: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
 export function useProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sessions, setSessions] = useState<UserSession[]>([]);
 
   useEffect(() => {
     let cancelled = false;
-    apiGet<UserProfile>('/auth/profile')
-      .then((data) => {
-        if (!cancelled) setProfile(data);
+    Promise.all([
+      apiGet<UserProfile>('/auth/profile'),
+      apiGet<{ sessions: UserSession[] }>('/auth/sessions'),
+    ])
+      .then(([profileData, sessionsData]) => {
+        if (!cancelled) {
+          setProfile(profileData);
+          setSessions(sessionsData.sessions);
+        }
       })
       .catch(() => {})
       .finally(() => {
@@ -34,7 +48,7 @@ export function useProfile() {
   }, []);
 
   async function updateProfile(
-    fields: Partial<Pick<UserProfile, 'displayName' | 'country' | 'timezone'>>
+    fields: Partial<Pick<UserProfile, 'displayName' | 'country' | 'timezone' | 'language'>>
   ) {
     setSaving(true);
     try {
@@ -46,5 +60,10 @@ export function useProfile() {
     }
   }
 
-  return { profile, loading, saving, updateProfile };
+  async function revokeSession(sessionId: string) {
+    await apiDelete(`/auth/sessions/${sessionId}`);
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+  }
+
+  return { profile, loading, saving, sessions, updateProfile, revokeSession };
 }

@@ -656,6 +656,12 @@
     "country": "País",
     "timezone": "Zona Horaria",
     "notDetected": "No detectado",
+    "language": "Idioma",
+    "languageHelp": "Elegí tu idioma preferido.",
+    "sessions": "Sesiones Activas",
+    "sessionsHelp": "Dispositivos donde tu cuenta está activa.",
+    "noSessions": "No hay sesiones activas.",
+    "revokeSession": "Cerrar",
     "save": "Guardar",
     "saving": "Guardando…",
     "saved": "¡Guardado!"

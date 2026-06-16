@@ -17,6 +17,7 @@ model User {
   displayName    String?          // how the user wants to be called (preferred name / nickname)
   country        String?          // ISO 3166-1 alpha-2 country code (self-reported)
   timezone       String?          // IANA timezone (e.g. "America/Argentina/Buenos_Aires")
+  language       String?          // preferred UI language (e.g. "en", "es") — synced to localStorage on login
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   conversations  Conversation[]
@@ -29,12 +30,15 @@ model User {
 }
 
 model RefreshToken {
-  id        String    @id @default(uuid())
-  userId    String
-  tokenHash String    @unique // sha256 of the opaque token — never store the raw value
-  expiresAt DateTime
-  revokedAt DateTime? // set on rotation or logout
-  createdAt DateTime  @default(now())
+  id         String    @id @default(uuid())
+  userId     String
+  tokenHash  String    @unique // sha256 of the opaque token — never store the raw value
+  expiresAt  DateTime
+  revokedAt  DateTime? // set on rotation or logout
+  userAgent  String?   // browser user-agent string captured on login
+  ip         String?   // client IP captured on login (trusted proxy header)
+  lastSeenAt DateTime  @default(now()) // updated on each authenticated request that uses this session
+  createdAt  DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
