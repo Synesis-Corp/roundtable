@@ -55,12 +55,17 @@ app.set(
 const skipInTest = () => process.env.NODE_ENV === 'test';
 
 // Strict limit on auth: brute-force / credential-stuffing surface.
+// Only applied to login, register, and OAuth endpoints — not to
+// refresh, sessions, or profile (those are called automatically by
+// the frontend and would exhaust the bucket on normal usage).
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  skip: skipInTest,
+  skip: (req) =>
+    skipInTest() ||
+    !['/auth/login', '/auth/register', '/auth/google'].includes(req.path),
   message: { error: 'Too many authentication attempts, try again later' },
 });
 
