@@ -99,16 +99,16 @@ describe('ChatMessageItem', () => {
 
   it('shows the thinking indicator on the streaming placeholder', () => {
     renderItem({ id: '4', role: 'assistant', content: '' }, { streaming: true, isLast: true });
-    expect(screen.getByText('Pensando…')).toBeInTheDocument();
+    expect(screen.getByText('Thinking…')).toBeInTheDocument();
   });
 
-  it("does not duplicate 'Pensando…' when the reasoning block is active", () => {
+  it("does not duplicate 'Thinking…' when the reasoning block is active", () => {
     renderItem(
       { id: '4b', role: 'assistant', content: '', reasoning: 'analizando…' },
       { streaming: true, isLast: true }
     );
     // Only the reasoning block header shows it — not the standalone indicator too.
-    expect(screen.getAllByText('Pensando…')).toHaveLength(1);
+    expect(screen.getAllByText('Thinking…')).toHaveLength(1);
   });
 
   it('renders a multi-provider answer as a clean assistant message', () => {
@@ -147,7 +147,7 @@ describe('ChatMessageItem', () => {
       provider: 'openai',
       model: 'gpt-4',
     });
-    const toggle = screen.getByRole('button', { name: /razonamiento/i });
+    const toggle = screen.getByRole('button', { name: /reasoning/i });
     expect(toggle).toBeInTheDocument();
     // Collapsed by default (not actively thinking)
     expect(screen.queryByText('step one then step two')).not.toBeInTheDocument();
@@ -165,26 +165,26 @@ describe('ChatMessageItem', () => {
       provider: 'openai',
       model: 'gpt-4',
     });
-    expect(screen.getByRole('button', { name: /copiar mensaje/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /marcar como útil/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /marcar como no útil/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /copy message/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /mark as helpful/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /mark as not helpful/i })).toBeInTheDocument();
   });
 
   it('does not show action buttons on user messages', () => {
     renderItem({ id: '7', role: 'user', content: 'user msg' });
-    expect(screen.queryByRole('button', { name: /copiar mensaje/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /marcar como útil/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /copy message/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /mark as helpful/i })).not.toBeInTheDocument();
   });
 
   it('does not show action buttons on error messages', () => {
     renderItem({ id: '8', role: 'assistant', content: 'Error: fail', isError: true });
-    expect(screen.queryByRole('button', { name: /copiar mensaje/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /marcar como útil/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /copy message/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /mark as helpful/i })).not.toBeInTheDocument();
   });
 
   it('shows Regenerate button when not streaming', () => {
     renderItem({ id: '9', role: 'assistant', content: 'done', provider: 'openai', model: 'gpt-4' });
-    expect(screen.getByRole('button', { name: /regenerar respuesta/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /regenerate response/i })).toBeInTheDocument();
   });
 
   it('hides Regenerate button while streaming the last message', () => {
@@ -192,7 +192,7 @@ describe('ChatMessageItem', () => {
       { id: '10', role: 'assistant', content: 'partial', provider: 'openai', model: 'gpt-4' },
       { streaming: true, isLast: true }
     );
-    expect(screen.queryByRole('button', { name: /regenerar respuesta/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /regenerate response/i })).not.toBeInTheDocument();
   });
 
   it('toggles feedback buttons mutually exclusively', async () => {
@@ -203,8 +203,8 @@ describe('ChatMessageItem', () => {
       provider: 'openai',
       model: 'gpt-4',
     });
-    const helpful = screen.getByRole('button', { name: /marcar como útil/i });
-    const unhelpful = screen.getByRole('button', { name: /marcar como no útil/i });
+    const helpful = screen.getByRole('button', { name: /mark as helpful/i });
+    const unhelpful = screen.getByRole('button', { name: /mark as not helpful/i });
 
     await userEvent.click(helpful);
     // Feedback active states are now applied via inline styles, not Tailwind classes
@@ -229,7 +229,7 @@ describe('ChatMessageItem', () => {
       provider: 'council',
       councilInfo: mockCouncil,
     });
-    expect(screen.getByText('Consejo · 4 modelos')).toBeInTheDocument();
+    expect(screen.getByText('Council · 4 models')).toBeInTheDocument();
     expect(screen.getByText(/El consejo recomienda una tabla/)).toBeInTheDocument();
   });
 
@@ -241,7 +241,7 @@ describe('ChatMessageItem', () => {
       provider: 'consensus',
       councilInfo: mockCouncil,
     });
-    expect(screen.getByText('Consejo · 4 modelos')).toBeInTheDocument();
+    expect(screen.getByText('Council · 4 models')).toBeInTheDocument();
   });
 
   it('opens and closes the council deliberation explorer', async () => {
@@ -252,20 +252,20 @@ describe('ChatMessageItem', () => {
       provider: 'council',
       councilInfo: mockCouncil,
     });
-    const toggle = screen.getByRole('button', { name: /deliberó el consejo/i });
+    const toggle = screen.getByRole('button', { name: /see how the council deliberated/i });
 
     // Collapsed by default — answer-first
-    expect(screen.queryByText('Propuesta ganadora')).not.toBeInTheDocument();
+    expect(screen.queryByText('Winning proposal')).not.toBeInTheDocument();
 
     // Open → vote step shows each model's stance
     await userEvent.click(toggle);
-    expect(screen.getByText('Propuesta ganadora')).toBeInTheDocument();
-    expect(screen.getAllByText('Vota a favor')).toHaveLength(2);
-    expect(screen.getByText('Cambió su voto')).toBeInTheDocument();
+    expect(screen.getByText('Winning proposal')).toBeInTheDocument();
+    expect(screen.getAllByText('Votes in favor')).toHaveLength(2);
+    expect(screen.getByText('Changed vote')).toBeInTheDocument();
 
     // Close again
     await userEvent.click(toggle);
-    expect(screen.queryByText('Propuesta ganadora')).not.toBeInTheDocument();
+    expect(screen.queryByText('Winning proposal')).not.toBeInTheDocument();
   });
 
   it('shows a real loading placeholder instead of mock council data', () => {
@@ -273,7 +273,7 @@ describe('ChatMessageItem', () => {
       { id: '15', role: 'assistant', content: '', provider: 'council' },
       { streaming: true, isLast: true }
     );
-    expect(screen.getByText(/Iniciando consejo real/i)).toBeInTheDocument();
+    expect(screen.getByText(/Starting real Council/i)).toBeInTheDocument();
     expect(screen.queryByText(/El consejo recomienda una tabla/i)).not.toBeInTheDocument();
   });
 
@@ -308,8 +308,8 @@ describe('ChatMessageItem', () => {
       ],
     });
 
-    // Two tool calls → "(2 consultas)"; two unique URLs → "2 fuentes".
-    const toggle = screen.getByRole('button', { name: /Busqué en la web.*2 fuentes/i });
+    // Two tool calls → "(2 queries)"; two unique URLs → "2 sources".
+    const toggle = screen.getByRole('button', { name: /I searched the web.*2 sources/i });
     expect(toggle).toBeInTheDocument();
 
     // Sources hidden until expanded.
@@ -336,7 +336,7 @@ describe('ChatMessageItem', () => {
       ],
     });
 
-    const toggle = screen.getByRole('button', { name: /Ejecuté Python/i });
+    const toggle = screen.getByRole('button', { name: /I ran Python/i });
     expect(toggle).toBeInTheDocument();
     // Code/output hidden until expanded.
     expect(screen.queryByText('print(2 + 2)')).not.toBeInTheDocument();
@@ -353,8 +353,8 @@ describe('ChatMessageItem', () => {
       content: 'Listo.',
       toolCalls: [{ name: 'run_python', args: { code: 'print(1)' }, result: { stdout: '1\n' } }],
     });
-    expect(screen.queryByRole('button', { name: /Busqué en la web/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Ejecuté Python/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /I searched the web/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /I ran Python/i })).toBeInTheDocument();
   });
 
   it('surfaces a python execution error in the run_python block', async () => {
@@ -371,7 +371,7 @@ describe('ChatMessageItem', () => {
       ],
     });
 
-    await userEvent.click(screen.getByRole('button', { name: /Ejecuté Python/i }));
+    await userEvent.click(screen.getByRole('button', { name: /I ran Python/i }));
     expect(screen.getByText(/ValueError: boom/)).toBeInTheDocument();
   });
 });

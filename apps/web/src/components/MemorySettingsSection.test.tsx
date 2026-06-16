@@ -51,10 +51,10 @@ describe('MemorySettingsSection', () => {
   it('renders the toggle and existing memories with accessible actions', () => {
     render(<MemorySettingsSection />);
 
-    expect(screen.getByRole('switch', { name: 'Usar memoria' })).toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Use memory' })).toBeChecked();
     expect(screen.getByText('Prefiere respuestas directas')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Editar memoria' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Borrar memoria' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit memory' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete memory' })).toBeInTheDocument();
   });
 
   it('shows an honest empty state and loading/error feedback', () => {
@@ -64,7 +64,7 @@ describe('MemorySettingsSection', () => {
 
     render(<MemorySettingsSection />);
 
-    expect(screen.getByText('Todavía no hay memorias guardadas')).toBeInTheDocument();
+    expect(screen.getByText('No saved memories yet')).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('No se pudo cargar');
   });
 
@@ -72,14 +72,14 @@ describe('MemorySettingsSection', () => {
     createMemory.mockResolvedValue(undefined);
     render(<MemorySettingsSection />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Añadir memoria' }));
-    fireEvent.change(screen.getByLabelText('Contenido de la memoria'), {
+    fireEvent.click(screen.getByRole('button', { name: 'Add memory' }));
+    fireEvent.change(screen.getByLabelText('Memory content'), {
       target: { value: 'Trabaja en Roundtable' },
     });
-    fireEvent.change(screen.getByLabelText('Etiquetas'), {
+    fireEvent.change(screen.getByLabelText('Tags'), {
       target: { value: 'proyecto, typescript' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar memoria' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save memory' }));
 
     await waitFor(() => {
       expect(createMemory).toHaveBeenCalledWith('Trabaja en Roundtable', [
@@ -94,11 +94,11 @@ describe('MemorySettingsSection', () => {
     deleteMemory.mockResolvedValue(undefined);
     render(<MemorySettingsSection />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Editar memoria' }));
-    fireEvent.change(screen.getByLabelText('Contenido de la memoria'), {
+    fireEvent.click(screen.getByRole('button', { name: 'Edit memory' }));
+    fireEvent.change(screen.getByLabelText('Memory content'), {
       target: { value: 'Prefiere respuestas breves' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
 
     await waitFor(() => {
       expect(updateMemory).toHaveBeenCalledWith('memory-1', 'Prefiere respuestas breves', [
@@ -106,14 +106,14 @@ describe('MemorySettingsSection', () => {
       ]);
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Borrar memoria' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete memory' }));
     await waitFor(() => expect(deleteMemory).toHaveBeenCalledWith('memory-1'));
   });
 
   it('updates the global memory preference', () => {
     render(<MemorySettingsSection />);
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Usar memoria' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Use memory' }));
 
     expect(setMemoryEnabled).toHaveBeenCalledWith(false);
   });

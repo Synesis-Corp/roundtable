@@ -3,7 +3,12 @@
     "email": "Email",
     "password": "Contraseña",
     "emailPlaceholder": "tu@ejemplo.com",
-    "or": "o"
+    "or": "o",
+    "language": "Idioma",
+    "code": {
+      "copy": "Copiar código",
+      "copied": "¡Copiado!"
+    }
   },
   "auth": {
     "login": {
@@ -34,7 +39,12 @@
         "tooShort": "La contraseña debe tener al menos 8 caracteres",
         "failed": "Error al registrarse"
       }
-    }
+    },
+    "errors": {
+      "noGoogleCredential": "No se recibió una credencial de Google",
+      "googleSignInFailed": "Error al iniciar sesión con Google"
+    },
+    "continueWithGithub": "Continuar con GitHub"
   },
   "shell": {
     "newChat": "Nuevo chat",
@@ -55,7 +65,17 @@
     "noResults": "Sin resultados para «{{query}}».",
     "lastModel": "Último modelo: {{label}}",
     "renameConversation": "Renombrar conversación {{title}}",
-    "deleteConversation": "Eliminar conversación {{title}}"
+    "deleteConversation": "Eliminar conversación {{title}}",
+    "providerLabelDefault": "Modelo",
+    "providerLabelCouncil": "Consejo (varios modelos)",
+    "history": {
+      "recent": "Recientes",
+      "empty": "Sin conversaciones todavía",
+      "justNow": "Justo ahora",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{count}}d"
+    }
   },
   "chat": {
     "auto": "Auto",
@@ -80,7 +100,179 @@
       "singleSubtitle": "Un prompt, varios modelos, una respuesta. Activa el <accent>Consejo</accent> para que los modelos deliberen y converjan."
     },
     "councilWarning": "Conecta al menos 2 proveedores para usar el Consejo",
-    "goToProviders": "Ir a Proveedores →"
+    "goToProviders": "Ir a Proveedores →",
+    "input": {
+      "placeholder": {
+        "incognito": "Escribe sin guardar…",
+        "council": "Pregunta al consejo…",
+        "reply": "Responde…",
+        "default": "Escribe un mensaje…"
+      },
+      "dropHint": "Suelta para adjuntar",
+      "removeFile": "Quitar archivo",
+      "attachFile": "Adjuntar archivos",
+      "modeGroup": "Modo de chat",
+      "singleMode": "Único",
+      "councilMode": "Consejo",
+      "incognitoMode": "Incógnito",
+      "incognitoActivate": "Activar modo incógnito",
+      "incognitoDeactivate": "Desactivar modo incógnito",
+      "incognitoNotice": "Este chat no se guardará. Solo se registrarán métricas de uso.",
+      "councilCount_one": "Sin modelos disponibles",
+      "councilCount_other": "{{count}} modelos en consejo",
+      "modelSelectorTitle": {
+        "council": "Modelo auto-seleccionado en modo Consejo",
+        "single": "Elegir modelo"
+      },
+      "modelSearchPlaceholder": "Buscar modelos…",
+      "modelLoading": "Cargando…",
+      "modelEmpty": "Conectar proveedores en Configuración",
+      "effortTitle": "Variante de modelo",
+      "effortVariant": "variant",
+      "effortSelectHeader": "Seleccionar variante",
+      "effortSelectSub": "Opciones de modelo por request",
+      "effortSearchPlaceholder": "Buscar variante…",
+      "effortEmpty": "Variante: {{variant}}",
+      "sendTitle": "Enviar mensaje",
+      "sendBlocked": {
+        "noProviders": "Conectá un proveedor para empezar",
+        "councilNeeds2": "El Consejo necesita al menos 2 providers",
+        "loading": "Cargando modelos…",
+        "noModels": "No hay modelos disponibles"
+      },
+      "stopTitle": "Detener generación"
+    },
+    "deliberation": {
+      "propose": "Proponen",
+      "debate": "Debaten",
+      "vote": "Votan",
+      "synthesize": "Sintetizan"
+    },
+    "quickActions": {
+      "image": "Crear imagen",
+      "write": "Escribir o editar",
+      "search": "Buscar info",
+      "ideas": "Lluvia de ideas"
+    },
+    "quickActionPrefixes": {
+      "image": "Crea una imagen de ",
+      "write": "Ayúdame a escribir ",
+      "search": "Busca información sobre ",
+      "ideas": "Generemos ideas para "
+    },
+    "banner": {
+      "councilConvening": "Roundtable: convening the Council"
+    },
+    "message": {
+      "copy": "Copiar",
+      "copyButton": "Copiar mensaje",
+      "copiedShort": "¡Copiado!",
+      "copied": "Copiado al portapapeles",
+      "regenerate": "Regenerar",
+      "regenerateAria": "Regenerar respuesta",
+      "thumbsUp": "Marcar como útil",
+      "thumbsUpTitle": "Útil",
+      "thumbsDown": "Marcar como no útil",
+      "thumbsDownTitle": "No útil",
+      "thinking": "Pensando…",
+      "responding": "Respondiendo…",
+      "reasoning": "Razonamiento",
+      "webSearch": {
+        "one": "Busqué en la web",
+        "other": "Busqué en la web ({{count}} consultas)",
+        "sources_one": "{{count}} fuente",
+        "sources_other": "{{count}} fuentes"
+      },
+      "pythonRun": {
+        "one": "Ejecuté Python",
+        "other": "Ejecuté Python ({{count}} veces)"
+      },
+      "pythonCode": "Código",
+      "pythonError": "Error",
+      "pythonOutput": "Salida",
+      "pythonEmpty": "(sin salida)",
+      "pythonTimeout": "Se agotó el tiempo de ejecución.",
+      "pythonTruncated": "Salida truncada.",
+      "imageAlt": "imagen adjunta",
+      "pdfFallback": "documento.pdf",
+      "fileFallback": "archivo",
+      "pageCount_one": "página",
+      "pageCount_other": "páginas",
+      "placeholder": "Analyze this:",
+      "councilStarting": "Iniciando consejo real…",
+      "councilWaitingProposals": "Esperando propuestas reales de los modelos conectados."
+    },
+    "council": {
+      "badge_one": "Consejo · {{count}} modelo",
+      "badge_other": "Consejo · {{count}} modelos",
+      "badgeBase": "Consejo",
+      "consensusByVote": "Elegida por consenso",
+      "consensusByMajority": "Elegida por mayoría",
+      "proposalsCollecting": "Recopilando propuestas",
+      "debateInProgress": "Debate en curso",
+      "votingInProgress": "Votación en curso",
+      "synthesizing": "Redactando síntesis final",
+      "tally": "{{for}} de {{total}} votos",
+      "tallyEmpty": "{{votes}} de {{total}} propuestas",
+      "answerEyebrow": "Respuesta consensuada",
+      "synthesizingAria": "Redactando…",
+      "generatingProposals": "Los modelos están generando propuestas…",
+      "debating": "El consejo está contrastando enfoques…",
+      "voting": "Los modelos están votando la mejor propuesta…",
+      "synthesizingFull": "El modelo ganador está redactando la respuesta final…",
+      "explorerToggle": "Ver cómo deliberó el consejo · paso a paso",
+      "tab": {
+        "proposals": "Propuestas",
+        "debate": "Debate",
+        "vote": "Voto"
+      },
+      "tabHint": {
+        "proposals": "Cada modelo propone su enfoque",
+        "debate": "Contrastan fortalezas y debilidades",
+        "vote": "Eligen la mejor base para el consenso"
+      },
+      "lockedHint": "Este paso todavía no empezó",
+      "chip": {
+        "winner": "Propuesta ganadora",
+        "pending": "Propuesta lista",
+        "for": "Vota a favor",
+        "changed": "Cambió su voto",
+        "against": "Vota en contra"
+      },
+      "summary": {
+        "debateEvaluated": "Evaluó cada propuesta y propuso una base común",
+        "debateMissing": "No se registró el debate de esta conversación",
+        "voteMissing": "Emitió su voto"
+      },
+      "tier": {
+        "strong": "Fuerte",
+        "light": "Liviano"
+      },
+      "angle": {
+        "pragmatic": "Pragmático",
+        "robust": "Robusto",
+        "economic": "Económico",
+        "innovative": "Innovador",
+        "secure": "Seguro",
+        "user-centric": "Centrado en el usuario"
+      },
+      "angleTitle": "Perspectiva asignada: {{angle}}",
+      "confidence": {
+        "high": "Alta confianza",
+        "medium": "Confianza media",
+        "low": "Baja confianza"
+      },
+      "riskLabel": "Riesgo: ",
+      "improvementLabel": "Mejora pedida: ",
+      "sourcesLabel": "Fuentes verificadas",
+      "thinkingRow": "Trabajando en este paso…",
+      "thinkingAria": "Trabajando",
+      "explorerAria": "Pasos de la deliberación",
+      "empty": {
+        "debate": "Esta conversación no guardó el detalle del debate.",
+        "generic": "Todavía no hay datos para este paso."
+      }
+    }
   },
   "settings": {
     "title": "Ajustes",
@@ -125,6 +317,277 @@
       "message": "¿Seguro que quieres desconectar <strong>{{name}}</strong>? Se borrarán la API key guardada y la configuración asociada.",
       "confirm": "Desconectar",
       "cancel": "Cancelar"
+    },
+    "providerRow": {
+      "connected": "Conectado",
+      "chatGptOAuth": "ChatGPT OAuth",
+      "modelCount_one": "{{count}} modelo",
+      "modelCount_other": "{{count}} modelos",
+      "docs": "Docs",
+      "disconnectAria": "Desconectar proveedor",
+      "disconnect": "Desconectar",
+      "credential": "Credencial",
+      "customConfig": "config personalizada",
+      "activeModels": "Modelos activos",
+      "codexTitle": "ChatGPT Plus/Pro",
+      "codexBody": "Inicia sesión con OpenAI para usar modelos respaldados por Codex sin API key.",
+      "codexConnecting": "Abriendo...",
+      "codexConnect": "Iniciar sesión con OpenAI",
+      "apiKeyPlaceholder": "Pega tu {{env}}...",
+      "apiKeyPlaceholderGeneric": "Pega tu API key...",
+      "hideKey": "Ocultar clave",
+      "showKey": "Mostrar clave",
+      "connecting": "Conectando...",
+      "connect": "Conectar",
+      "testing": "Probando...",
+      "test": "Probar",
+      "advancedHide": "Ocultar opciones avanzadas",
+      "advancedShow": "Opciones avanzadas",
+      "advancedSection": "Configuración del proveedor",
+      "package": "Paquete",
+      "defaultEndpoint": "Endpoint por defecto",
+      "standardEndpoint": "Endpoint estándar del proveedor",
+      "customBaseUrl": "Custom base URL",
+      "customEndpointPath": "Custom endpoint path",
+      "customHeadersJson": "Custom headers JSON",
+      "health": {
+        "checking": "Comprobando estado del proveedor",
+        "checkingTitle": "Comprobando estado…",
+        "operational": "Proveedor operativo",
+        "unavailable": "Proveedor no disponible: {{error}}",
+        "unknownError": "error desconocido"
+      }
+    },
+    "providerSelector": {
+      "selectModel": "Seleccionar modelo",
+      "search": "Buscar modelos...",
+      "loading": "Cargando...",
+      "empty": "Sin proveedores conectados. Conéctalos en Configuración.",
+      "noMatch": "Ningún modelo coincide con tu búsqueda."
+    },
+    "memory": {
+      "title": "Usar memoria",
+      "subtitle": "Permite usar estos datos como contexto en chats futuros. Esta preferencia se guarda en este navegador.",
+      "listTitle": "Memorias guardadas",
+      "listSub": "Puedes corregir o eliminar cualquier dato.",
+      "add": "Añadir memoria",
+      "content": "Contenido de la memoria",
+      "tags": "Etiquetas",
+      "tagsPlaceholder": "proyecto, preferencia",
+      "save": "Guardar memoria",
+      "saveChanges": "Guardar cambios",
+      "saving": "Guardando…",
+      "cancel": "Cancelar",
+      "empty": "Todavía no hay memorias guardadas",
+      "emptySub": "Añade una manualmente o deja que Roundtable aprenda durante conversaciones normales.",
+      "loading": "Cargando memorias…",
+      "retry": "Reintentar",
+      "editAria": "Editar memoria",
+      "deleteAria": "Borrar memoria",
+      "edit": "Editar",
+      "delete": "Borrar",
+      "deleting": "Borrando…"
+    },
+    "activeModels": {
+      "title": "Modelos activos · {{provider}}",
+      "aria": "Modelos activos de {{provider}}",
+      "body": "Elegí qué modelos mostrar en todo el sistema. Con todos seleccionados se muestran todos.",
+      "loading": "Cargando…",
+      "empty": "No hay modelos disponibles para este proveedor.",
+      "all": "Todos",
+      "none": "Ninguno",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "saveErrorFallback": "No se pudo guardar"
+    },
+    "councilMembers": {
+      "title": "Miembros del Consejo",
+      "aria": "Miembros del Consejo",
+      "closeAria": "Cerrar",
+      "selectedCount_one": "{{count}} seleccionado · mínimo 2 · máximo 8",
+      "selectedCount_other": "{{count}} seleccionados · mínimo 2 · máximo 8",
+      "autoLabel": "Usar selección automática",
+      "autoBody": "Los modelos se eligen automáticamente según los proveedores conectados.",
+      "tier": {
+        "strong": "Fuerte",
+        "light": "Liviano"
+      },
+      "empty": "No hay modelos de texto disponibles.",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "errors": {
+        "lessThan2": "Selecciona al menos 2 modelos",
+        "moreThan8": "Máximo 8 modelos permitidos",
+        "lessThan2Providers": "Se necesitan al menos 2 proveedores diferentes"
+      },
+      "saveErrorFallback": "No se pudo guardar la configuración"
+    }
+  },
+  "modal": {
+    "confirm": {
+      "processing": "Procesando…",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
+    },
+    "delete": {
+      "title": "Eliminar conversación",
+      "aria": "Eliminar conversación",
+      "body": "¿Seguro que querés eliminar «{{title}}»? Dejará de aparecer en tu historial.",
+      "cancel": "Cancelar",
+      "confirm": "Eliminar",
+      "deleting": "Eliminando…"
+    },
+    "rename": {
+      "title": "Renombrar conversación",
+      "aria": "Renombrar conversación",
+      "regenerateTitle": "Generar un título con IA a partir de la conversación",
+      "regenerating": "Generando…",
+      "regenerateWithAi": "Generar con IA",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando…"
+    }
+  },
+  "onboarding": {
+    "wizard": {
+      "aria": "Asistente de configuración",
+      "stepAria": "Paso {{current}} de 4",
+      "stepLabel": "Paso {{current}} de 4",
+      "step1Title": "Elegí tu primer proveedor",
+      "step2Title": "Conectá tu cuenta",
+      "step3Title": "Verificá la conexión",
+      "step4Title": "Elegí tu modelo por defecto",
+      "step1Body": "Elegí un proveedor para empezar. Después podés agregar más en Configuración.",
+      "step1Loading": "Cargando…",
+      "step1Badge": "OAuth",
+      "step1ModelCount": "{{count}} modelos · {{kind}}",
+      "step1Popular": "Popular",
+      "step1Support": "Soporte",
+      "step2PasteKey": "Pegá tu API key de <accent>{{name}}</accent>. Se cifra antes de guardarse.",
+      "step2CodexTitle": "<accent>Codex usa autenticación con ChatGPT Plus.</accent>",
+      "step2CodexBody": "Te llevamos a Configuración para conectar tu cuenta de OpenAI. Cuando vuelvas, ya vas a tener un modelo listo para chatear.",
+      "step2CodexButton": "Conectar con ChatGPT Plus",
+      "step2CodexButtonLoading": "Conectando…",
+      "step2ShowKey": "Mostrar API key",
+      "step2HideKey": "Ocultar API key",
+      "step2AdvancedShow": "Opciones avanzadas (baseURL, headers)",
+      "step2AdvancedHide": "Ocultar opciones avanzadas",
+      "step2AdvancedBaseUrl": "Base URL (opcional)",
+      "step2AdvancedHeaders": "Headers JSON (opcional, ej. {\"X-Custom\": \"value\"})",
+      "step3Body": "Verificamos tu clave con una llamada mínima al proveedor. Esto evita que descubras un problema en el primer chat.",
+      "step3Validate": "Verificar conexión",
+      "step3Skip": "Saltar (degraded)",
+      "step3Validating": "Verificando…",
+      "step3Success": "Conexión exitosa",
+      "step3ErrorFallback": "No se pudo verificar la conexión",
+      "step3Retry": "Reintentar",
+      "step4Body": "Elegí el modelo con el que querés empezar. Después podés cambiarlo desde el selector del chat.",
+      "step4Loading": "Cargando modelos…",
+      "step4NoModels": "No hay modelos activos para {{name}}. <link>Ir a Configuración</link> para activarlos.",
+      "back": "Atrás",
+      "cancel": "Cancelar",
+      "next": "Siguiente",
+      "nextConnecting": "Conectando…",
+      "start": "Empezar a chatear",
+      "startConnecting": "Conectando…",
+      "connectErrorFallback": "No se pudo conectar"
+    },
+    "connect": {
+      "title": "Conectar proveedor",
+      "aria": "Conectar proveedor",
+      "body": "Pegá tu API key para empezar. Para opciones avanzadas (Codex OAuth, baseURL custom), andá a Configuración.",
+      "providerLabel": "Provider",
+      "loading": "Cargando…",
+      "errorSuffix": "Ir a <link>Configuración</link>",
+      "empty": "No hay providers populares disponibles. <link>Ver todos</link>",
+      "apiKeyLabel": "API key",
+      "apiKeyOf": "API key de {{name}}",
+      "showKey": "Mostrar API key",
+      "hideKey": "Ocultar API key",
+      "cancel": "Cancelar",
+      "submit": "Conectar",
+      "submitLoading": "Conectando…",
+      "errorEmpty": "Pegá una API key para continuar.",
+      "errorFallback": "No se pudo conectar"
+    },
+    "copy": {
+      "new": {
+        "title": "Conecta tu primer proveedor para empezar",
+        "body": "Roundtable necesita una clave de API para hablar con los modelos. Añádela en Proveedores y empieza a trabajar.",
+        "cta": "Ir a Proveedores →"
+      },
+      "returning": {
+        "title": "Todavía no tienes proveedores conectados",
+        "body": "Sin un proveedor activo no puedes enviar mensajes. Conéctate ahora y todo estará listo.",
+        "cta": "Ir a Proveedores →"
+      }
+    }
+  },
+  "usage": {
+    "title": "Uso de IA",
+    "summary": "{{period}} · {{modelsCount}} {{modelsLabel}} · {{providersCount}} {{providersLabel}}",
+    "summaryAll": "Histórico completo",
+    "summary30d": "Últimos 30 días",
+    "summaryModel_one": "modelo",
+    "summaryModel_other": "modelos",
+    "summaryProvider_one": "proveedor",
+    "summaryProvider_other": "proveedores",
+    "periodToggle": {
+      "total": "Total",
+      "days30": "30 días"
+    },
+    "retry": "Reintentar",
+    "empty": {
+      "title": "Sin datos de uso",
+      "body": "Empezá a chatear para ver tus métricas"
+    },
+    "kpi": {
+      "estimatedCost": "Costo estimado",
+      "estimatedCostDetail": "Incluye estimaciones",
+      "totalTokens": "Total de tokens",
+      "tokensInOut": "{{in}} in / {{out}} out",
+      "requests": "Requests",
+      "tokensPerReq": "~{{count}} tokens/req",
+      "avgLatency": "Latencia promedio",
+      "latencySlow": "Lento",
+      "latencyFast": "Rápido"
+    },
+    "charts": {
+      "tokensByProvider": "Tokens por proveedor",
+      "costDistribution": "Distribución de costo",
+      "latencyVsTokens": "Latencia vs Tokens (tamaño del punto = requests)",
+      "scatterLatency": "Latencia",
+      "scatterTokens": "Tokens",
+      "input": "Input",
+      "output": "Output",
+      "scatterTooltip": {
+        "latency": "Latencia:",
+        "tokens": "Tokens:",
+        "requests": "Requests:"
+      }
+    },
+    "table": {
+      "title": "Detalle por modelo",
+      "estimatedBadge": "Estimado",
+      "estimatedTooltip": "Algunos costos son estimados porque no hay breakdown de input/output",
+      "estimatedCellTooltip": "Costo estimado (sin breakdown de input/output)",
+      "modelCount_one": "{{count}} modelo",
+      "modelCount_other": "{{count}} modelos",
+      "headers": {
+        "provider": "Provider",
+        "model": "Modelo",
+        "input": "Input",
+        "output": "Output",
+        "total": "Total",
+        "reqs": "Reqs",
+        "cost": "Costo",
+        "latency": "Latencia"
+      }
+    },
+    "insights": {
+      "title": "Insights"
     }
   }
 }

@@ -234,7 +234,7 @@ describe('SettingsPage — Council tab', () => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('Cancelar'));
+    fireEvent.click(screen.getByText('Cancel'));
 
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -284,7 +284,7 @@ describe('SettingsPage — Council tab', () => {
     } as any);
 
     renderSettingsPage();
-    const disconnectButtons = screen.getAllByText('Desconectar');
+    const disconnectButtons = screen.getAllByText('Disconnect');
     fireEvent.click(disconnectButtons[0]);
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();

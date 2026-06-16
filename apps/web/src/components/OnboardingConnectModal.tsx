@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useProviders } from '../hooks/useProviders';
 import { useSettings } from '../hooks/useSettings';
 
@@ -19,6 +20,7 @@ interface OnboardingConnectModalProps {
  * Cero backend, cero migración.
  */
 export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModalProps) {
+  const { t } = useTranslation();
   const { popularProviders, loading: providersLoading, error: providersError } = useProviders();
   const { handleConnect } = useSettings();
 
@@ -60,7 +62,7 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
 
   const handleSubmit = async () => {
     if (!providerId || !apiKey.trim()) {
-      setError('Pegá una API key para continuar.');
+      setError(t('onboarding.connect.errorEmpty'));
       return;
     }
     setError(null);
@@ -72,7 +74,7 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
       // user can see the (now populated) model selector immediately.
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo conectar');
+      setError(err instanceof Error ? err.message : t('onboarding.connect.errorFallback'));
     } finally {
       setSubmitting(false);
     }
@@ -83,7 +85,7 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
       data-testid="onboarding-connect-modal"
       role="dialog"
       aria-modal="true"
-      aria-label="Conectar proveedor"
+      aria-label={t('onboarding.connect.aria')}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       onClick={() => {
@@ -102,11 +104,10 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
         {/* Header */}
         <div style={{ padding: '20px 20px 12px', borderBottom: '1px solid var(--border)' }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)' }}>
-            Conectar proveedor
+            {t('onboarding.connect.title')}
           </h2>
           <p className="mt-1" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-            Pegá tu API key para empezar. Para opciones avanzadas (Codex OAuth, baseURL custom),
-            andá a Configuración.
+            {t('onboarding.connect.body')}
           </p>
         </div>
 
@@ -114,9 +115,13 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
         <div style={{ padding: 20, maxHeight: 480, overflowY: 'auto' }}>
           {/* Provider picker */}
           <p className="mb-2" style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-2)' }}>
-            Provider
+            {t('onboarding.connect.providerLabel')}
           </p>
-          {providersLoading && <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Cargando…</p>}
+          {providersLoading && (
+            <p style={{ fontSize: 13, color: 'var(--text-3)' }}>
+              {t('onboarding.connect.loading')}
+            </p>
+          )}
           {providersError && !providersLoading && (
             <div
               role="alert"
@@ -130,17 +135,26 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
               }}
             >
               {providersError}.{' '}
-              <a href="/settings" className="underline" style={{ color: 'var(--accent)' }}>
-                Ir a Configuración
-              </a>
+              <Trans
+                i18nKey="onboarding.connect.errorSuffix"
+                components={{
+                  link: (
+                    <a href="/settings" className="underline" style={{ color: 'var(--accent)' }} />
+                  ),
+                }}
+              />
             </div>
           )}
           {!providersLoading && !providersError && popularProviders.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--text-3)' }}>
-              No hay providers populares disponibles.{' '}
-              <a href="/settings" className="underline" style={{ color: 'var(--accent)' }}>
-                Ver todos
-              </a>
+              <Trans
+                i18nKey="onboarding.connect.empty"
+                components={{
+                  link: (
+                    <a href="/settings" className="underline" style={{ color: 'var(--accent)' }} />
+                  ),
+                }}
+              />
             </p>
           )}
           {!providersLoading && popularProviders.length > 0 && (
@@ -176,7 +190,10 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
 
           {/* API key input */}
           <p className="mb-2" style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-2)' }}>
-            API key {selectedProvider ? `de ${selectedProvider.name}` : ''}
+            {t('onboarding.connect.apiKeyLabel')}
+            {selectedProvider
+              ? ` ${t('onboarding.connect.apiKeyOf', { name: selectedProvider.name })}`
+              : ''}
           </p>
           <div className="relative">
             <input
@@ -187,7 +204,7 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
                 setApiKey(e.target.value);
                 if (error) setError(null);
               }}
-              placeholder={selectedProvider ? `sk-…` : 'sk-…'}
+              placeholder="sk-…"
               autoComplete="off"
               spellCheck={false}
               className="w-full pr-10 pl-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-surface)]"
@@ -201,7 +218,9 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
             <button
               type="button"
               onClick={() => setShowKey((s) => !s)}
-              aria-label={showKey ? 'Ocultar API key' : 'Mostrar API key'}
+              aria-label={
+                showKey ? t('onboarding.connect.hideKey') : t('onboarding.connect.showKey')
+              }
               className="absolute top-1/2 right-2 -translate-y-1/2 p-1"
               style={{
                 color: 'var(--text-3)',
@@ -289,7 +308,7 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
               cursor: submittingBlocked ? 'default' : 'pointer',
             }}
           >
-            Cancelar
+            {t('onboarding.connect.cancel')}
           </button>
           <button
             type="button"
@@ -308,7 +327,9 @@ export function OnboardingConnectModal({ open, onClose }: OnboardingConnectModal
               cursor: submittingBlocked ? 'default' : 'pointer',
             }}
           >
-            {submittingBlocked ? 'Conectando…' : 'Conectar'}
+            {submittingBlocked
+              ? t('onboarding.connect.submitLoading')
+              : t('onboarding.connect.submit')}
           </button>
         </div>
       </div>

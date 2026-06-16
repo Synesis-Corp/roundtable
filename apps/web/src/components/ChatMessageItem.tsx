@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MarkdownContent } from './MarkdownContent';
 import { CouncilBlock } from './CouncilBlock';
 import type { ChatMessage, ToolCallRecord } from '../types/chat';
@@ -18,7 +19,7 @@ interface ChatMessageItemProps {
 }
 
 /** Placeholder content the backend/composer uses when only files are sent. */
-const ATTACH_PLACEHOLDER = 'Analyze this:';
+const ATTACH_PLACEHOLDER_KEY = 'chat.message.placeholder';
 
 function attachmentSrc(a: Attachment): string {
   return a.base64 ?? a.url ?? '';
@@ -214,10 +215,13 @@ function SourceFavicon({ host, size = 16 }: { host: string; size?: number }) {
  *  ChatGPT's "Fuentes"). When every search soft-failed (no results), it stays
  *  a plain, non-interactive label. */
 function WebSearchChip({ toolCalls }: { toolCalls: ToolCallRecord[] }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const sources = collectWebSources(toolCalls);
   const count = toolCalls.length;
-  const label = count === 1 ? 'Busqué en la web' : `Busqué en la web (${count} consultas)`;
+  const label = t(count === 1 ? 'chat.message.webSearch.one' : 'chat.message.webSearch.other', {
+    count,
+  });
   const hasSources = sources.length > 0;
   const preview = sources.slice(0, 3);
 
@@ -229,7 +233,11 @@ function WebSearchChip({ toolCalls }: { toolCalls: ToolCallRecord[] }) {
         className="flex items-center gap-1.5 text-xs transition-colors focus:outline-none"
         style={{ color: 'var(--text-3)', cursor: hasSources ? 'pointer' : 'default' }}
         aria-expanded={hasSources ? open : undefined}
-        aria-label={hasSources ? `${label} · ${sources.length} fuentes` : label}
+        aria-label={
+          hasSources
+            ? `${label} · ${t('chat.message.webSearch.sources', { count: sources.length })}`
+            : label
+        }
       >
         <SearchIcon />
         <span>{label}</span>
@@ -252,7 +260,7 @@ function WebSearchChip({ toolCalls }: { toolCalls: ToolCallRecord[] }) {
               ))}
             </span>
             <span style={{ color: 'var(--text-4)' }}>
-              · {sources.length} {sources.length === 1 ? 'fuente' : 'fuentes'}
+              · {t('chat.message.webSearch.sources', { count: sources.length })}
             </span>
             <ChevronIcon open={open} />
           </>
@@ -351,10 +359,13 @@ function TerminalIcon() {
  *  the user can audit exactly what ran — same provenance idea as the web-search
  *  "Fuentes" chip. */
 function PythonRunChip({ toolCalls }: { toolCalls: ToolCallRecord[] }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const runs = collectPythonRuns(toolCalls);
   const count = runs.length;
-  const label = count === 1 ? 'Ejecuté Python' : `Ejecuté Python (${count} veces)`;
+  const label = t(count === 1 ? 'chat.message.pythonRun.one' : 'chat.message.pythonRun.other', {
+    count,
+  });
 
   const preStyle: CSSProperties = {
     margin: 0,
@@ -393,32 +404,34 @@ function PythonRunChip({ toolCalls }: { toolCalls: ToolCallRecord[] }) {
           {runs.map((run, i) => (
             <div key={i} className="flex flex-col gap-1">
               <span className="text-xs" style={{ color: 'var(--text-4)' }}>
-                Código
+                {t('chat.message.pythonCode')}
               </span>
               <pre style={preStyle}>{run.code}</pre>
               {run.error ? (
                 <>
                   <span className="text-xs" style={{ color: 'var(--m-rose)' }}>
-                    Error
+                    {t('chat.message.pythonError')}
                   </span>
                   <pre style={{ ...preStyle, color: 'var(--m-rose)' }}>{run.error}</pre>
                 </>
               ) : (
                 <>
                   <span className="text-xs" style={{ color: 'var(--text-4)' }}>
-                    Salida
+                    {t('chat.message.pythonOutput')}
                   </span>
-                  <pre style={preStyle}>{(run.stdout ?? '').trim() || '(sin salida)'}</pre>
+                  <pre style={preStyle}>
+                    {(run.stdout ?? '').trim() || t('chat.message.pythonEmpty')}
+                  </pre>
                 </>
               )}
               {run.timedOut && (
                 <span className="text-xs" style={{ color: 'var(--m-amber)' }}>
-                  ⏱ Se agotó el tiempo de ejecución.
+                  {t('chat.message.pythonTimeout')}
                 </span>
               )}
               {run.truncated && (
                 <span className="text-xs" style={{ color: 'var(--text-4)' }}>
-                  Salida truncada.
+                  {t('chat.message.pythonTruncated')}
                 </span>
               )}
             </div>
@@ -486,6 +499,7 @@ function ThinkingDots() {
 /* ── Reasoning / thinking block ── collapsible, Roundtable-styled. */
 
 function ReasoningBlock({ reasoning, active }: { reasoning: string; active: boolean }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(active);
   const [userToggled, setUserToggled] = useState(false);
 
@@ -518,7 +532,9 @@ function ReasoningBlock({ reasoning, active }: { reasoning: string; active: bool
         ) : (
           <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
         )}
-        <span style={{ fontWeight: 500 }}>{active ? 'Pensando…' : 'Razonamiento'}</span>
+        <span style={{ fontWeight: 500 }}>
+          {active ? t('chat.message.thinking') : t('chat.message.reasoning')}
+        </span>
         <ChevronIcon open={open} />
       </button>
       {open && (
@@ -547,9 +563,11 @@ function ReasoningBlock({ reasoning, active }: { reasoning: string; active: bool
 function ImageAttachments({
   attachments,
   align,
+  t,
 }: {
   attachments: Attachment[];
   align: 'end' | 'start';
+  t: ReturnType<typeof useTranslation>['t'];
 }) {
   if (attachments.length === 0) return null;
   return (
@@ -565,7 +583,7 @@ function ImageAttachments({
         >
           <img
             src={attachmentSrc(a)}
-            alt={a.name ?? 'imagen adjunta'}
+            alt={a.name ?? t('chat.message.imageAlt')}
             className="object-cover"
             style={{ maxWidth: 280, maxHeight: 280, width: 'auto', height: 'auto' }}
           />
@@ -575,10 +593,16 @@ function ImageAttachments({
   );
 }
 
-function PdfAttachment({ attachment }: { attachment: Attachment }) {
+function PdfAttachment({
+  attachment,
+  t,
+}: {
+  attachment: Attachment;
+  t: ReturnType<typeof useTranslation>['t'];
+}) {
   const pageInfo =
     attachment.pageCount !== undefined
-      ? `${attachment.pageCount} ${attachment.pageCount === 1 ? 'página' : 'páginas'}`
+      ? `${attachment.pageCount} ${t('chat.message.pageCount', { count: attachment.pageCount })}`
       : null;
   return (
     <div
@@ -612,7 +636,7 @@ function PdfAttachment({ attachment }: { attachment: Attachment }) {
         />
       </svg>
       <span className="truncate text-xs" style={{ color: 'var(--text-2)' }}>
-        {attachment.name ?? 'documento.pdf'}
+        {attachment.name ?? t('chat.message.pdfFallback')}
       </span>
       {pageInfo && (
         <span
@@ -629,16 +653,18 @@ function PdfAttachment({ attachment }: { attachment: Attachment }) {
 function FileAttachments({
   attachments,
   align,
+  t,
 }: {
   attachments: Attachment[];
   align: 'end' | 'start';
+  t: ReturnType<typeof useTranslation>['t'];
 }) {
   if (attachments.length === 0) return null;
   return (
     <div className={`flex flex-wrap gap-2 ${align === 'end' ? 'justify-end' : 'justify-start'}`}>
       {attachments.map((a, i) =>
         a.type === 'pdf' ? (
-          <PdfAttachment key={i} attachment={a} />
+          <PdfAttachment key={i} attachment={a} t={t} />
         ) : (
           <div
             key={i}
@@ -654,7 +680,7 @@ function FileAttachments({
               <FileIcon className="w-4 h-4" />
             </span>
             <span className="truncate text-xs" style={{ color: 'var(--text-2)' }}>
-              {a.name ?? 'archivo'}
+              {a.name ?? t('chat.message.fileFallback')}
             </span>
           </div>
         )
@@ -674,6 +700,7 @@ export function ChatMessageItem({
   isNew,
   onRegenerate,
 }: ChatMessageItemProps) {
+  const { t } = useTranslation();
   void userName; // user identity now lives in the sidebar/topbar, not per-message
   const isCouncil = msg.provider === 'council' || msg.provider === 'consensus';
   const showTyping = streaming && isLast && msg.role === 'assistant' && !msg.isError && !isCouncil;
@@ -707,12 +734,12 @@ export function ChatMessageItem({
 
   /* ── USER message → right-aligned bubble (ChatGPT-style) ── */
   if (msg.role === 'user') {
-    const showText = msg.content && msg.content !== ATTACH_PLACEHOLDER;
+    const showText = msg.content && msg.content !== t(ATTACH_PLACEHOLDER_KEY);
     return (
       <div className={`flex flex-col items-end gap-2 py-2.5 ${isNew ? 'animate-fade-in-up' : ''}`}>
         <div className="max-w-[80%] flex flex-col items-end gap-2">
-          <ImageAttachments attachments={imageAttachments} align="end" />
-          <FileAttachments attachments={fileAttachments} align="end" />
+          <ImageAttachments attachments={imageAttachments} align="end" t={t} />
+          <FileAttachments attachments={fileAttachments} align="end" t={t} />
           {showText && (
             <div
               className="whitespace-pre-wrap break-words"
@@ -751,7 +778,7 @@ export function ChatMessageItem({
         <div className="flex items-center gap-2 mb-2">
           <ThinkingDots />
           <span className="text-xs" style={{ color: 'var(--text-4)' }}>
-            {msg.content ? 'Respondiendo…' : 'Pensando…'}
+            {msg.content ? t('chat.message.responding') : t('chat.message.thinking')}
           </span>
         </div>
       )}
@@ -780,11 +807,11 @@ export function ChatMessageItem({
             <div className="flex items-center gap-2">
               <ThinkingDots />
               <span className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>
-                Iniciando consejo real…
+                {t('chat.message.councilStarting')}
               </span>
             </div>
             <p className="mt-2 text-sm" style={{ color: 'var(--text-3)' }}>
-              Esperando propuestas reales de los modelos conectados.
+              {t('chat.message.councilWaitingProposals')}
             </p>
           </div>
         )
@@ -821,11 +848,13 @@ export function ChatMessageItem({
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
             }}
-            aria-label={copied ? 'Copiado al portapapeles' : 'Copiar mensaje'}
-            title={copied ? '¡Copiado!' : 'Copiar mensaje'}
+            aria-label={copied ? t('chat.message.copied') : t('chat.message.copyButton')}
+            title={copied ? t('chat.message.copiedShort') : t('chat.message.copyButton')}
           >
             <ClipboardIcon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{copied ? '¡Copiado!' : 'Copiar'}</span>
+            <span className="hidden sm:inline">
+              {copied ? t('chat.message.copiedShort') : t('chat.message.copy')}
+            </span>
           </button>
 
           {/* Regenerate */}
@@ -840,11 +869,11 @@ export function ChatMessageItem({
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
             }}
-            aria-label="Regenerar respuesta"
-            title="Regenerar respuesta"
+            aria-label={t('chat.message.regenerateAria')}
+            title={t('chat.message.regenerateAria')}
           >
             <RefreshIcon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Regenerar</span>
+            <span className="hidden sm:inline">{t('chat.message.regenerate')}</span>
           </button>
 
           {/* Feedback */}
@@ -861,8 +890,8 @@ export function ChatMessageItem({
               if (feedback !== 'helpful')
                 (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
             }}
-            aria-label="Marcar como útil"
-            title="Útil"
+            aria-label={t('chat.message.thumbsUp')}
+            title={t('chat.message.thumbsUpTitle')}
           >
             <ThumbsUpIcon className="w-3.5 h-3.5" />
           </button>
@@ -879,8 +908,8 @@ export function ChatMessageItem({
               if (feedback !== 'unhelpful')
                 (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-4)';
             }}
-            aria-label="Marcar como no útil"
-            title="No útil"
+            aria-label={t('chat.message.thumbsDown')}
+            title={t('chat.message.thumbsDownTitle')}
           >
             <ThumbsDownIcon className="w-3.5 h-3.5" />
           </button>

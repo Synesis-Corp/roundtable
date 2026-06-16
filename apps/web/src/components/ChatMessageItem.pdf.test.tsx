@@ -30,7 +30,7 @@ describe('ChatMessageItem — PDF attachment chip', () => {
     // The filename must be visible.
     expect(screen.getByText('informe.pdf')).toBeInTheDocument();
     // The page count must be visible alongside the filename.
-    expect(screen.getByText(/12 páginas/i)).toBeInTheDocument();
+    expect(screen.getByText(/12 pages/i)).toBeInTheDocument();
   });
 
   it('renders a PDF chip with just the filename when page count is missing (legacy data)', () => {
@@ -44,8 +44,8 @@ describe('ChatMessageItem — PDF attachment chip', () => {
     renderItem({ attachments: [pdfAttachment] });
 
     expect(screen.getByText('doc.pdf')).toBeInTheDocument();
-    // No "X páginas" text when pageCount is missing.
-    expect(screen.queryByText(/páginas/i)).not.toBeInTheDocument();
+    // No "X pages" text when pageCount is missing.
+    expect(screen.queryByText(/pages/i)).not.toBeInTheDocument();
   });
 
   it('renders a generic file chip for non-PDF attachments (regression check)', () => {
@@ -58,7 +58,7 @@ describe('ChatMessageItem — PDF attachment chip', () => {
     renderItem({ attachments: [textAttachment] });
 
     expect(screen.getByText('notes.txt')).toBeInTheDocument();
-    // The PDF-specific "páginas" label is not shown for generic files.
-    expect(screen.queryByText(/páginas/i)).not.toBeInTheDocument();
+    // The PDF-specific "pages" label is not shown for generic files.
+    expect(screen.queryByText(/pages/i)).not.toBeInTheDocument();
   });
 });

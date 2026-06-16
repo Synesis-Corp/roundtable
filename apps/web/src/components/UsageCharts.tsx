@@ -14,6 +14,7 @@ import {
   Scatter,
   ZAxis,
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import type { UsageRow } from '../lib/usage-helpers';
 import { getProviderColor, formatTokens, formatLatency, formatCost } from '../lib/usage-helpers';
 
@@ -41,6 +42,7 @@ export function ScatterTooltipContent({
   active?: boolean;
   payload?: ReadonlyArray<{ payload?: UsageRow; name?: string }>;
 }) {
+  const { t } = useTranslation();
   if (!active || !payload || payload.length === 0) return null;
   const p = payload[0].payload;
   if (!p) return null;
@@ -62,13 +64,16 @@ export function ScatterTooltipContent({
         {p.displayName || `${p.providerId} · ${p.modelId}`}
       </div>
       <div style={{ color: 'var(--text-2)' }}>
-        Latencia: <span style={{ color: 'var(--text-1)' }}>{formatLatency(p.avgLatencyMs)}</span>
+        {t('usage.charts.scatterTooltip.latency')}{' '}
+        <span style={{ color: 'var(--text-1)' }}>{formatLatency(p.avgLatencyMs)}</span>
       </div>
       <div style={{ color: 'var(--text-2)' }}>
-        Tokens: <span style={{ color: 'var(--text-1)' }}>{formatTokens(p.totalTokens)}</span>
+        {t('usage.charts.scatterTooltip.tokens')}{' '}
+        <span style={{ color: 'var(--text-1)' }}>{formatTokens(p.totalTokens)}</span>
       </div>
       <div style={{ color: 'var(--text-2)' }}>
-        Requests: <span style={{ color: 'var(--text-1)' }}>{p.requestCount}</span>
+        {t('usage.charts.scatterTooltip.requests')}{' '}
+        <span style={{ color: 'var(--text-1)' }}>{p.requestCount}</span>
       </div>
     </div>
   );
@@ -95,8 +100,9 @@ export function ChartCard({
 
 /** Stacked input/output tokens per provider. */
 export function TokensByProviderChart({ providerData }: { providerData: ProviderDatum[] }) {
+  const { t } = useTranslation();
   return (
-    <ChartCard title="Tokens por proveedor">
+    <ChartCard title={t('usage.charts.tokensByProvider')}>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={providerData} barGap={0} barCategoryGap="20%">
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -134,14 +140,14 @@ export function TokensByProviderChart({ providerData }: { providerData: Provider
           />
           <Bar
             dataKey="inputTokens"
-            name="Input"
+            name={t('usage.charts.input')}
             stackId="a"
             fill="#6366f1"
             radius={[0, 0, 0, 0]}
           />
           <Bar
             dataKey="outputTokens"
-            name="Output"
+            name={t('usage.charts.output')}
             stackId="a"
             fill="#8b5cf6"
             radius={[4, 4, 0, 0]}
@@ -154,8 +160,9 @@ export function TokensByProviderChart({ providerData }: { providerData: Provider
 
 /** Cost distribution donut by provider. */
 export function CostDistributionChart({ pieData }: { pieData: PieDatum[] }) {
+  const { t } = useTranslation();
   return (
-    <ChartCard title="Distribución de costo">
+    <ChartCard title={t('usage.charts.costDistribution')}>
       <ResponsiveContainer width="100%" height={280}>
         <PieChart>
           <Pie
@@ -201,21 +208,22 @@ export function CostDistributionChart({ pieData }: { pieData: PieDatum[] }) {
 
 /** Latency vs tokens scatter; point size encodes request volume. */
 export function LatencyScatterChart({ rows }: { rows: UsageRow[] }) {
+  const { t } = useTranslation();
   return (
-    <ChartCard title="Latencia vs Tokens (tamaño del punto = requests)" className="mb-8">
+    <ChartCard title={t('usage.charts.latencyVsTokens')} className="mb-8">
       <ResponsiveContainer width="100%" height={300}>
         <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
             type="number"
             dataKey="totalTokens"
-            name="Tokens"
+            name={t('usage.charts.scatterTokens')}
             tick={{ fill: 'var(--text-3)', fontSize: 11 }}
             axisLine={{ stroke: 'var(--border)' }}
             tickLine={false}
             tickFormatter={formatTokens}
             label={{
-              value: 'Tokens',
+              value: t('usage.charts.scatterTokens'),
               position: 'insideBottom',
               offset: -5,
               fill: 'var(--text-3)',
@@ -225,13 +233,13 @@ export function LatencyScatterChart({ rows }: { rows: UsageRow[] }) {
           <YAxis
             type="number"
             dataKey="avgLatencyMs"
-            name="Latencia"
+            name={t('usage.charts.scatterLatency')}
             tick={{ fill: 'var(--text-3)', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={formatLatency}
             label={{
-              value: 'Latencia',
+              value: t('usage.charts.scatterLatency'),
               angle: -90,
               position: 'insideLeft',
               fill: 'var(--text-3)',

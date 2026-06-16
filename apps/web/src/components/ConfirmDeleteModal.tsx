@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 interface ConfirmDeleteModalProps {
   title: string;
   deleting: boolean;
@@ -12,6 +14,7 @@ export function ConfirmDeleteModal({
   onCancel,
   onConfirm,
 }: ConfirmDeleteModalProps) {
+  const { t } = useTranslation();
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -23,7 +26,7 @@ export function ConfirmDeleteModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Eliminar conversación"
+        aria-label={t('modal.delete.aria')}
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--bg-surface)',
@@ -35,10 +38,10 @@ export function ConfirmDeleteModal({
         }}
       >
         <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)', marginBottom: 8 }}>
-          Eliminar conversación
+          {t('modal.delete.title')}
         </h2>
         <p style={{ fontSize: 13.5, color: 'var(--text-3)', marginBottom: 20, lineHeight: 1.5 }}>
-          ¿Seguro que querés eliminar «{title}»? Dejará de aparecer en tu historial.
+          {t('modal.delete.body', { title })}
         </p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
@@ -56,7 +59,7 @@ export function ConfirmDeleteModal({
               cursor: deleting ? 'default' : 'pointer',
             }}
           >
-            Cancelar
+            {t('modal.delete.cancel')}
           </button>
           <button
             type="button"
@@ -74,7 +77,7 @@ export function ConfirmDeleteModal({
               cursor: deleting ? 'default' : 'pointer',
             }}
           >
-            {deleting ? 'Eliminando…' : 'Eliminar'}
+            {deleting ? t('modal.delete.deleting') : t('modal.delete.confirm')}
           </button>
         </div>
       </div>

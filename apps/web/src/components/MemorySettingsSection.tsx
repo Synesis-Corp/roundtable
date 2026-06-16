@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMemory, type MemoryItem } from '../hooks/useMemory';
 
 function parseTags(value: string): string[] {
@@ -9,6 +10,7 @@ function parseTags(value: string): string[] {
 }
 
 export function MemorySettingsSection() {
+  const { t } = useTranslation();
   const {
     memories,
     loading,
@@ -80,17 +82,16 @@ export function MemorySettingsSection() {
             id="memory-settings-title"
             style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)' }}
           >
-            Usar memoria
+            {t('settings.memory.title')}
           </h2>
           <p className="mt-1" style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5 }}>
-            Permite usar estos datos como contexto en chats futuros. Esta preferencia se guarda en
-            este navegador.
+            {t('settings.memory.subtitle')}
           </p>
         </div>
         <button
           type="button"
           role="switch"
-          aria-label="Usar memoria"
+          aria-label={t('settings.memory.title')}
           aria-checked={memoryEnabled}
           onClick={() => setMemoryEnabled(!memoryEnabled)}
           className="relative shrink-0 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
@@ -112,10 +113,10 @@ export function MemorySettingsSection() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-1)' }}>
-            Memorias guardadas
+            {t('settings.memory.listTitle')}
           </h3>
           <p className="mt-0.5" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-            Puedes corregir o eliminar cualquier dato.
+            {t('settings.memory.listSub')}
           </p>
         </div>
         <button
@@ -124,7 +125,7 @@ export function MemorySettingsSection() {
           className="rounded-lg px-3.5 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
           style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
         >
-          Añadir memoria
+          {t('settings.memory.add')}
         </button>
       </div>
 
@@ -142,7 +143,7 @@ export function MemorySettingsSection() {
             className="block text-sm font-medium"
             style={{ color: 'var(--text-1)' }}
           >
-            Contenido de la memoria
+            {t('settings.memory.content')}
           </label>
           <textarea
             id="memory-content"
@@ -163,13 +164,13 @@ export function MemorySettingsSection() {
             className="mt-3 block text-sm font-medium"
             style={{ color: 'var(--text-1)' }}
           >
-            Etiquetas
+            {t('settings.memory.tags')}
           </label>
           <input
             id="memory-tags"
             value={tags}
             onChange={(event) => setTags(event.target.value)}
-            placeholder="proyecto, preferencia"
+            placeholder={t('settings.memory.tagsPlaceholder')}
             className="mt-2 w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
             style={{
               backgroundColor: 'var(--bg-input)',
@@ -186,7 +187,11 @@ export function MemorySettingsSection() {
               className="rounded-lg px-3.5 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
               style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
             >
-              {saving ? 'Guardando…' : editingId ? 'Guardar cambios' : 'Guardar memoria'}
+              {saving
+                ? t('settings.memory.saving')
+                : editingId
+                  ? t('settings.memory.saveChanges')
+                  : t('settings.memory.save')}
             </button>
             <button
               type="button"
@@ -195,7 +200,7 @@ export function MemorySettingsSection() {
               className="rounded-lg px-3.5 py-2 text-sm"
               style={{ color: 'var(--text-2)', border: '1px solid var(--border)' }}
             >
-              Cancelar
+              {t('settings.memory.cancel')}
             </button>
           </div>
         </div>
@@ -216,14 +221,14 @@ export function MemorySettingsSection() {
         >
           <span>{error}</span>
           <button type="button" onClick={refetch} className="font-medium underline">
-            Reintentar
+            {t('settings.memory.retry')}
           </button>
         </div>
       )}
 
       {loading ? (
         <div role="status" aria-live="polite" style={{ color: 'var(--text-3)', fontSize: 13 }}>
-          Cargando memorias…
+          {t('settings.memory.loading')}
         </div>
       ) : memories.length === 0 ? (
         <div
@@ -235,10 +240,10 @@ export function MemorySettingsSection() {
           }}
         >
           <p style={{ color: 'var(--text-1)', fontSize: 14, fontWeight: 500 }}>
-            Todavía no hay memorias guardadas
+            {t('settings.memory.empty')}
           </p>
           <p className="mt-1" style={{ color: 'var(--text-3)', fontSize: 13 }}>
-            Añade una manualmente o deja que Roundtable aprenda durante conversaciones normales.
+            {t('settings.memory.emptySub')}
           </p>
         </div>
       ) : (
@@ -276,22 +281,24 @@ export function MemorySettingsSection() {
               <div className="mt-4 flex items-center gap-3">
                 <button
                   type="button"
-                  aria-label="Editar memoria"
+                  aria-label={t('settings.memory.editAria')}
                   onClick={() => openEdit(memory)}
                   className="text-xs font-medium"
                   style={{ color: 'var(--accent-text)' }}
                 >
-                  Editar
+                  {t('settings.memory.edit')}
                 </button>
                 <button
                   type="button"
-                  aria-label="Borrar memoria"
+                  aria-label={t('settings.memory.deleteAria')}
                   disabled={deletingId === memory.id}
                   onClick={() => void deleteMemory(memory.id).catch(() => undefined)}
                   className="text-xs font-medium disabled:opacity-50"
                   style={{ color: 'var(--m-rose)' }}
                 >
-                  {deletingId === memory.id ? 'Borrando…' : 'Borrar'}
+                  {deletingId === memory.id
+                    ? t('settings.memory.deleting')
+                    : t('settings.memory.delete')}
                 </button>
               </div>
             </li>

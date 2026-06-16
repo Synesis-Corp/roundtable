@@ -26,8 +26,8 @@ export function getProviderColor(provider?: string): string {
 }
 
 /** Human-readable provider label for the conversation dot tooltip. */
-export function getProviderLabel(provider?: string): string {
-  if (!provider) return 'Modelo';
+export function getProviderLabel(provider?: string, t?: (key: string) => string): string {
+  if (!provider) return t ? t('shell.providerLabelDefault') : 'Model';
   switch (provider.toLowerCase()) {
     case 'openai':
       return 'OpenAI';
@@ -40,7 +40,7 @@ export function getProviderLabel(provider?: string): string {
     case 'multi':
     case 'council':
     case 'consensus':
-      return 'Consejo (varios modelos)';
+      return t ? t('shell.providerLabelCouncil') : 'Council (multiple models)';
     default:
       return provider.charAt(0).toUpperCase() + provider.slice(1);
   }

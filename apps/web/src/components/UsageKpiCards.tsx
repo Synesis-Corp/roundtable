@@ -1,4 +1,5 @@
 import type { UsageTotals } from '../lib/usage-helpers';
+import { useTranslation } from 'react-i18next';
 import { formatCost, formatTokens, formatLatency } from '../lib/usage-helpers';
 import { Icons } from '../lib/usage-icons';
 
@@ -39,35 +40,41 @@ interface UsageKpiCardsProps {
 
 /** The four headline KPI cards (cost, tokens, requests, latency). */
 export function UsageKpiCards({ totals, tokensPerRequest, hasEstimatedCosts }: UsageKpiCardsProps) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <KpiCard
-        label="Costo estimado"
+        label={t('usage.kpi.estimatedCost')}
         value={formatCost(totals.totalCostUsd)}
         icon={Icons.dollar}
         accent="var(--accent)"
-        detail={hasEstimatedCosts ? 'Incluye estimaciones' : undefined}
+        detail={hasEstimatedCosts ? t('usage.kpi.estimatedCostDetail') : undefined}
       />
       <KpiCard
-        label="Total de tokens"
+        label={t('usage.kpi.totalTokens')}
         value={formatTokens(totals.totalTokens)}
         icon={Icons.tokens}
         accent="#8b5cf6"
-        detail={`${formatTokens(totals.inputTokens)} in / ${formatTokens(totals.outputTokens)} out`}
+        detail={t('usage.kpi.tokensInOut', {
+          in: formatTokens(totals.inputTokens),
+          out: formatTokens(totals.outputTokens),
+        })}
       />
       <KpiCard
-        label="Requests"
+        label={t('usage.kpi.requests')}
         value={totals.totalRequests.toLocaleString()}
         icon={Icons.chart}
         accent="#10b981"
-        detail={`~${tokensPerRequest.toLocaleString()} tokens/req`}
+        detail={t('usage.kpi.tokensPerReq', { count: tokensPerRequest.toLocaleString() })}
       />
       <KpiCard
-        label="Latencia promedio"
+        label={t('usage.kpi.avgLatency')}
         value={formatLatency(totals.avgLatencyMs)}
         icon={Icons.lightning}
         accent="#f59e0b"
-        detail={totals.avgLatencyMs > 1000 ? 'Lento' : 'Rápido'}
+        detail={
+          totals.avgLatencyMs > 1000 ? t('usage.kpi.latencySlow') : t('usage.kpi.latencyFast')
+        }
       />
     </div>
   );

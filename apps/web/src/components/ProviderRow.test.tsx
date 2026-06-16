@@ -40,22 +40,22 @@ describe('ProviderRow', () => {
   it('shows the connect form when not connected', () => {
     render(<ProviderRow {...makeProps()} />);
     expect(screen.getByText('OpenAI')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Pega tu OPENAI_API_KEY...')).toBeInTheDocument();
-    expect(screen.getByText('Conectar')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Paste your OPENAI_API_KEY...')).toBeInTheDocument();
+    expect(screen.getByText('Connect')).toBeInTheDocument();
   });
 
   it('calls onConnect when the API key is present', () => {
     const onConnect = vi.fn();
     render(<ProviderRow {...makeProps({ apiKey: 'sk-test', onConnect })} />);
-    fireEvent.click(screen.getByText('Conectar'));
+    fireEvent.click(screen.getByText('Connect'));
     expect(onConnect).toHaveBeenCalledOnce();
   });
 
   it('shows the masked credential and Disconnect when connected', () => {
     render(<ProviderRow {...makeProps({ isConnected: true, maskedKey: 'sk-...abcd' })} />);
     expect(screen.getByText('sk-...abcd')).toBeInTheDocument();
-    expect(screen.getByText('Desconectar')).toBeInTheDocument();
-    expect(screen.queryByText('Conectar')).not.toBeInTheDocument();
+    expect(screen.getByText('Disconnect')).toBeInTheDocument();
+    expect(screen.queryByText('Connect')).not.toBeInTheDocument();
   });
 
   it('calls onRequestDisconnect when the Disconnect button is clicked', () => {
@@ -65,13 +65,13 @@ describe('ProviderRow', () => {
         {...makeProps({ isConnected: true, maskedKey: 'sk-...abcd', onRequestDisconnect })}
       />
     );
-    fireEvent.click(screen.getByText('Desconectar'));
+    fireEvent.click(screen.getByText('Disconnect'));
     expect(onRequestDisconnect).toHaveBeenCalledOnce();
   });
 
   it('offers ChatGPT OAuth for the openai provider', () => {
     render(<ProviderRow {...makeProps()} />);
-    expect(screen.getByText('Iniciar sesión con OpenAI')).toBeInTheDocument();
+    expect(screen.getByText('Sign in with OpenAI')).toBeInTheDocument();
   });
 
   it('shows a healthy dot when the connected provider is operational', () => {
@@ -84,7 +84,7 @@ describe('ProviderRow', () => {
         })}
       />
     );
-    expect(screen.getByLabelText('Proveedor operativo')).toBeInTheDocument();
+    expect(screen.getByLabelText('Provider operational')).toBeInTheDocument();
   });
 
   it('shows the error in the dot tooltip when the provider probe failed', () => {
@@ -97,7 +97,7 @@ describe('ProviderRow', () => {
         })}
       />
     );
-    expect(screen.getByLabelText('Proveedor no disponible: API key invalid')).toBeInTheDocument();
+    expect(screen.getByLabelText('Provider unavailable: API key invalid')).toBeInTheDocument();
   });
 
   it('shows a checking dot while health is still loading', () => {
@@ -106,11 +106,11 @@ describe('ProviderRow', () => {
         {...makeProps({ isConnected: true, maskedKey: 'sk-...x', healthLoading: true })}
       />
     );
-    expect(screen.getByLabelText('Comprobando estado del proveedor')).toBeInTheDocument();
+    expect(screen.getByLabelText('Checking provider status')).toBeInTheDocument();
   });
 
   it('renders no health dot when disconnected', () => {
     render(<ProviderRow {...makeProps({ isConnected: false })} />);
-    expect(screen.queryByLabelText('Proveedor operativo')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Provider operational')).not.toBeInTheDocument();
   });
 });

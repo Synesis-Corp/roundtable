@@ -74,14 +74,14 @@ describe('ActiveModelsModal (#1)', () => {
     render(<ActiveModelsModal providerId="openai" providerName="OpenAI" onClose={() => {}} />);
     const boxes = screen.getAllByRole('checkbox') as HTMLInputElement[];
     fireEvent.click(boxes[2]); // uncheck "o5"
-    fireEvent.click(screen.getByText('Guardar'));
+    fireEvent.click(screen.getByText('Save'));
     await waitFor(() => expect(saveMock).toHaveBeenCalled());
     expect(saveMock).toHaveBeenCalledWith(['gpt-5.4', 'gpt-5.4-mini']);
   });
 
   it('saves an empty list (reset to show all) when every model stays selected', async () => {
     render(<ActiveModelsModal providerId="openai" providerName="OpenAI" onClose={() => {}} />);
-    fireEvent.click(screen.getByText('Guardar'));
+    fireEvent.click(screen.getByText('Save'));
     await waitFor(() => expect(saveMock).toHaveBeenCalled());
     expect(saveMock).toHaveBeenCalledWith([]);
   });

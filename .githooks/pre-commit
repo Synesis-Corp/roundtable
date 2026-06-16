@@ -49,15 +49,22 @@ fi
 # --- Bloquear secretos reales en el contenido (no solo nombres) ---
 # Permite placeholders: REPLACE_ME, CHANGE_ME, example, dummy, xxx, your-, <...>, ${...}
 #
-# Allowlist de falsos positivos (afinada 2026-06-12): la palabra "token" aparece
-# como SUBSTRING en vocabulario de conteo de tokens de LLM (inputTokens,
-# outputTokens, tokensUsed, maxTokens, tokenBudget…), como tipo (`token: string`),
-# como variable leída de storage (`storage.get("token")`), y en fixtures de test
-# (gho_test, e2e-test-*, sk-test-*). Nada de eso es un secreto real. Se excluyen
-# de forma específica: `gho_test` (NO `gho_`, que es prefijo de token real de
-# GitHub) y `sk-test` (clave de PRUEBA). Un secreto real con valor concreto (una
-# api key sk-live, un jwt secret real, un gho real distinto de gho_test, una db
-# url con password) sigue bloqueado. Override puntual: git commit --no-verify.
+# Allowlist de falsos positivos (afinada 2026-06-12 y extendida 2026-06-16).
+# Cubre patrones legitimos del codebase que la primera regex matchea:
+#   - Vocabulario de tokens LLM (inputTokens, outputTokens, maxTokens, ...)
+#   - Tipo `token: string`, storage.get("token"), fixtures gho_test / e2e-test / sk-test
+#   - Zod schemas: JWT_SECRET: z.string().min(32, ...) — el "valor" es una
+#     llamada a schema, no un secreto (env.ts)
+#   - Vitest mocks: verifyIdToken: vi.fn() — vi.fn() nunca retorna un valor real
+#   - OAuth test mocks: access_token: opts.token.access_token — variable ref,
+#     no un token real
+#   - Test cookie fixtures: .set('Cookie', 'refreshToken=some-raw-token')
+#   - Test variable prefixes: TEST_TOKEN, ORIGINAL_GH_SECRET
+#   - Assertions: tokenHash: expect.any(String)
+#   - POSTGRES_PASSWORD=postgres (default documentado de compose / ci.yml)
+# Un secreto real con valor concreto (api key sk-live, jwt secret real, gho
+# real distinto de gho_test, db url con password, un Bearer eyJ... con payload
+# real) sigue bloqueado. Override puntual: git commit --no-verify.
 secret_hits=""
 for f in $staged; do
   case "$(basename "$f")" in
@@ -65,7 +72,7 @@ for f in $staged; do
   esac
   hit=$(git show ":$f" 2>/dev/null | grep -nEi \
     '(sk-[a-z0-9]{16,}|(API_KEY|ACCESS_TOKEN|SECRET|DATABASE_URL|PASSWORD|PRIVATE_KEY|TOKEN)[a-z_]*[[:space:]]*[=:][[:space:]]*[^[:space:]"'"'"']+)' \
-    | grep -vEi 'REPLACE_ME|CHANGE_ME|example|dummy|placeholder|xxx|your-|<[a-z_]+>|\$\{|inputTokens|outputTokens|totalTokens|tokensUsed|maxTokens|tokenBudget|tokenCount|estimatedTokens|promptTokens|completionTokens|token[[:space:]]*[?:][[:space:]]*(string|number)|storage\.get|gho_test|e2e-test|sk-test' || true)
+    | grep -vEi 'REPLACE_ME|CHANGE_ME|example|dummy|placeholder|xxx|your-|<[a-z_]+>|\$\{|inputTokens|outputTokens|totalTokens|tokensUsed|maxTokens|tokenBudget|tokenCount|estimatedTokens|promptTokens|completionTokens|token[[:space:]]*[?:][[:space:]]*(string|number)|storage\.get|gho_test|e2e-test|sk-test|z\.string\(\)\.(min|max|optional|nullable|email|url|uuid|default|refine|transform)\(|vi\.fn\(|(access_token|refresh_token):[[:space:]]*opts\.|Cookie.*refreshToken=[a-zA-Z0-9_-]+|setCookie.*refreshToken=[a-zA-Z0-9_;-]+|refreshToken:[[:space:]]*\{[[:space:]]*$|(TEST|ORIGINAL)_[A-Z_]+|tokenHash:[[:space:]]*expect\.any\(|POSTGRES_PASSWORD=postgres' || true)
   if [ -n "$hit" ]; then
     secret_hits="$secret_hits\n  $f:\n$(printf '%s' "$hit" | sed 's/^/      /')"
   fi

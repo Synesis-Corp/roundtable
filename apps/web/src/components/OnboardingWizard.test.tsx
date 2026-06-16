@@ -165,12 +165,12 @@ describe('OnboardingWizard', () => {
     expect(screen.getByTestId('step-indicator-2')).toBeInTheDocument();
     expect(screen.getByTestId('step-indicator-3')).toBeInTheDocument();
     expect(screen.getByTestId('step-indicator-4')).toBeInTheDocument();
-    expect(screen.getByText(/paso 1 de 4/i)).toBeInTheDocument();
+    expect(screen.getByText(/step 1 of 4/i)).toBeInTheDocument();
   });
 
-  it('starts on step 1 by default (Elegí tu primer proveedor)', () => {
+  it('starts on step 1 by default (Choose your first provider)', () => {
     renderWizard();
-    expect(screen.getByText(/elegí tu primer proveedor/i)).toBeInTheDocument();
+    expect(screen.getByText(/choose your first provider/i)).toBeInTheDocument();
   });
 
   it('backdrop click calls onClose (without completing)', () => {
@@ -213,7 +213,7 @@ describe('OnboardingWizard', () => {
   it('Siguiente advances to step 2 when a provider is selected', async () => {
     renderWizard();
     fireEvent.click(screen.getByTestId('wizard-next'));
-    await waitFor(() => expect(screen.getByText(/conectá tu cuenta/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/connect your account/i)).toBeInTheDocument());
   });
 
   // ── STEP 2: Auth — API key branch ──────────────────────────────────────
@@ -273,7 +273,7 @@ describe('OnboardingWizard', () => {
     fireEvent.change(input, { target: { value: 'sk-real' } });
     await waitFor(() => expect(input.value).toBe('sk-real'));
     fireEvent.click(screen.getByTestId('wizard-next'));
-    await waitFor(() => expect(screen.getByText(/verificá la conexión/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/verify the connection/i)).toBeInTheDocument());
   });
 
   it('clicking Conectar con ChatGPT Plus calls handleCodexStart', async () => {
@@ -301,7 +301,9 @@ describe('OnboardingWizard', () => {
     fireEvent.click(screen.getByTestId('wizard-next'));
     await waitFor(() => screen.getByTestId('wizard-step-2-body'));
     fireEvent.click(screen.getByTestId('wizard-back'));
-    await waitFor(() => expect(screen.getByText(/elegí tu primer proveedor/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/choose your first provider/i)).toBeInTheDocument()
+    );
     const deepseek = screen.getByTestId('provider-card-deepseek');
     expect(deepseek.getAttribute('aria-pressed')).toBe('true');
   });
@@ -378,9 +380,7 @@ describe('OnboardingWizard', () => {
     fireEvent.click(screen.getByTestId('wizard-skip-validation'));
     // After Saltar, the Siguiente button is enabled (validationResult === "success").
     fireEvent.click(screen.getByTestId('wizard-next'));
-    await waitFor(() =>
-      expect(screen.getByText(/elegí tu modelo por defecto/i)).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText(/choose your default model/i)).toBeInTheDocument());
   });
 
   // ── STEP 4: Default model ───────────────────────────────────────────────
@@ -520,8 +520,8 @@ describe('OnboardingWizard — connect on step 3 → 4 transition', () => {
     await waitFor(() => screen.getByTestId('wizard-skip-validation'));
     fireEvent.click(screen.getByTestId('wizard-skip-validation'));
     fireEvent.click(screen.getByTestId('wizard-next'));
-    // While in-flight, the button text changes to "Conectando…"
-    await waitFor(() => expect(screen.getByTestId('wizard-next')).toHaveTextContent('Conectando…'));
+    // While in-flight, the button text changes to "Connecting…"
+    await waitFor(() => expect(screen.getByTestId('wizard-next')).toHaveTextContent('Connecting…'));
   });
 
   it('step 3 Siguiente stays on step 3 and shows error when handleConnect fails', async () => {

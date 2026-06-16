@@ -68,23 +68,24 @@ function renderCouncil(council: CouncilInfo = mockCouncil) {
   return render(<CouncilBlock council={council} />);
 }
 
-const explorerToggle = () => screen.getByRole('button', { name: /deliberó el consejo/i });
+const explorerToggle = () =>
+  screen.getByRole('button', { name: /see how the council deliberated/i });
 
 describe('CouncilBlock', () => {
   it('renders the badge with model count', () => {
     renderCouncil();
-    expect(screen.getByText('Consejo · 4 modelos')).toBeInTheDocument();
+    expect(screen.getByText('Council · 4 models')).toBeInTheDocument();
   });
 
   it('renders the consensus meta', () => {
     renderCouncil();
-    expect(screen.getByText(/Elegida por consenso/i)).toBeInTheDocument();
-    expect(screen.getByText(/3 de 4 votos/i)).toBeInTheDocument();
+    expect(screen.getByText(/Chosen by consensus/i)).toBeInTheDocument();
+    expect(screen.getByText(/3 of 4 votes/i)).toBeInTheDocument();
   });
 
   it('renders majority meta when not consensus', () => {
     renderCouncil({ ...mockCouncil, consensus: false });
-    expect(screen.getByText(/Elegida por mayoría/i)).toBeInTheDocument();
+    expect(screen.getByText(/Chosen by majority/i)).toBeInTheDocument();
   });
 
   it('renders the winner answer with markdown', () => {
@@ -106,24 +107,24 @@ describe('CouncilBlock', () => {
   it('keeps the deliberation explorer collapsed by default', () => {
     renderCouncil();
     // Steps and vote chips are hidden until the user opens the explorer.
-    expect(screen.queryByRole('tab', { name: /Propuestas/i })).not.toBeInTheDocument();
-    expect(screen.queryByText('Propuesta ganadora')).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Proposals/i })).not.toBeInTheDocument();
+    expect(screen.queryByText('Winning proposal')).not.toBeInTheDocument();
   });
 
   it('reveals the step tabs when the explorer is opened', async () => {
     renderCouncil();
     await userEvent.click(explorerToggle());
-    expect(screen.getByRole('tab', { name: /Propuestas/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Proposals/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Debate/i })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Voto/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Vote/i })).toBeInTheDocument();
   });
 
   it("defaults to the vote step and shows each model's vote", async () => {
     renderCouncil();
     await userEvent.click(explorerToggle());
-    expect(screen.getByText('Propuesta ganadora')).toBeInTheDocument();
-    expect(screen.getAllByText('Vota a favor')).toHaveLength(2);
-    expect(screen.getByText('Cambió su voto')).toBeInTheDocument();
+    expect(screen.getByText('Winning proposal')).toBeInTheDocument();
+    expect(screen.getAllByText('Votes in favor')).toHaveLength(2);
+    expect(screen.getByText('Changed vote')).toBeInTheDocument();
   });
 
   it('shows the vote reason and requested improvement in the vote step', async () => {
@@ -136,7 +137,7 @@ describe('CouncilBlock', () => {
   it('switches to the proposals step and shows approach summaries', async () => {
     renderCouncil();
     await userEvent.click(explorerToggle());
-    await userEvent.click(screen.getByRole('tab', { name: /Propuestas/i }));
+    await userEvent.click(screen.getByRole('tab', { name: /Proposals/i }));
     expect(screen.getByText(/Propone índices con cobertura parcial/i)).toBeInTheDocument();
     expect(screen.getByText(/Aporta consideraciones de coste/i)).toBeInTheDocument();
   });
@@ -144,7 +145,7 @@ describe('CouncilBlock', () => {
   it('expands a proposal to reveal its full text', async () => {
     renderCouncil();
     await userEvent.click(explorerToggle());
-    await userEvent.click(screen.getByRole('tab', { name: /Propuestas/i }));
+    await userEvent.click(screen.getByRole('tab', { name: /Proposals/i }));
     // The GPT-5 card is expandable (has proposalText); expanding reveals the body.
     await userEvent.click(screen.getByRole('button', { name: /GPT-5/i }));
     expect(screen.getByText(/Índices parciales/i)).toBeInTheDocument();
@@ -162,16 +163,16 @@ describe('CouncilBlock', () => {
       votes: [],
       tally: { for: 0, total: 0 },
     });
-    expect(screen.getByRole('tab', { name: /Propuestas/i })).not.toBeDisabled();
+    expect(screen.getByRole('tab', { name: /Proposals/i })).not.toBeDisabled();
     expect(screen.getByRole('tab', { name: /Debate/i })).toBeDisabled();
-    expect(screen.getByRole('tab', { name: /Voto/i })).toBeDisabled();
+    expect(screen.getByRole('tab', { name: /Vote/i })).toBeDisabled();
   });
 
   it('collapses the explorer again on toggle', async () => {
     renderCouncil();
     await userEvent.click(explorerToggle());
-    expect(screen.getByRole('tab', { name: /Voto/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Vote/i })).toBeInTheDocument();
     await userEvent.click(explorerToggle());
-    expect(screen.queryByRole('tab', { name: /Voto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Vote/i })).not.toBeInTheDocument();
   });
 });

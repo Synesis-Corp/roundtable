@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useUsageData } from '../hooks/useUsageData';
 import { UsageLoading, UsageError, UsageEmpty } from '../components/UsageStates';
 import { UsageKpiCards } from '../components/UsageKpiCards';
@@ -13,6 +14,7 @@ import { UsageInsights } from '../components/UsageInsights';
 export { ScatterTooltipContent } from '../components/UsageCharts';
 
 export default function UsagePage({ embedded = false }: { embedded?: boolean } = {}) {
+  const { t } = useTranslation();
   // When embedded inside the Settings tabs, the parent already provides the
   // page container — so we drop our own max-width/padding to fill it cleanly.
   const wrap = embedded ? 'px-4' : 'p-6 max-w-7xl mx-auto';
@@ -38,19 +40,25 @@ export default function UsagePage({ embedded = false }: { embedded?: boolean } =
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[var(--text-1)]">Uso de IA</h1>
+          <h1 className="text-2xl font-semibold text-[var(--text-1)]">{t('usage.title')}</h1>
           <p className="text-sm text-[var(--text-3)] mt-0.5">
-            {period === 'all' ? 'Histórico completo' : 'Últimos 30 días'} · {view.rows.length}{' '}
-            {view.rows.length === 1 ? 'modelo' : 'modelos'} · {providerData.length}{' '}
-            {providerData.length === 1 ? 'proveedor' : 'proveedores'}
+            {t('usage.summary', {
+              period: period === 'all' ? t('usage.summaryAll') : t('usage.summary30d'),
+              modelsCount: view.rows.length,
+              modelsLabel: t(`usage.summaryModel_${view.rows.length === 1 ? 'one' : 'other'}`),
+              providersCount: providerData.length,
+              providersLabel: t(
+                `usage.summaryProvider_${providerData.length === 1 ? 'one' : 'other'}`
+              ),
+            })}
           </p>
         </div>
 
         <div className="inline-flex p-1 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)]">
           {(
             [
-              { key: 'all', label: 'Total' },
-              { key: '30d', label: '30 días' },
+              { key: 'all', label: t('usage.periodToggle.total') },
+              { key: '30d', label: t('usage.periodToggle.days30') },
             ] as const
           ).map(({ key, label }) => (
             <button

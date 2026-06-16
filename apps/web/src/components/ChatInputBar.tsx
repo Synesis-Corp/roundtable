@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { UserProvider } from '@chat/sdk';
 import type { EffortSpec, ModelOption } from '../types/chat';
 import { filterAllowedFiles } from '../lib/file-types';
@@ -168,6 +169,7 @@ function FileTypeIcon({ file, className = 'w-5 h-5' }: { file: File; className?:
 }
 
 export function ChatInputBar(props: ChatInputBarProps) {
+  const { t } = useTranslation();
   const {
     inputText,
     setInputText,
@@ -207,10 +209,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
     onRejectedFiles,
   } = props;
 
-  const councilCountLabel =
-    councilModelCount <= 0
-      ? 'Sin modelos disponibles'
-      : `${councilModelCount} modelo${councilModelCount === 1 ? '' : 's'} en consejo`;
+  const councilCountLabel = t('chat.input.councilCount', { count: councilModelCount });
 
   // Mode is freely switchable: Único ⇄ Consejo only changes how the NEXT message
   // is processed; a conversation can mix single and council turns without issue.
@@ -250,12 +249,12 @@ export function ChatInputBar(props: ChatInputBarProps) {
   }, [files]);
 
   const placeholderText = incognito
-    ? 'Escribe sin guardar…'
+    ? t('chat.input.placeholder.incognito')
     : multiMode
-      ? 'Pregunta al consejo…'
+      ? t('chat.input.placeholder.council')
       : hasMessages
-        ? 'Responde…'
-        : 'Escribe un mensaje…';
+        ? t('chat.input.placeholder.reply')
+        : t('chat.input.placeholder.default');
 
   // Onboarding UX gate (2026-06-14): disable the send button when the user
   // can't actually send. Without this, the input bar is enabled with 0
@@ -279,13 +278,13 @@ export function ChatInputBar(props: ChatInputBarProps) {
   // Human-readable reason for the disabled state. Surfaced as the
   // `title` attr on the send button so the user gets context on hover.
   const sendBlockedReason = noProviders
-    ? 'Conectá un proveedor para empezar'
+    ? t('chat.input.sendBlocked.noProviders')
     : notEnoughForCouncil
-      ? 'El Consejo necesita al menos 2 providers'
+      ? t('chat.input.sendBlocked.councilNeeds2')
       : modelsLoading
-        ? 'Cargando modelos…'
+        ? t('chat.input.sendBlocked.loading')
         : noModelsLoaded
-          ? 'No hay modelos disponibles'
+          ? t('chat.input.sendBlocked.noModels')
           : null;
 
   // Drag-and-drop handlers — gate everything on `!streaming` so a user
@@ -347,7 +346,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
             style={{ color: 'var(--m-amber)' }}
           >
             <span aria-hidden="true">◌</span>
-            <span>Este chat no se guardará. Solo se registrarán métricas de uso.</span>
+            <span>{t('chat.input.incognitoNotice')}</span>
           </div>
         )}
         {/* Drag-and-drop visual cue (subtle label inside the composer). */}
@@ -366,7 +365,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 boxShadow: 'var(--shadow-md)',
               }}
             >
-              Suelta para adjuntar
+              {t('chat.input.dropHint')}
             </div>
           </div>
         )}
@@ -431,7 +430,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                     color: '#fff',
                     backdropFilter: 'blur(6px)',
                   }}
-                  aria-label="Quitar archivo"
+                  aria-label={t('chat.input.removeFile')}
                 >
                   ×
                 </button>
@@ -471,8 +470,8 @@ export function ChatInputBar(props: ChatInputBarProps) {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={streaming}
-            title="Adjuntar archivos"
-            aria-label="Adjuntar archivos"
+            title={t('chat.input.attachFile')}
+            aria-label={t('chat.input.attachFile')}
             className="p-2 rounded-full transition-colors shrink-0 disabled:opacity-40 active:scale-95 transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
             style={{ color: 'var(--text-3)' }}
             onMouseEnter={(e) => {
@@ -498,7 +497,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
           <div
             className="flex items-center shrink-0"
             role="group"
-            aria-label="Modo de chat"
+            aria-label={t('chat.input.modeGroup')}
             style={{
               backgroundColor: 'var(--bg-surface)',
               borderRadius: 'var(--r-pill)',
@@ -510,7 +509,6 @@ export function ChatInputBar(props: ChatInputBarProps) {
               type="button"
               onClick={() => setMultiMode(false)}
               disabled={streaming}
-              title="Un solo modelo"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:cursor-not-allowed active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
               style={{
                 backgroundColor: !multiMode ? 'var(--accent-quiet)' : 'transparent',
@@ -520,7 +518,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
               }}
             >
               <PersonIcon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Único</span>
+              <span className="hidden sm:inline">{t('chat.input.singleMode')}</span>
             </button>
             <button
               type="button"
@@ -534,18 +532,20 @@ export function ChatInputBar(props: ChatInputBarProps) {
               }}
             >
               <NetworkIcon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Consejo</span>
+              <span className="hidden sm:inline">{t('chat.input.councilMode')}</span>
             </button>
           </div>
 
           <button
             type="button"
             role="switch"
-            aria-label="Modo incógnito"
+            aria-label={t('chat.input.incognitoMode')}
             aria-checked={incognito}
             onClick={() => setIncognito(!incognito)}
             disabled={streaming}
-            title={incognito ? 'Desactivar modo incógnito' : 'Activar modo incógnito'}
+            title={
+              incognito ? t('chat.input.incognitoDeactivate') : t('chat.input.incognitoActivate')
+            }
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors shrink-0 disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
             style={{
               backgroundColor: incognito ? 'rgba(245, 158, 11, 0.12)' : 'var(--hover)',
@@ -564,7 +564,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
               <path d="M3 11.5C5.4 7.8 8.4 6 12 6s6.6 1.8 9 5.5c-2.4 3.7-5.4 5.5-9 5.5s-6.6-1.8-9-5.5Z" />
               <path d="m4 4 16 16" />
             </svg>
-            <span className="hidden sm:inline">Incógnito</span>
+            <span className="hidden sm:inline">{t('chat.input.incognitoMode')}</span>
           </button>
 
           {/* Spacer */}
@@ -580,7 +580,11 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 setIsModelDropdownOpen((v) => !v);
               }}
               disabled={modelsLoading || models.length === 0 || multiMode}
-              title={multiMode ? 'Modelo auto-seleccionado en modo Consejo' : 'Elegir modelo'}
+              title={
+                multiMode
+                  ? t('chat.input.modelSelectorTitle.council')
+                  : t('chat.input.modelSelectorTitle.single')
+              }
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-colors max-w-[180px] sm:max-w-[260px] active:scale-95 transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)] disabled:opacity-40"
               style={{
                 backgroundColor: multiMode ? 'transparent' : 'var(--hover)',
@@ -634,7 +638,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                     type="text"
                     value={modelSearch}
                     onChange={(e) => setModelSearch(e.target.value)}
-                    placeholder="Buscar modelos…"
+                    placeholder={t('chat.input.modelSearchPlaceholder')}
                     className="w-full rounded-lg px-3 py-1.5 outline-none text-sm transition-colors focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                     style={{
                       backgroundColor: 'var(--bg-input)',
@@ -646,7 +650,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 <div className="max-h-72 overflow-y-auto py-1">
                   {modelsLoading && (
                     <div className="p-4 text-sm text-center" style={{ color: 'var(--text-3)' }}>
-                      Cargando…
+                      {t('chat.input.modelLoading')}
                     </div>
                   )}
                   {!modelsLoading && models.length === 0 && (
@@ -657,7 +661,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                         style={{ color: 'var(--accent-text)' }}
                         onClick={() => setIsModelDropdownOpen(false)}
                       >
-                        Conectar proveedores en Configuración
+                        {t('chat.input.modelEmpty')}
                       </Link>
                     </div>
                   )}
@@ -765,7 +769,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                   setIsEffortDropdownOpen((v) => !v);
                 }}
                 disabled={streaming || effortLoading || !effortSpec}
-                title="Variante de modelo"
+                title={t('chat.input.effortTitle')}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-colors shrink-0 disabled:opacity-40 active:scale-95 transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                 style={{
                   backgroundColor:
@@ -774,7 +778,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 }}
               >
                 <span className="hidden sm:inline" style={{ color: 'var(--text-4)' }}>
-                  variant
+                  {t('chat.input.effortVariant')}
                 </span>
                 <span className="font-semibold">{effortLoading ? '…' : selectedEffort}</span>
                 {effortSpec && (
@@ -799,10 +803,10 @@ export function ChatInputBar(props: ChatInputBarProps) {
                       className="text-[11px] uppercase tracking-wide"
                       style={{ color: 'var(--text-4)' }}
                     >
-                      Seleccionar variante
+                      {t('chat.input.effortSelectHeader')}
                     </div>
                     <div className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
-                      Opciones de modelo por request
+                      {t('chat.input.effortSelectSub')}
                     </div>
                   </div>
                   <div className="p-2" style={{ borderBottom: '1px solid var(--border)' }}>
@@ -810,7 +814,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                       type="text"
                       value={effortSearch}
                       onChange={(e) => setEffortSearch(e.target.value)}
-                      placeholder="Buscar variante…"
+                      placeholder={t('chat.input.effortSearchPlaceholder')}
                       className="w-full rounded-lg px-3 py-1.5 outline-none text-sm transition-colors focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                       style={{
                         backgroundColor: 'var(--bg-input)',
@@ -822,7 +826,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                   <div className="max-h-64 overflow-y-auto py-1">
                     {/* effort options would go here — kept minimal since hidden */}
                     <div className="p-4 text-sm text-center" style={{ color: 'var(--text-3)' }}>
-                      Variante: {selectedEffort}
+                      {t('chat.input.effortEmpty', { variant: selectedEffort })}
                     </div>
                   </div>
                 </div>
@@ -835,8 +839,8 @@ export function ChatInputBar(props: ChatInputBarProps) {
             <button
               type="button"
               onClick={stopStream}
-              title="Detener generación"
-              aria-label="Detener generación"
+              title={t('chat.input.stopTitle')}
+              aria-label={t('chat.input.stopTitle')}
               className="rounded-full flex items-center justify-center transition-colors shrink-0 active:scale-95 transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
               style={{
                 width: 38,
@@ -853,8 +857,8 @@ export function ChatInputBar(props: ChatInputBarProps) {
             <button
               type="submit"
               disabled={!canSend}
-              title={sendBlockedReason ?? 'Enviar mensaje'}
-              aria-label="Enviar mensaje"
+              title={sendBlockedReason ?? t('chat.input.sendTitle')}
+              aria-label={t('chat.input.sendTitle')}
               onClick={() => {
                 setSendPulsing(true);
                 setTimeout(() => setSendPulsing(false), 150);

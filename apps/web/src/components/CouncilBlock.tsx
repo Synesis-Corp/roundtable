@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MarkdownContent } from './MarkdownContent';
 import type { CouncilInfo, CouncilVote } from '../types/chat';
 
@@ -67,23 +68,19 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
-function angleLabel(angleId?: string): string {
-  const labels: Record<string, string> = {
-    pragmatic: 'Pragmático',
-    robust: 'Robusto',
-    economic: 'Económico',
-    innovative: 'Innovador',
-    secure: 'Seguro',
-    'user-centric': 'Centrado en el usuario',
-  };
-  return angleId ? (labels[angleId] ?? angleId) : '';
-}
+type AngleKey = 'pragmatic' | 'robust' | 'economic' | 'innovative' | 'secure' | 'user-centric';
 
-function confidenceLabel(confidence?: string): string {
-  if (confidence === 'high') return 'Alta confianza';
-  if (confidence === 'medium') return 'Confianza media';
-  if (confidence === 'low') return 'Baja confianza';
-  return '';
+function angleLabelKey(angleId: string | undefined): AngleKey | null {
+  const valid: AngleKey[] = [
+    'pragmatic',
+    'robust',
+    'economic',
+    'innovative',
+    'secure',
+    'user-centric',
+  ];
+  if (!angleId) return null;
+  return valid.includes(angleId as AngleKey) ? (angleId as AngleKey) : null;
 }
 
 function confidenceColor(confidence?: string): string {
@@ -140,53 +137,50 @@ function ProviderAvatar({
   );
 }
 
-function voteChip(
-  vote: CouncilVote['vote'],
-  isWinner: boolean
-): {
-  label: string;
-  bg: string;
-  color: string;
-  border: string;
-} {
-  if (isWinner) {
-    return {
-      label: 'Propuesta ganadora',
-      bg: 'var(--accent-quiet)',
-      color: 'var(--accent-text)',
-      border: '1px solid var(--accent-line)',
-    };
+type VoteChipKind = 'winner' | 'pending' | 'for' | 'changed' | 'against';
+
+function voteChipKey(vote: CouncilVote['vote'], isWinner: boolean): VoteChipKind {
+  if (isWinner) return 'winner';
+  if (vote === 'pending') return 'pending';
+  if (vote === 'for') return 'for';
+  if (vote === 'changed') return 'changed';
+  return 'against';
+}
+
+function voteChipStyle(kind: VoteChipKind): { bg: string; color: string; border: string } {
+  switch (kind) {
+    case 'winner':
+      return {
+        bg: 'var(--accent-quiet)',
+        color: 'var(--accent-text)',
+        border: '1px solid var(--accent-line)',
+      };
+    case 'pending':
+      return {
+        bg: 'var(--bg-elevated)',
+        color: 'var(--text-2)',
+        border: '1px solid var(--border)',
+      };
+    case 'for':
+      return {
+        bg: 'rgba(92,176,139,0.14)',
+        color: 'var(--m-green)',
+        border: '1px solid rgba(92,176,139,0.32)',
+      };
+    case 'changed':
+      return {
+        bg: 'var(--hover)',
+        color: 'var(--text-2)',
+        border: '1px solid var(--border)',
+      };
+    case 'against':
+    default:
+      return {
+        bg: 'var(--bg-elevated)',
+        color: 'var(--text-3)',
+        border: '1px solid var(--border)',
+      };
   }
-  if (vote === 'pending') {
-    return {
-      label: 'Propuesta lista',
-      bg: 'var(--bg-elevated)',
-      color: 'var(--text-2)',
-      border: '1px solid var(--border)',
-    };
-  }
-  if (vote === 'for') {
-    return {
-      label: 'Vota a favor',
-      bg: 'rgba(92,176,139,0.14)',
-      color: 'var(--m-green)',
-      border: '1px solid rgba(92,176,139,0.32)',
-    };
-  }
-  if (vote === 'changed') {
-    return {
-      label: 'Cambió su voto',
-      bg: 'var(--hover)',
-      color: 'var(--text-2)',
-      border: '1px solid var(--border)',
-    };
-  }
-  return {
-    label: 'Vota en contra',
-    bg: 'var(--bg-elevated)',
-    color: 'var(--text-3)',
-    border: '1px solid var(--border)',
-  };
 }
 
 function AvatarStack({ members }: { members: CouncilInfo['members'] }) {
@@ -222,10 +216,30 @@ const STEP_INDEX: Record<NonNullable<CouncilInfo['currentRoundKind']>, number> =
   synthesis: 4,
 };
 
-const STEPS: { key: StepKey; n: number; label: string; hint: string }[] = [
-  { key: 'proposals', n: 1, label: 'Propuestas', hint: 'Cada modelo propone su enfoque' },
-  { key: 'debate', n: 2, label: 'Debate', hint: 'Contrastan fortalezas y debilidades' },
-  { key: 'vote', n: 3, label: 'Voto', hint: 'Eligen la mejor base para el consenso' },
+interface StepDef {
+  key: StepKey;
+  n: number;
+  labelKey: 'chat.council.tab.proposals' | 'chat.council.tab.debate' | 'chat.council.tab.vote';
+  hintKey:
+    | 'chat.council.tabHint.proposals'
+    | 'chat.council.tabHint.debate'
+    | 'chat.council.tabHint.vote';
+}
+
+const STEPS: StepDef[] = [
+  {
+    key: 'proposals',
+    n: 1,
+    labelKey: 'chat.council.tab.proposals',
+    hintKey: 'chat.council.tabHint.proposals',
+  },
+  {
+    key: 'debate',
+    n: 2,
+    labelKey: 'chat.council.tab.debate',
+    hintKey: 'chat.council.tabHint.debate',
+  },
+  { key: 'vote', n: 3, labelKey: 'chat.council.tab.vote', hintKey: 'chat.council.tabHint.vote' },
 ];
 
 /* ── A single model's contribution for the selected step ── */
@@ -241,7 +255,10 @@ function DeliberationCard({
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const chip = step === 'vote' ? voteChip(vote.vote, vote.isWinner) : null;
+  const { t } = useTranslation();
+  const chipKind = step === 'vote' ? voteChipKey(vote.vote, vote.isWinner) : null;
+  const chipStyle = chipKind ? voteChipStyle(chipKind) : null;
+  const chipLabel = chipKind ? t(`chat.council.chip.${chipKind}`) : null;
   const longContent =
     step === 'proposals' ? vote.proposalText : step === 'debate' ? vote.debateText : undefined;
   const canExpand = Boolean(longContent);
@@ -251,9 +268,11 @@ function DeliberationCard({
       ? vote.approachLabel
       : step === 'debate'
         ? vote.debateText
-          ? 'Evaluó cada propuesta y propuso una base común'
-          : 'No se registró el debate de esta conversación'
-        : vote.voteReason || 'Emitió su voto';
+          ? t('chat.council.summary.debateEvaluated')
+          : t('chat.council.summary.debateMissing')
+        : vote.voteReason || t('chat.council.summary.voteMissing');
+
+  const angleKey = angleLabelKey(vote.angle);
 
   return (
     <div
@@ -301,10 +320,10 @@ function DeliberationCard({
                       : '1px solid var(--border)',
                 }}
               >
-                {vote.tier === 'strong' ? 'Potente' : 'Liviano'}
+                {t(`chat.council.tier.${vote.tier}`)}
               </span>
             )}
-            {step === 'proposals' && vote.angle && (
+            {step === 'proposals' && angleKey && (
               <span
                 className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full"
                 style={{
@@ -312,9 +331,9 @@ function DeliberationCard({
                   color: 'var(--accent-text)',
                   border: '1px solid var(--accent-line)',
                 }}
-                title={`Perspectiva asignada: ${angleLabel(vote.angle)}`}
+                title={t('chat.council.angleTitle', { angle: t(`chat.council.angle.${angleKey}`) })}
               >
-                {angleLabel(vote.angle)}
+                {t(`chat.council.angle.${angleKey}`)}
               </span>
             )}
             {step === 'vote' && vote.confidence && (
@@ -326,15 +345,19 @@ function DeliberationCard({
                   border: '1px solid var(--border)',
                 }}
               >
-                {confidenceLabel(vote.confidence)}
+                {t(`chat.council.confidence.${vote.confidence}`)}
               </span>
             )}
-            {chip && (
+            {chipLabel && chipStyle && (
               <span
                 className="inline-flex items-center px-2.5 py-1 text-[11px] font-medium rounded-full whitespace-nowrap ml-auto"
-                style={{ backgroundColor: chip.bg, color: chip.color, border: chip.border }}
+                style={{
+                  backgroundColor: chipStyle.bg,
+                  color: chipStyle.color,
+                  border: chipStyle.border,
+                }}
               >
-                {chip.label}
+                {chipLabel}
               </span>
             )}
           </div>
@@ -346,13 +369,17 @@ function DeliberationCard({
           {/* Vote step shows confidence, risk and the requested improvement inline. */}
           {step === 'vote' && vote.risk && (
             <p className="mt-2 text-[12px] leading-relaxed" style={{ color: 'var(--text-3)' }}>
-              <span style={{ color: 'var(--m-red)', fontWeight: 500 }}>Riesgo: </span>
+              <span style={{ color: 'var(--m-red)', fontWeight: 500 }}>
+                {t('chat.council.riskLabel')}
+              </span>
               {vote.risk}
             </p>
           )}
           {step === 'vote' && vote.voteImprovement && (
             <p className="mt-2 text-[12px] leading-relaxed" style={{ color: 'var(--text-3)' }}>
-              <span style={{ color: 'var(--accent-text)', fontWeight: 500 }}>Mejora pedida: </span>
+              <span style={{ color: 'var(--accent-text)', fontWeight: 500 }}>
+                {t('chat.council.improvementLabel')}
+              </span>
               {vote.voteImprovement}
             </p>
           )}
@@ -382,7 +409,7 @@ function DeliberationCard({
                   className="text-[11px] uppercase tracking-[0.12em] font-semibold mb-1"
                   style={{ color: 'var(--text-3)' }}
                 >
-                  Fuentes verificadas
+                  {t('chat.council.sourcesLabel')}
                 </p>
                 <ul className="space-y-1">
                   {vote.sources.map((source, idx) => (
@@ -415,6 +442,7 @@ function DeliberationCard({
 
 /** A member still working — shown live while the council deliberates. */
 function CouncilThinkingRow({ member }: { member: CouncilInfo['members'][number] }) {
+  const { t } = useTranslation();
   return (
     <div
       className="flex items-center gap-3 py-3 animate-fade-in-up"
@@ -438,10 +466,10 @@ function CouncilThinkingRow({ member }: { member: CouncilInfo['members'][number]
           </span>
         </div>
         <p className="mt-0.5 text-[13px]" style={{ color: 'var(--text-3)' }}>
-          Trabajando en este paso…
+          {t('chat.council.thinkingRow')}
         </p>
       </div>
-      <span className="dot-pulse shrink-0" aria-label="Trabajando">
+      <span className="dot-pulse shrink-0" aria-label={t('chat.council.thinkingAria')}>
         <span />
         <span />
         <span />
@@ -457,6 +485,7 @@ interface CouncilBlockProps {
 }
 
 export function CouncilBlock({ council }: CouncilBlockProps) {
+  const { t } = useTranslation();
   const isRunning = council.status === 'running';
   const memberCount = council.members.length;
   const hasConsensus = council.consensus;
@@ -490,20 +519,23 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
 
   const consensusLabel = !isRunning
     ? hasConsensus
-      ? 'Elegida por consenso'
-      : 'Elegida por mayoría'
+      ? t('chat.council.consensusByVote')
+      : t('chat.council.consensusByMajority')
     : council.currentRoundKind === 'proposals'
-      ? 'Recopilando propuestas'
+      ? t('chat.council.proposalsCollecting')
       : council.currentRoundKind === 'debate'
-        ? 'Debate en curso'
+        ? t('chat.council.debateInProgress')
         : council.currentRoundKind === 'vote'
-          ? 'Votación en curso'
-          : 'Redactando síntesis final';
+          ? t('chat.council.votingInProgress')
+          : t('chat.council.synthesizing');
 
   const voteMeta =
     council.tally.total > 0
-      ? `${council.tally.for} de ${council.tally.total} votos`
-      : `${council.votes.length} de ${memberCount} propuestas`;
+      ? t('chat.council.tally', { for: council.tally.for, total: council.tally.total })
+      : t('chat.council.tallyEmpty', {
+          votes: council.votes.length,
+          total: memberCount,
+        });
 
   const answerText = council.answer.trim();
   const isSynthesizing = isRunning && council.currentRoundKind === 'synthesis';
@@ -542,8 +574,8 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
             }}
           >
             {memberCount > 0
-              ? `Consejo · ${memberCount} modelo${memberCount === 1 ? '' : 's'}`
-              : 'Consejo'}
+              ? t('chat.council.badge', { count: memberCount })
+              : t('chat.council.badgeBase')}
           </span>
 
           <span
@@ -567,7 +599,7 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
                   border: '1px solid var(--border)',
                 }}
               >
-                {confidenceLabel(council.confidence)}
+                {t(`chat.council.confidence.${council.confidence}`)}
               </span>
             )}
           </span>
@@ -590,7 +622,7 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
               className="text-[11px] uppercase tracking-[0.16em] font-semibold"
               style={{ color: 'var(--accent-text)' }}
             >
-              Respuesta consensuada
+              {t('chat.council.answerEyebrow')}
             </p>
           </div>
           <div style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--text-1)' }}>
@@ -598,7 +630,7 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
             {isSynthesizing && (
               <span
                 className="typing-cursor"
-                aria-label="Redactando…"
+                aria-label={t('chat.council.synthesizingAria')}
                 style={{ color: 'var(--accent-text)' }}
               />
             )}
@@ -626,12 +658,12 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
               <span />
             </span>
             {council.currentRoundKind === 'proposals'
-              ? 'Los modelos están generando propuestas…'
+              ? t('chat.council.generatingProposals')
               : council.currentRoundKind === 'debate'
-                ? 'El consejo está contrastando enfoques…'
+                ? t('chat.council.debating')
                 : council.currentRoundKind === 'vote'
-                  ? 'Los modelos están votando la mejor propuesta…'
-                  : 'El modelo ganador está redactando la respuesta final…'}
+                  ? t('chat.council.voting')
+                  : t('chat.council.synthesizingFull')}
           </p>
         </div>
       )}
@@ -656,9 +688,7 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
           ) : (
             <ChevronRightIcon className="w-4 h-4 shrink-0" />
           )}
-          <span className="text-[13px] font-medium">
-            Ver cómo deliberó el consejo · paso a paso
-          </span>
+          <span className="text-[13px] font-medium">{t('chat.council.explorerToggle')}</span>
         </button>
 
         {open && (
@@ -667,7 +697,7 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
             <div
               className="flex items-stretch gap-1 p-1 rounded-xl"
               role="tablist"
-              aria-label="Pasos de la deliberación"
+              aria-label={t('chat.council.explorerAria')}
               style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border)' }}
             >
               {STEPS.map((s) => {
@@ -686,7 +716,7 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
                     onClick={() => {
                       if (!isLocked) selectStep(s.key);
                     }}
-                    title={isLocked ? 'Este paso todavía no empezó' : s.hint}
+                    title={isLocked ? t('chat.council.lockedHint') : t(s.hintKey)}
                     className={`flex-1 flex flex-col items-start gap-0.5 px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)] ${isCurrent ? 'animate-pulse' : ''}`}
                     style={{
                       backgroundColor: isActive ? 'var(--accent-quiet)' : 'transparent',
@@ -721,14 +751,14 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
                         className="text-[12px] font-medium"
                         style={{ color: isActive ? 'var(--accent-text)' : 'var(--text-2)' }}
                       >
-                        {s.label}
+                        {t(s.labelKey)}
                       </span>
                     </span>
                     <span
                       className="text-[10px] hidden sm:block text-left"
                       style={{ color: 'var(--text-4)' }}
                     >
-                      {s.hint}
+                      {t(s.hintKey)}
                     </span>
                   </button>
                 );
@@ -740,8 +770,8 @@ export function CouncilBlock({ council }: CouncilBlockProps) {
               {stepVotes.length === 0 && pendingMembers.length === 0 ? (
                 <p className="text-[13px] px-1 py-3" style={{ color: 'var(--text-3)' }}>
                   {activeStep === 'debate'
-                    ? 'Esta conversación no guardó el detalle del debate.'
-                    : 'Todavía no hay datos para este paso.'}
+                    ? t('chat.council.empty.debate')
+                    : t('chat.council.empty.generic')}
                 </p>
               ) : (
                 <>

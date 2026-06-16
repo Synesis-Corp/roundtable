@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { RoundtableMark } from './RoundtableMark';
 import type { MultiInfo } from '../types/chat';
 
 /** Orchestration banner shown while Roundtable plans and runs subtasks. */
 export function RoundtableBanner({ multiInfo }: { multiInfo: MultiInfo }) {
+  const { t } = useTranslation();
   if (!multiInfo.plan) return null;
 
   return (
@@ -10,7 +12,7 @@ export function RoundtableBanner({ multiInfo }: { multiInfo: MultiInfo }) {
       <div className="rounded-xl border border-purple-700/40 bg-gradient-to-r from-purple-900/20 to-blue-900/20 px-4 py-3">
         <div className="flex items-center gap-2 text-purple-300 text-sm font-medium mb-2">
           <RoundtableMark className="w-4 h-4" />
-          Roundtable: convening the Council
+          {t('chat.banner.councilConvening')}
         </div>
         <ul className="text-xs text-gray-300 space-y-1">
           {multiInfo.plan.map((step, i) => (

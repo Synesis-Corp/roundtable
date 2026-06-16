@@ -145,7 +145,7 @@ describe('ChatInputBar — incognito mode', () => {
     const setIncognito = vi.fn();
     render(<ChatInputBar {...defaultProps({ setIncognito })} />);
 
-    const toggle = screen.getByRole('switch', { name: /modo incógnito/i });
+    const toggle = screen.getByRole('switch', { name: /incognito/i });
     expect(toggle).toHaveAttribute('aria-checked', 'false');
 
     fireEvent.click(toggle);
@@ -156,11 +156,11 @@ describe('ChatInputBar — incognito mode', () => {
   it('shows a visible ephemeral-state indicator while incognito is active', () => {
     render(<ChatInputBar {...defaultProps({ incognito: true })} />);
 
-    expect(screen.getByRole('switch', { name: /modo incógnito/i })).toHaveAttribute(
+    expect(screen.getByRole('switch', { name: /incognito/i })).toHaveAttribute(
       'aria-checked',
       'true'
     );
-    expect(screen.getByText(/este chat no se guardará/i)).toBeInTheDocument();
+    expect(screen.getByText(/this chat won't be saved/i)).toBeInTheDocument();
   });
 });
 
@@ -177,9 +177,9 @@ describe('ChatInputBar — send button gate (no providers)', () => {
         })}
       />
     );
-    const send = screen.getByRole('button', { name: /enviar mensaje/i }) as HTMLButtonElement;
+    const send = screen.getByRole('button', { name: /send message/i }) as HTMLButtonElement;
     expect(send.disabled).toBe(true);
-    expect(send.title).toMatch(/conectá un proveedor para empezar/i);
+    expect(send.title).toMatch(/connect a provider to start/i);
   });
 
   it('send button is enabled when user has at least one provider (single)', () => {
@@ -191,12 +191,12 @@ describe('ChatInputBar — send button gate (no providers)', () => {
         })}
       />
     );
-    const send = screen.getByRole('button', { name: /enviar mensaje/i }) as HTMLButtonElement;
+    const send = screen.getByRole('button', { name: /send message/i }) as HTMLButtonElement;
     expect(send.disabled).toBe(false);
-    expect(send.title).toBe('Enviar mensaje');
+    expect(send.title).toBe('Send message');
   });
 
-  it('send button is disabled in Consejo mode with only 1 provider', () => {
+  it('send button is disabled in Council mode with only 1 provider', () => {
     render(
       <ChatInputBar
         {...defaultProps({
@@ -209,12 +209,12 @@ describe('ChatInputBar — send button gate (no providers)', () => {
         })}
       />
     );
-    const send = screen.getByRole('button', { name: /enviar mensaje/i }) as HTMLButtonElement;
+    const send = screen.getByRole('button', { name: /send message/i }) as HTMLButtonElement;
     expect(send.disabled).toBe(true);
-    expect(send.title).toMatch(/el consejo necesita al menos 2 providers/i);
+    expect(send.title).toMatch(/council needs at least 2 providers/i);
   });
 
-  it('send button is enabled in Consejo mode with 2+ providers', () => {
+  it('send button is enabled in Council mode with 2+ providers', () => {
     render(
       <ChatInputBar
         {...defaultProps({
@@ -247,7 +247,7 @@ describe('ChatInputBar — send button gate (no providers)', () => {
         })}
       />
     );
-    const send = screen.getByRole('button', { name: /enviar mensaje/i }) as HTMLButtonElement;
+    const send = screen.getByRole('button', { name: /send message/i }) as HTMLButtonElement;
     expect(send.disabled).toBe(false);
   });
 
@@ -261,8 +261,8 @@ describe('ChatInputBar — send button gate (no providers)', () => {
         })}
       />
     );
-    const send = screen.getByRole('button', { name: /enviar mensaje/i }) as HTMLButtonElement;
+    const send = screen.getByRole('button', { name: /send message/i }) as HTMLButtonElement;
     expect(send.disabled).toBe(true);
-    expect(send.title).toMatch(/cargando modelos/i);
+    expect(send.title).toMatch(/loading models/i);
   });
 });

@@ -3,7 +3,12 @@
     "email": "Email",
     "password": "Password",
     "emailPlaceholder": "you@example.com",
-    "or": "or"
+    "or": "or",
+    "language": "Language",
+    "code": {
+      "copy": "Copy code",
+      "copied": "Copied!"
+    }
   },
   "auth": {
     "login": {
@@ -16,6 +21,8 @@
       "createAccount": "Create account",
       "errors": {
         "noToken": "No token received",
+        "googleNoCredential": "No Google credential received",
+        "googleFailed": "Google sign-in failed",
         "failed": "Login failed"
       }
     },
@@ -34,7 +41,12 @@
         "tooShort": "Password must be at least 8 characters",
         "failed": "Registration failed"
       }
-    }
+    },
+    "errors": {
+      "noGoogleCredential": "No Google credential received",
+      "googleSignInFailed": "Google sign-in failed"
+    },
+    "continueWithGithub": "Continue with GitHub"
   },
   "shell": {
     "newChat": "New chat",
@@ -55,7 +67,17 @@
     "noResults": "No results for «{{query}}».",
     "lastModel": "Last model: {{label}}",
     "renameConversation": "Rename conversation {{title}}",
-    "deleteConversation": "Delete conversation {{title}}"
+    "deleteConversation": "Delete conversation {{title}}",
+    "providerLabelDefault": "Model",
+    "providerLabelCouncil": "Council (multiple models)",
+    "history": {
+      "recent": "Recent",
+      "empty": "No conversations yet",
+      "justNow": "Just now",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{count}}d"
+    }
   },
   "chat": {
     "auto": "Auto",
@@ -80,7 +102,179 @@
       "singleSubtitle": "One prompt, several models, one answer. Turn on the <accent>Council</accent> so the models deliberate and converge."
     },
     "councilWarning": "Connect at least 2 providers to use the Council",
-    "goToProviders": "Go to Providers →"
+    "goToProviders": "Go to Providers →",
+    "input": {
+      "placeholder": {
+        "incognito": "Type without saving…",
+        "council": "Ask the Council…",
+        "reply": "Reply…",
+        "default": "Type a message…"
+      },
+      "dropHint": "Drop to attach",
+      "removeFile": "Remove file",
+      "attachFile": "Attach files",
+      "modeGroup": "Chat mode",
+      "singleMode": "Single",
+      "councilMode": "Council",
+      "incognitoMode": "Incognito",
+      "incognitoActivate": "Turn on incognito mode",
+      "incognitoDeactivate": "Turn off incognito mode",
+      "incognitoNotice": "This chat won't be saved. Only usage metrics are recorded.",
+      "councilCount_one": "No models available",
+      "councilCount_other": "{{count}} models in council",
+      "modelSelectorTitle": {
+        "council": "Auto-selected model in Council mode",
+        "single": "Choose model"
+      },
+      "modelSearchPlaceholder": "Search models…",
+      "modelLoading": "Loading…",
+      "modelEmpty": "Connect providers in Settings",
+      "effortTitle": "Model variant",
+      "effortVariant": "variant",
+      "effortSelectHeader": "Select variant",
+      "effortSelectSub": "Per-request model options",
+      "effortSearchPlaceholder": "Search variant…",
+      "effortEmpty": "Variant: {{variant}}",
+      "sendTitle": "Send message",
+      "sendBlocked": {
+        "noProviders": "Connect a provider to start",
+        "councilNeeds2": "Council needs at least 2 providers",
+        "loading": "Loading models…",
+        "noModels": "No models available"
+      },
+      "stopTitle": "Stop generation"
+    },
+    "deliberation": {
+      "propose": "Propose",
+      "debate": "Debate",
+      "vote": "Vote",
+      "synthesize": "Synthesize"
+    },
+    "quickActions": {
+      "image": "Create image",
+      "write": "Write or edit",
+      "search": "Search info",
+      "ideas": "Brainstorm"
+    },
+    "quickActionPrefixes": {
+      "image": "Create an image of ",
+      "write": "Help me write ",
+      "search": "Search information about ",
+      "ideas": "Let's brainstorm for "
+    },
+    "banner": {
+      "councilConvening": "Roundtable: convening the Council"
+    },
+    "message": {
+      "copy": "Copy",
+      "copyButton": "Copy message",
+      "copiedShort": "Copied!",
+      "copied": "Copied to clipboard",
+      "regenerate": "Regenerate",
+      "regenerateAria": "Regenerate response",
+      "thumbsUp": "Mark as helpful",
+      "thumbsUpTitle": "Helpful",
+      "thumbsDown": "Mark as not helpful",
+      "thumbsDownTitle": "Not helpful",
+      "thinking": "Thinking…",
+      "responding": "Responding…",
+      "reasoning": "Reasoning",
+      "webSearch": {
+        "one": "I searched the web",
+        "other": "I searched the web ({{count}} queries)",
+        "sources_one": "{{count}} source",
+        "sources_other": "{{count}} sources"
+      },
+      "pythonRun": {
+        "one": "I ran Python",
+        "other": "I ran Python ({{count}} times)"
+      },
+      "pythonCode": "Code",
+      "pythonError": "Error",
+      "pythonOutput": "Output",
+      "pythonEmpty": "(no output)",
+      "pythonTimeout": "Execution timed out.",
+      "pythonTruncated": "Output truncated.",
+      "imageAlt": "attached image",
+      "pdfFallback": "document.pdf",
+      "fileFallback": "file",
+      "pageCount_one": "page",
+      "pageCount_other": "pages",
+      "placeholder": "Analyze this:",
+      "councilStarting": "Starting real Council…",
+      "councilWaitingProposals": "Waiting for real proposals from the connected models."
+    },
+    "council": {
+      "badge_one": "Council · {{count}} model",
+      "badge_other": "Council · {{count}} models",
+      "badgeBase": "Council",
+      "consensusByVote": "Chosen by consensus",
+      "consensusByMajority": "Chosen by majority",
+      "proposalsCollecting": "Collecting proposals",
+      "debateInProgress": "Debate in progress",
+      "votingInProgress": "Voting in progress",
+      "synthesizing": "Drafting final synthesis",
+      "tally": "{{for}} of {{total}} votes",
+      "tallyEmpty": "{{votes}} of {{total}} proposals",
+      "answerEyebrow": "Consensus answer",
+      "synthesizingAria": "Drafting…",
+      "generatingProposals": "Models are generating proposals…",
+      "debating": "Council is contrasting approaches…",
+      "voting": "Models are voting the best proposal…",
+      "synthesizingFull": "Winning model is drafting the final response…",
+      "explorerToggle": "See how the Council deliberated · step by step",
+      "tab": {
+        "proposals": "Proposals",
+        "debate": "Debate",
+        "vote": "Vote"
+      },
+      "tabHint": {
+        "proposals": "Each model proposes its approach",
+        "debate": "They contrast strengths and weaknesses",
+        "vote": "They pick the best base for consensus"
+      },
+      "lockedHint": "This step hasn't started yet",
+      "chip": {
+        "winner": "Winning proposal",
+        "pending": "Proposal ready",
+        "for": "Votes in favor",
+        "changed": "Changed vote",
+        "against": "Votes against"
+      },
+      "summary": {
+        "debateEvaluated": "Evaluated each proposal and proposed a common base",
+        "debateMissing": "Debate was not recorded for this conversation",
+        "voteMissing": "Cast its vote"
+      },
+      "tier": {
+        "strong": "Strong",
+        "light": "Light"
+      },
+      "angle": {
+        "pragmatic": "Pragmatic",
+        "robust": "Robust",
+        "economic": "Economic",
+        "innovative": "Innovative",
+        "secure": "Secure",
+        "user-centric": "User-centric"
+      },
+      "angleTitle": "Assigned perspective: {{angle}}",
+      "confidence": {
+        "high": "High confidence",
+        "medium": "Medium confidence",
+        "low": "Low confidence"
+      },
+      "riskLabel": "Risk: ",
+      "improvementLabel": "Improvement requested: ",
+      "sourcesLabel": "Verified sources",
+      "thinkingRow": "Working on this step…",
+      "thinkingAria": "Working",
+      "explorerAria": "Deliberation steps",
+      "empty": {
+        "debate": "This conversation did not save the debate details.",
+        "generic": "No data yet for this step."
+      }
+    }
   },
   "settings": {
     "title": "Settings",
@@ -125,6 +319,277 @@
       "message": "Are you sure you want to disconnect <strong>{{name}}</strong>? The saved API key and associated configuration will be deleted.",
       "confirm": "Disconnect",
       "cancel": "Cancel"
+    },
+    "providerRow": {
+      "connected": "Connected",
+      "chatGptOAuth": "ChatGPT OAuth",
+      "modelCount_one": "{{count}} model",
+      "modelCount_other": "{{count}} models",
+      "docs": "Docs",
+      "disconnectAria": "Disconnect provider",
+      "disconnect": "Disconnect",
+      "credential": "Credential",
+      "customConfig": "custom config",
+      "activeModels": "Active models",
+      "codexTitle": "ChatGPT Plus/Pro",
+      "codexBody": "Sign in with OpenAI to use Codex-backed models without an API key.",
+      "codexConnecting": "Opening...",
+      "codexConnect": "Sign in with OpenAI",
+      "apiKeyPlaceholder": "Paste your {{env}}...",
+      "apiKeyPlaceholderGeneric": "Paste your API key...",
+      "hideKey": "Hide key",
+      "showKey": "Show key",
+      "connecting": "Connecting...",
+      "connect": "Connect",
+      "testing": "Testing...",
+      "test": "Test",
+      "advancedHide": "Hide advanced options",
+      "advancedShow": "Advanced options",
+      "advancedSection": "Provider configuration",
+      "package": "Package",
+      "defaultEndpoint": "Default endpoint",
+      "standardEndpoint": "Standard provider endpoint",
+      "customBaseUrl": "Custom base URL",
+      "customEndpointPath": "Custom endpoint path",
+      "customHeadersJson": "Custom headers JSON",
+      "health": {
+        "checking": "Checking provider status",
+        "checkingTitle": "Checking status…",
+        "operational": "Provider operational",
+        "unavailable": "Provider unavailable: {{error}}",
+        "unknownError": "unknown error"
+      }
+    },
+    "providerSelector": {
+      "selectModel": "Select model",
+      "search": "Search models...",
+      "loading": "Loading...",
+      "empty": "No connected providers. Connect in Settings.",
+      "noMatch": "No models match your search."
+    },
+    "memory": {
+      "title": "Use memory",
+      "subtitle": "Allow using this data as context in future chats. This preference is stored in this browser.",
+      "listTitle": "Saved memories",
+      "listSub": "You can correct or delete any entry.",
+      "add": "Add memory",
+      "content": "Memory content",
+      "tags": "Tags",
+      "tagsPlaceholder": "project, preference",
+      "save": "Save memory",
+      "saveChanges": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "empty": "No saved memories yet",
+      "emptySub": "Add one manually or let Roundtable learn during normal conversations.",
+      "loading": "Loading memories…",
+      "retry": "Retry",
+      "editAria": "Edit memory",
+      "deleteAria": "Delete memory",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…"
+    },
+    "activeModels": {
+      "title": "Active models · {{provider}}",
+      "aria": "Active models of {{provider}}",
+      "body": "Pick which models to show system-wide. With all selected, all are shown.",
+      "loading": "Loading…",
+      "empty": "No models available for this provider.",
+      "all": "All",
+      "none": "None",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveErrorFallback": "Could not save"
+    },
+    "councilMembers": {
+      "title": "Council members",
+      "aria": "Council members",
+      "closeAria": "Close",
+      "selectedCount_one": "{{count}} selected · min 2 · max 8",
+      "selectedCount_other": "{{count}} selected · min 2 · max 8",
+      "autoLabel": "Use automatic selection",
+      "autoBody": "Models are picked automatically from the connected providers.",
+      "tier": {
+        "strong": "Strong",
+        "light": "Light"
+      },
+      "empty": "No text models available.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "errors": {
+        "lessThan2": "Select at least 2 models",
+        "moreThan8": "Maximum 8 models allowed",
+        "lessThan2Providers": "Need at least 2 different providers"
+      },
+      "saveErrorFallback": "Could not save the configuration"
+    }
+  },
+  "modal": {
+    "confirm": {
+      "processing": "Processing…",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "delete": {
+      "title": "Delete conversation",
+      "aria": "Delete conversation",
+      "body": "Are you sure you want to delete «{{title}}»? It will no longer appear in your history.",
+      "cancel": "Cancel",
+      "confirm": "Delete",
+      "deleting": "Deleting…"
+    },
+    "rename": {
+      "title": "Rename conversation",
+      "aria": "Rename conversation",
+      "regenerateTitle": "Generate a title with AI from the conversation",
+      "regenerating": "Generating…",
+      "regenerateWithAi": "Generate with AI",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…"
+    }
+  },
+  "onboarding": {
+    "wizard": {
+      "aria": "Onboarding wizard",
+      "stepAria": "Step {{current}} of 4",
+      "stepLabel": "Step {{current}} of 4",
+      "step1Title": "Choose your first provider",
+      "step2Title": "Connect your account",
+      "step3Title": "Verify the connection",
+      "step4Title": "Choose your default model",
+      "step1Body": "Pick a provider to get started. You can add more in Settings later.",
+      "step1Loading": "Loading…",
+      "step1Badge": "OAuth",
+      "step1ModelCount": "{{count}} models · {{kind}}",
+      "step1Popular": "Popular",
+      "step1Support": "Supported",
+      "step2PasteKey": "Paste your API key for <accent>{{name}}</accent>. It's encrypted before saving.",
+      "step2CodexTitle": "<accent>Codex uses ChatGPT Plus authentication.</accent>",
+      "step2CodexBody": "We take you to Settings to connect your OpenAI account. When you come back, a model will be ready to chat.",
+      "step2CodexButton": "Connect with ChatGPT Plus",
+      "step2CodexButtonLoading": "Connecting…",
+      "step2ShowKey": "Show API key",
+      "step2HideKey": "Hide API key",
+      "step2AdvancedShow": "Advanced options (baseURL, headers)",
+      "step2AdvancedHide": "Hide advanced options",
+      "step2AdvancedBaseUrl": "Base URL (optional)",
+      "step2AdvancedHeaders": "Headers JSON (optional, e.g. {\"X-Custom\": \"value\"})",
+      "step3Body": "We verify your key with a minimal call to the provider. This avoids discovering a problem in your first chat.",
+      "step3Validate": "Verify connection",
+      "step3Skip": "Skip (degraded)",
+      "step3Validating": "Verifying…",
+      "step3Success": "Connection successful",
+      "step3ErrorFallback": "Could not verify the connection",
+      "step3Retry": "Retry",
+      "step4Body": "Pick the model you want to start with. You can change it later from the chat selector.",
+      "step4Loading": "Loading models…",
+      "step4NoModels": "No active models for {{name}}. Go to <link>Settings</link> to activate them.",
+      "back": "Back",
+      "cancel": "Cancel",
+      "next": "Next",
+      "nextConnecting": "Connecting…",
+      "start": "Start chatting",
+      "startConnecting": "Connecting…",
+      "connectErrorFallback": "Could not connect"
+    },
+    "connect": {
+      "title": "Connect provider",
+      "aria": "Connect provider",
+      "body": "Paste your API key to start. For advanced options (Codex OAuth, custom baseURL), go to Settings.",
+      "providerLabel": "Provider",
+      "loading": "Loading…",
+      "errorSuffix": "Go to <link>Settings</link>",
+      "empty": "No popular providers available. <link>View all</link>",
+      "apiKeyLabel": "API key",
+      "apiKeyOf": "API key of {{name}}",
+      "showKey": "Show API key",
+      "hideKey": "Hide API key",
+      "cancel": "Cancel",
+      "submit": "Connect",
+      "submitLoading": "Connecting…",
+      "errorEmpty": "Paste an API key to continue.",
+      "errorFallback": "Could not connect"
+    },
+    "copy": {
+      "new": {
+        "title": "Connect your first provider to start",
+        "body": "Roundtable needs an API key to talk to the models. Add it in Providers and start working.",
+        "cta": "Go to Providers →"
+      },
+      "returning": {
+        "title": "You don't have any connected providers yet",
+        "body": "Without an active provider you can't send messages. Connect now and everything will be ready.",
+        "cta": "Go to Providers →"
+      }
+    }
+  },
+  "usage": {
+    "title": "AI Usage",
+    "summary": "{{period}} · {{modelsCount}} {{modelsLabel}} · {{providersCount}} {{providersLabel}}",
+    "summaryAll": "All time",
+    "summary30d": "Last 30 days",
+    "summaryModel_one": "model",
+    "summaryModel_other": "models",
+    "summaryProvider_one": "provider",
+    "summaryProvider_other": "providers",
+    "periodToggle": {
+      "total": "All",
+      "days30": "30 days"
+    },
+    "retry": "Retry",
+    "empty": {
+      "title": "No usage data",
+      "body": "Start chatting to see your metrics"
+    },
+    "kpi": {
+      "estimatedCost": "Estimated cost",
+      "estimatedCostDetail": "Includes estimates",
+      "totalTokens": "Total tokens",
+      "tokensInOut": "{{in}} in / {{out}} out",
+      "requests": "Requests",
+      "tokensPerReq": "~{{count}} tokens/req",
+      "avgLatency": "Average latency",
+      "latencySlow": "Slow",
+      "latencyFast": "Fast"
+    },
+    "charts": {
+      "tokensByProvider": "Tokens by provider",
+      "costDistribution": "Cost distribution",
+      "latencyVsTokens": "Latency vs Tokens (point size = requests)",
+      "scatterLatency": "Latency",
+      "scatterTokens": "Tokens",
+      "input": "Input",
+      "output": "Output",
+      "scatterTooltip": {
+        "latency": "Latency:",
+        "tokens": "Tokens:",
+        "requests": "Requests:"
+      }
+    },
+    "table": {
+      "title": "Detail by model",
+      "estimatedBadge": "Estimated",
+      "estimatedTooltip": "Some costs are estimated because there's no input/output breakdown",
+      "estimatedCellTooltip": "Estimated cost (no input/output breakdown)",
+      "modelCount_one": "{{count}} model",
+      "modelCount_other": "{{count}} models",
+      "headers": {
+        "provider": "Provider",
+        "model": "Model",
+        "input": "Input",
+        "output": "Output",
+        "total": "Total",
+        "reqs": "Reqs",
+        "cost": "Cost",
+        "latency": "Latency"
+      }
+    },
+    "insights": {
+      "title": "Insights"
     }
   }
 }

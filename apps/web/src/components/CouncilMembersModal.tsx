@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ModelInfo } from '@chat/sdk';
 import type { CouncilConfig } from '../hooks/useCouncilConfig';
 
@@ -88,13 +89,14 @@ function getAutoSelectedModels(models: ModelInfo[]): string[] {
 /* ── Validation ── */
 function validateSelection(
   selectedIds: string[],
-  models: ModelInfo[]
+  models: ModelInfo[],
+  t: (key: string) => string
 ): { valid: boolean; error?: string } {
   if (selectedIds.length < 2) {
-    return { valid: false, error: 'Selecciona al menos 2 modelos' };
+    return { valid: false, error: t('settings.councilMembers.errors.lessThan2') };
   }
   if (selectedIds.length > 8) {
-    return { valid: false, error: 'Máximo 8 modelos permitidos' };
+    return { valid: false, error: t('settings.councilMembers.errors.moreThan8') };
   }
 
   const providers = new Set<string>();
@@ -103,7 +105,7 @@ function validateSelection(
     if (model) providers.add(model.provider);
   }
   if (providers.size < 2) {
-    return { valid: false, error: 'Se necesitan al menos 2 proveedores diferentes' };
+    return { valid: false, error: t('settings.councilMembers.errors.lessThan2Providers') };
   }
 
   return { valid: true };
@@ -127,6 +129,7 @@ export function CouncilMembersModal({
   onSave,
   onReset,
 }: Props) {
+  const { t } = useTranslation();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isAuto, setIsAuto] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -216,8 +219,8 @@ export function CouncilMembersModal({
 
   const activeSelection = isAuto ? autoSelectedIds : selectedIds;
   const validation = useMemo(
-    () => validateSelection(Array.from(activeSelection), models),
-    [activeSelection, models]
+    () => validateSelection(Array.from(activeSelection), models, t),
+    [activeSelection, models, t]
   );
 
   const toggleModel = useCallback(
@@ -254,11 +257,13 @@ export function CouncilMembersModal({
       await onSave(Array.from(selectedIds), 'manual');
       onClose();
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'No se pudo guardar la configuración');
+      setSaveError(
+        err instanceof Error ? err.message : t('settings.councilMembers.saveErrorFallback')
+      );
     } finally {
       setIsSubmitting(false);
     }
-  }, [isAuto, onReset, onSave, selectedIds, validation.valid, onClose]);
+  }, [isAuto, onReset, onSave, selectedIds, validation.valid, onClose, t]);
 
   const handleToggleAuto = useCallback(() => {
     setIsAuto((prev) => {
@@ -283,7 +288,7 @@ export function CouncilMembersModal({
       className="fixed inset-0 z-50 flex items-center justify-center"
       role="dialog"
       aria-modal="true"
-      aria-label="Miembros del Consejo"
+      aria-label={t('settings.councilMembers.aria')}
     >
       {/* Backdrop */}
       <div
@@ -310,14 +315,14 @@ export function CouncilMembersModal({
           style={{ borderBottom: '1px solid var(--border)' }}
         >
           <h2 className="text-base font-semibold" style={{ color: 'var(--text-1)' }}>
-            Miembros del Consejo
+            {t('settings.councilMembers.title')}
           </h2>
           <button
             ref={closeButtonRef}
             onClick={onClose}
             className="p-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-surface)]"
             style={{ color: 'var(--text-3)' }}
-            aria-label="Cerrar"
+            aria-label={t('settings.councilMembers.closeAria')}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
               (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--hover)';
@@ -345,7 +350,9 @@ export function CouncilMembersModal({
               <span className="font-semibold" style={{ color: 'var(--text-1)' }}>
                 {selectedCount}
               </span>{' '}
-              {selectedCount === 1 ? 'seleccionado' : 'seleccionados'} · mínimo 2 · máximo 8
+              {t(`settings.councilMembers.selectedCount_${selectedCount === 1 ? 'one' : 'other'}`, {
+                count: selectedCount,
+              })}
             </span>
           </div>
 
@@ -371,13 +378,13 @@ export function CouncilMembersModal({
               </div>
             </div>
             <span className="text-sm" style={{ color: 'var(--text-2)' }}>
-              Usar selección automática
+              {t('settings.councilMembers.autoLabel')}
             </span>
           </label>
 
           {isAuto && (
             <p className="text-xs" style={{ color: 'var(--text-3)' }}>
-              Los modelos se eligen automáticamente según los proveedores conectados.
+              {t('settings.councilMembers.autoBody')}
             </p>
           )}
 
@@ -400,7 +407,7 @@ export function CouncilMembersModal({
         <div className="flex-1 overflow-y-auto px-5 pb-2">
           {textModels.length === 0 && (
             <div className="py-8 text-center text-sm" style={{ color: 'var(--text-3)' }}>
-              No hay modelos de texto disponibles.
+              {t('settings.councilMembers.empty')}
             </div>
           )}
 
@@ -478,7 +485,9 @@ export function CouncilMembersModal({
                               color: tier === 'strong' ? 'var(--m-green)' : 'var(--accent)',
                             }}
                           >
-                            {tier === 'strong' ? 'Fuerte' : 'Liviano'}
+                            {tier === 'strong'
+                              ? t('settings.councilMembers.tier.strong')
+                              : t('settings.councilMembers.tier.light')}
                           </span>
                         </div>
                         <div className="text-xs truncate mt-0.5" style={{ color: 'var(--text-3)' }}>
@@ -512,7 +521,7 @@ export function CouncilMembersModal({
               (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
             }}
           >
-            Cancelar
+            {t('settings.councilMembers.cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -532,7 +541,7 @@ export function CouncilMembersModal({
               (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent)';
             }}
           >
-            {isSubmitting ? 'Guardando…' : 'Guardar'}
+            {isSubmitting ? t('settings.councilMembers.saving') : t('settings.councilMembers.save')}
           </button>
         </div>
       </div>

@@ -24,7 +24,6 @@ import { ChatInputBar } from '../components/ChatInputBar';
 import { ChatMessageItem } from '../components/ChatMessageItem';
 import { RoundtableBanner } from '../components/RoundtableBanner';
 import { QuickActions, DeliberationSteps } from '../components/QuickActions';
-import { ONBOARDING_COPY } from '../lib/onboarding-helpers';
 import type { OnboardingNew, OnboardingReturning } from '../lib/onboarding-helpers';
 import type { ChatMessage, MultiInfo, EffortSpec, CouncilInfo } from '../types/chat';
 
@@ -438,7 +437,7 @@ export default function ChatPage() {
           </svg>
           <div>
             <p className="text-sm font-medium" style={{ color: 'var(--m-amber)' }}>
-              {ONBOARDING_COPY[state.bodyKey]}
+              {t(state.bodyKey)}
             </p>
             <div className="mt-2 flex items-center gap-2.5 flex-wrap">
               <button
@@ -461,7 +460,7 @@ export default function ChatPage() {
                 className="text-sm underline underline-offset-2 transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                 style={{ color: 'var(--accent)' }}
               >
-                {ONBOARDING_COPY[state.ctaKey]}
+                {t(state.ctaKey)}
               </Link>
             </div>
           </div>
@@ -630,7 +629,7 @@ export default function ChatPage() {
                 style={{ color: 'var(--text-1)' }}
               >
                 {showOnboardingCta && onboarding.kind === 'new'
-                  ? ONBOARDING_COPY[onboarding.titleKey]
+                  ? t(onboarding.titleKey)
                   : incognito
                     ? t('chat.welcome.titlePrivate')
                     : multiMode

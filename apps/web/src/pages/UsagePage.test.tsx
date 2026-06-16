@@ -80,11 +80,11 @@ describe('UsagePage', () => {
     render(<UsagePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Costo estimado')).toBeInTheDocument();
+      expect(screen.getByText('Estimated cost')).toBeInTheDocument();
     });
-    expect(screen.getByText('Total de tokens')).toBeInTheDocument();
+    expect(screen.getByText('Total tokens')).toBeInTheDocument();
     expect(screen.getByText('Requests')).toBeInTheDocument();
-    expect(screen.getByText('Latencia promedio')).toBeInTheDocument();
+    expect(screen.getByText('Average latency')).toBeInTheDocument();
   });
 
   it('shows the empty state when the API returns no rows', async () => {
@@ -108,7 +108,7 @@ describe('UsagePage', () => {
     render(<UsagePage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Sin datos de uso')).toBeInTheDocument();
+      expect(screen.getByText('No usage data')).toBeInTheDocument();
     });
   });
 
@@ -119,10 +119,10 @@ describe('UsagePage', () => {
 
     // Wait for the initial load to finish so the period toggle is rendered.
     await waitFor(() => {
-      expect(screen.getByText('Costo estimado')).toBeInTheDocument();
+      expect(screen.getByText('Estimated cost')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText('30 días'));
+    fireEvent.click(screen.getByText('30 days'));
 
     await waitFor(() => {
       expect(mockApiGet).toHaveBeenCalledWith('/usage?period=30d');
@@ -184,7 +184,7 @@ describe('ScatterTooltipContent', () => {
     render(<ScatterTooltipContent active payload={[{ payload: row }]} />);
 
     expect(screen.getByText('GPT-4o')).toBeInTheDocument();
-    expect(screen.getByText(/Latencia:/)).toBeInTheDocument();
+    expect(screen.getByText(/Latency:/)).toBeInTheDocument();
     expect(screen.getByText('6.3s')).toBeInTheDocument();
     expect(screen.getByText(/Tokens:/)).toBeInTheDocument();
     expect(screen.getByText('3.0K')).toBeInTheDocument();

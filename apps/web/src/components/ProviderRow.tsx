@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getInitials } from '../lib/initials';
 import { CODEX_ENABLED } from '../lib/features';
 import type { ProviderHealth } from '../hooks/useProvidersHealth';
@@ -107,13 +108,14 @@ function ProviderLogo({ id, name }: { id: string; name: string }) {
  * pulsing grey = still checking. Renders nothing until we have a signal.
  */
 function HealthDot({ health, loading }: { health?: ProviderHealth; loading?: boolean }) {
+  const { t } = useTranslation();
   if (!health) {
     if (!loading) return null;
     return (
       <span
         role="img"
-        aria-label="Comprobando estado del proveedor"
-        title="Comprobando estado…"
+        aria-label={t('settings.providerRow.health.checking')}
+        title={t('settings.providerRow.health.checkingTitle')}
         className="inline-block rounded-full animate-pulse"
         style={{ width: 7, height: 7, backgroundColor: 'var(--text-4)' }}
       />
@@ -121,8 +123,10 @@ function HealthDot({ health, loading }: { health?: ProviderHealth; loading?: boo
   }
   const ok = health.ok;
   const label = ok
-    ? 'Proveedor operativo'
-    : `Proveedor no disponible: ${health.error ?? 'error desconocido'}`;
+    ? t('settings.providerRow.health.operational')
+    : t('settings.providerRow.health.unavailable', {
+        error: health.error ?? t('settings.providerRow.health.unknownError'),
+      });
   return (
     <span
       role="img"
@@ -159,6 +163,7 @@ export function ProviderRow({
   onOptionsChange,
   onManageModels,
 }: ProviderRowProps) {
+  const { t } = useTranslation();
   const connectedOptions = parseProviderOptions(userOptions);
   const usesCodex = connectedOptions.authType === 'codex';
   const topModels = provider.models?.slice(0, 4) ?? [];
@@ -214,7 +219,7 @@ export function ProviderRow({
                   }}
                 >
                   <HealthDot health={health} loading={healthLoading} />
-                  Conectado
+                  {t('settings.providerRow.connected')}
                 </span>
               )}
               {usesCodex && (
@@ -227,13 +232,18 @@ export function ProviderRow({
                     color: 'var(--m-blue)',
                   }}
                 >
-                  ChatGPT OAuth
+                  {t('settings.providerRow.chatGptOAuth')}
                 </span>
               )}
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
-                {provider.modelCount} modelos
+                {t(
+                  `settings.providerRow.modelCount_${provider.modelCount === 1 ? 'one' : 'other'}`,
+                  {
+                    count: provider.modelCount,
+                  }
+                )}
               </span>
               <span style={{ color: 'var(--text-4)' }}>·</span>
               <span className="font-mono-ui" style={{ fontSize: 12, color: 'var(--text-3)' }}>
@@ -249,7 +259,7 @@ export function ProviderRow({
                     className="text-xs underline underline-offset-2 transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                     style={{ color: 'var(--accent)' }}
                   >
-                    Docs
+                    {t('settings.providerRow.docs')}
                   </a>
                 </>
               )}
@@ -271,9 +281,9 @@ export function ProviderRow({
               (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
               (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
             }}
-            aria-label="Desconectar proveedor"
+            aria-label={t('settings.providerRow.disconnectAria')}
           >
-            {saving ? '...' : 'Desconectar'}
+            {saving ? '...' : t('settings.providerRow.disconnect')}
           </button>
         )}
       </div>
@@ -310,7 +320,9 @@ export function ProviderRow({
           }}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Credencial</span>
+            <span style={{ fontSize: 12, color: 'var(--text-3)' }}>
+              {t('settings.providerRow.credential')}
+            </span>
             <span className="font-mono-ui" style={{ fontSize: 12, color: 'var(--text-2)' }}>
               {maskedKey}
             </span>
@@ -323,7 +335,7 @@ export function ProviderRow({
                   color: 'var(--text-3)',
                 }}
               >
-                config personalizada
+                {t('settings.providerRow.customConfig')}
               </span>
             )}
             {onManageModels && (
@@ -347,7 +359,7 @@ export function ProviderRow({
                   (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-2)';
                 }}
               >
-                Modelos activos
+                {t('settings.providerRow.activeModels')}
               </button>
             )}
           </div>
@@ -366,10 +378,10 @@ export function ProviderRow({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="font-medium" style={{ fontSize: 13, color: 'var(--accent-text)' }}>
-                    ChatGPT Plus/Pro
+                    {t('settings.providerRow.codexTitle')}
                   </p>
                   <p className="mt-1" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-                    Inicia sesión con OpenAI para usar modelos respaldados por Codex sin API key.
+                    {t('settings.providerRow.codexBody')}
                   </p>
                 </div>
                 <button
@@ -389,7 +401,9 @@ export function ProviderRow({
                     (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent)';
                   }}
                 >
-                  {codexConnecting ? 'Abriendo...' : 'Iniciar sesión con OpenAI'}
+                  {codexConnecting
+                    ? t('settings.providerRow.codexConnecting')
+                    : t('settings.providerRow.codexConnect')}
                 </button>
               </div>
             </div>
@@ -401,7 +415,11 @@ export function ProviderRow({
                 type={showKey ? 'text' : 'password'}
                 value={apiKey}
                 onChange={(e) => onApiKeyChange(e.target.value)}
-                placeholder={primaryEnv ? `Pega tu ${primaryEnv}...` : 'Pega tu API key...'}
+                placeholder={
+                  primaryEnv
+                    ? t('settings.providerRow.apiKeyPlaceholder', { env: primaryEnv })
+                    : t('settings.providerRow.apiKeyPlaceholderGeneric')
+                }
                 className="w-full text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                 style={{
                   backgroundColor: 'var(--bg-input)',
@@ -424,8 +442,12 @@ export function ProviderRow({
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
                   }}
-                  title={showKey ? 'Ocultar clave' : 'Mostrar clave'}
-                  aria-label={showKey ? 'Ocultar clave' : 'Mostrar clave'}
+                  title={
+                    showKey ? t('settings.providerRow.hideKey') : t('settings.providerRow.showKey')
+                  }
+                  aria-label={
+                    showKey ? t('settings.providerRow.hideKey') : t('settings.providerRow.showKey')
+                  }
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {showKey ? (
@@ -465,7 +487,7 @@ export function ProviderRow({
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent)';
               }}
             >
-              {saving ? 'Conectando...' : 'Conectar'}
+              {saving ? t('settings.providerRow.connecting') : t('settings.providerRow.connect')}
             </button>
             {apiKey.trim() && !saving && (
               <button
@@ -488,7 +510,7 @@ export function ProviderRow({
                   (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-2)';
                 }}
               >
-                {testing ? 'Probando...' : 'Probar'}
+                {testing ? t('settings.providerRow.testing') : t('settings.providerRow.test')}
               </button>
             )}
           </div>
@@ -518,7 +540,9 @@ export function ProviderRow({
             (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
           }}
         >
-          {advancedOpen ? 'Ocultar opciones avanzadas' : 'Opciones avanzadas'}
+          {advancedOpen
+            ? t('settings.providerRow.advancedHide')
+            : t('settings.providerRow.advancedShow')}
         </button>
       )}
 
@@ -536,11 +560,11 @@ export function ProviderRow({
             className="uppercase font-medium"
             style={{ fontSize: 11, letterSpacing: '0.08em', color: 'var(--text-3)' }}
           >
-            Configuración del proveedor
+            {t('settings.providerRow.advancedSection')}
           </div>
           <div>
             <label className="mb-1 block" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-              Paquete
+              {t('settings.providerRow.package')}
             </label>
             <code
               className="font-mono-ui inline-block"
@@ -557,7 +581,7 @@ export function ProviderRow({
           </div>
           <div>
             <label className="mb-1 block" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-              Endpoint por defecto
+              {t('settings.providerRow.defaultEndpoint')}
             </label>
             <code
               className="font-mono-ui block truncate"
@@ -569,12 +593,12 @@ export function ProviderRow({
                 borderRadius: 'var(--r-xs)',
               }}
             >
-              {DEFAULT_ENDPOINTS[provider.id] ?? 'Standard provider endpoint'}
+              {DEFAULT_ENDPOINTS[provider.id] ?? t('settings.providerRow.standardEndpoint')}
             </code>
           </div>
           <div>
             <label className="mb-1 block" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-              Custom base URL
+              {t('settings.providerRow.customBaseUrl')}
             </label>
             <input
               type="text"
@@ -594,7 +618,7 @@ export function ProviderRow({
           </div>
           <div>
             <label className="mb-1 block" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-              Custom endpoint path
+              {t('settings.providerRow.customEndpointPath')}
             </label>
             <input
               type="text"
@@ -614,7 +638,7 @@ export function ProviderRow({
           </div>
           <div>
             <label className="mb-1 block" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-              Custom headers JSON
+              {t('settings.providerRow.customHeadersJson')}
             </label>
             <textarea
               value={options.headers ?? ''}

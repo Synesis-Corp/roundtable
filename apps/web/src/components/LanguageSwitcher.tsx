@@ -9,14 +9,14 @@ const LABELS: Record<Language, string> = { en: 'EN', es: 'ES' };
  * consumer through the shared i18n instance.
  */
 export default function LanguageSwitcher({ className = '' }: { className?: string }) {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const resolved = i18n.resolvedLanguage as Language | undefined;
   const current: Language = resolved && SUPPORTED_LANGUAGES.includes(resolved) ? resolved : 'en';
 
   return (
     <div
       role="group"
-      aria-label="Language"
+      aria-label={t('common.language')}
       className={`inline-flex items-center rounded-lg border border-white/10 bg-white/5 p-0.5 text-xs font-medium ${className}`}
     >
       {SUPPORTED_LANGUAGES.map((lng) => (

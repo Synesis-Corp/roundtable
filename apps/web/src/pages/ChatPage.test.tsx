@@ -154,14 +154,14 @@ describe('ChatPage — Council Count Display', () => {
   it('shows auto council count when no manual config exists', async () => {
     renderChatPage();
 
-    // Enable council mode by clicking the Consejo button
-    const councilButton = screen.getByRole('button', { name: /Consejo/i });
+    // Enable council mode by clicking the Council button
+    const councilButton = screen.getByRole('button', { name: /Council/i });
     fireEvent.click(councilButton);
 
     await waitFor(() => {
       // With 2 providers and 4 models, auto-selection should show 4 models
       // (2 per provider: openai has gpt-4o + gpt-4o-mini, deepseek has deepseek-chat + deepseek-coder)
-      expect(screen.getByText(/4 modelos en consejo/i)).toBeInTheDocument();
+      expect(screen.getByText(/4 models in council/i)).toBeInTheDocument();
     });
   });
 
@@ -184,12 +184,12 @@ describe('ChatPage — Council Count Display', () => {
     renderChatPage();
 
     // Enable council mode
-    const councilButton = screen.getByRole('button', { name: /Consejo/i });
+    const councilButton = screen.getByRole('button', { name: /Council/i });
     fireEvent.click(councilButton);
 
     await waitFor(() => {
-      // Manual config has 3 models, so should show 3 modelos
-      expect(screen.getByText(/3 modelos en consejo/i)).toBeInTheDocument();
+      // Manual config has 3 models, so should show 3 models
+      expect(screen.getByText(/3 models in council/i)).toBeInTheDocument();
     });
   });
 });
@@ -209,16 +209,16 @@ describe('ChatPage — incognito mode', () => {
   it('propagates incognito preferences and never sends a persisted conversation id', async () => {
     renderChatPage();
 
-    fireEvent.click(screen.getByRole('switch', { name: /modo incógnito/i }));
+    fireEvent.click(screen.getByRole('switch', { name: /incognito/i }));
     fireEvent.change(screen.getByRole('textbox'), {
-      target: { value: 'Mensaje privado' },
+      target: { value: 'Private message' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /enviar mensaje/i }));
+    fireEvent.click(screen.getByRole('button', { name: /send message/i }));
 
     await waitFor(() => expect(mockStartStream).toHaveBeenCalledTimes(1));
     expect(mockStartStream).toHaveBeenCalledWith(
       'test-token',
-      [{ role: 'user', content: 'Mensaje privado' }],
+      [{ role: 'user', content: 'Private message' }],
       expect.objectContaining({ incognito: true }),
       undefined,
       undefined
@@ -228,19 +228,19 @@ describe('ChatPage — incognito mode', () => {
   it('resets the ephemeral transcript when incognito is disabled', async () => {
     renderChatPage();
 
-    fireEvent.click(screen.getByRole('switch', { name: /modo incógnito/i }));
+    fireEvent.click(screen.getByRole('switch', { name: /incognito/i }));
     fireEvent.change(screen.getByRole('textbox'), {
-      target: { value: 'No persistir' },
+      target: { value: 'Do not persist' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /enviar mensaje/i }));
+    fireEvent.click(screen.getByRole('button', { name: /send message/i }));
 
-    expect((await screen.findAllByText('No persistir')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Do not persist')).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('switch', { name: /modo incógnito/i }));
+    fireEvent.click(screen.getByRole('switch', { name: /incognito/i }));
 
     await waitFor(() => {
-      expect(screen.queryByText('No persistir')).not.toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/escribe un mensaje/i)).toBeInTheDocument();
+      expect(screen.queryByText('Do not persist')).not.toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/type a message/i)).toBeInTheDocument();
     });
   });
 });
@@ -273,35 +273,31 @@ describe('ChatPage — Onboarding CTA (single mode)', () => {
   it('kind=new: greeting is NOT in DOM, CTA with link to /settings IS present', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
-        kind: 'new' as const,
-        titleKey: 'onboarding.new.title' as const,
-        bodyKey: 'onboarding.new.body' as const,
-        ctaKey: 'onboarding.new.cta' as const,
+        kind: 'new',
+        titleKey: 'onboarding.copy.new.title' as const,
+        bodyKey: 'onboarding.copy.new.body' as const,
+        ctaKey: 'onboarding.copy.new.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
     expect(screen.queryByText('What are we working on today?')).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('link', { name: /settings|proveedor|configuraci/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /settings|providers|provider/i })).toBeInTheDocument();
   });
 
   it('kind=returning: greeting IS in DOM, soft banner with link to /settings IS present', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
-        kind: 'returning' as const,
-        titleKey: 'onboarding.returning.title' as const,
-        bodyKey: 'onboarding.returning.body' as const,
-        ctaKey: 'onboarding.returning.cta' as const,
+        kind: 'returning',
+        titleKey: 'onboarding.copy.returning.title' as const,
+        bodyKey: 'onboarding.copy.returning.body' as const,
+        ctaKey: 'onboarding.copy.returning.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
     expect(screen.getByText('What are we working on today?')).toBeInTheDocument();
-    expect(
-      screen.getByRole('link', { name: /settings|proveedor|configuraci/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /settings|providers|provider/i })).toBeInTheDocument();
   });
 
   it('kind=hidden: no onboarding CTA or banner rendered', () => {
@@ -328,15 +324,15 @@ describe('ChatPage — Onboarding CTA (single mode)', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
         kind: 'new' as const,
-        titleKey: 'onboarding.new.title' as const,
-        bodyKey: 'onboarding.new.body' as const,
-        ctaKey: 'onboarding.new.cta' as const,
+        titleKey: 'onboarding.copy.new.title' as const,
+        bodyKey: 'onboarding.copy.new.body' as const,
+        ctaKey: 'onboarding.copy.new.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
     renderChatPage();
     // Activate council mode
-    fireEvent.click(screen.getByRole('button', { name: /Consejo/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Council/i }));
     // The onboarding CTA (data-testid) must NOT be present in council mode
     expect(screen.queryByTestId('onboarding-cta')).not.toBeInTheDocument();
   });
@@ -446,9 +442,9 @@ describe('ChatPage — onboarding wizard (Fase 2.3)', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
         kind: 'new' as const,
-        titleKey: 'onboarding.new.title' as const,
-        bodyKey: 'onboarding.new.body' as const,
-        ctaKey: 'onboarding.new.cta' as const,
+        titleKey: 'onboarding.copy.new.title' as const,
+        bodyKey: 'onboarding.copy.new.body' as const,
+        ctaKey: 'onboarding.copy.new.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
@@ -460,9 +456,9 @@ describe('ChatPage — onboarding wizard (Fase 2.3)', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
         kind: 'returning' as const,
-        titleKey: 'onboarding.returning.title' as const,
-        bodyKey: 'onboarding.returning.body' as const,
-        ctaKey: 'onboarding.returning.cta' as const,
+        titleKey: 'onboarding.copy.returning.title' as const,
+        bodyKey: 'onboarding.copy.returning.body' as const,
+        ctaKey: 'onboarding.copy.returning.cta' as const,
       },
       clearIsNew: vi.fn(),
     });
@@ -474,9 +470,9 @@ describe('ChatPage — onboarding wizard (Fase 2.3)', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {
         kind: 'new' as const,
-        titleKey: 'onboarding.new.title' as const,
-        bodyKey: 'onboarding.new.body' as const,
-        ctaKey: 'onboarding.new.cta' as const,
+        titleKey: 'onboarding.copy.new.title' as const,
+        bodyKey: 'onboarding.copy.new.body' as const,
+        ctaKey: 'onboarding.copy.new.cta' as const,
       },
       clearIsNew: vi.fn(),
     });

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 interface RenameModalProps {
   renameValue: string;
   renaming: boolean;
@@ -18,6 +20,7 @@ export function RenameModal({
   onConfirm,
   onRegenerateTitle,
 }: RenameModalProps) {
+  const { t } = useTranslation();
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -29,7 +32,7 @@ export function RenameModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Renombrar conversación"
+        aria-label={t('modal.rename.aria')}
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--bg-surface)',
@@ -41,7 +44,7 @@ export function RenameModal({
         }}
       >
         <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)', marginBottom: 12 }}>
-          Renombrar conversación
+          {t('modal.rename.title')}
         </h2>
         <input
           autoFocus
@@ -71,7 +74,7 @@ export function RenameModal({
             type="button"
             onClick={onRegenerateTitle}
             disabled={renaming || regeneratingTitle}
-            title="Generar un título con IA a partir de la conversación"
+            title={t('modal.rename.regenerateTitle')}
             style={{
               fontSize: 13,
               fontWeight: 500,
@@ -85,7 +88,7 @@ export function RenameModal({
             }}
           >
             {regeneratingTitle ? (
-              'Generando…'
+              t('modal.rename.regenerating')
             ) : (
               <span className="inline-flex items-center gap-1.5">
                 <svg
@@ -101,7 +104,7 @@ export function RenameModal({
                   <path d="M12 3l1.9 5.7 5.7 1.9-5.7 1.9L12 18.2l-1.9-5.7L4.4 10.6l5.7-1.9L12 3z" />
                   <path d="M19 14l.7 2 2 .7-2 .7L19 19.5l-.7-2-2-.7 2-.7L19 14zM5 14l.7 2 2 .7-2 .7L5 19.5l-.7-2-2-.7 2-.7L5 14z" />
                 </svg>
-                Generar con IA
+                {t('modal.rename.regenerateWithAi')}
               </span>
             )}
           </button>
@@ -121,7 +124,7 @@ export function RenameModal({
                 cursor: renaming ? 'default' : 'pointer',
               }}
             >
-              Cancelar
+              {t('modal.rename.cancel')}
             </button>
             <button
               type="button"
@@ -139,7 +142,7 @@ export function RenameModal({
                 cursor: renaming || !renameValue.trim() ? 'default' : 'pointer',
               }}
             >
-              {renaming ? 'Guardando…' : 'Guardar'}
+              {renaming ? t('modal.rename.saving') : t('modal.rename.save')}
             </button>
           </div>
         </div>

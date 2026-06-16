@@ -62,8 +62,8 @@ describe('CouncilMembersModal', () => {
 
   it('renders header and close button', () => {
     renderModal();
-    expect(screen.getByText('Miembros del Consejo')).toBeInTheDocument();
-    expect(screen.getByLabelText('Cerrar')).toBeInTheDocument();
+    expect(screen.getByText('Council members')).toBeInTheDocument();
+    expect(screen.getByLabelText('Close')).toBeInTheDocument();
   });
 
   it('groups models by provider with colored dots', () => {
@@ -74,10 +74,10 @@ describe('CouncilMembersModal', () => {
     expect(screen.getByText('Claude 3 Opus')).toBeInTheDocument();
   });
 
-  it('shows tier badges (Fuerte/Liviano)', () => {
+  it('shows tier badges (Strong/Light)', () => {
     renderModal();
-    expect(screen.getAllByText('Fuerte').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Liviano').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Strong').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Light').length).toBeGreaterThanOrEqual(1);
   });
 
   it('updates counter when selecting models', () => {
@@ -99,7 +99,7 @@ describe('CouncilMembersModal', () => {
     if (gpt4o) fireEvent.click(gpt4o);
     if (claude) fireEvent.click(claude);
 
-    expect(screen.getByText((content) => content.includes('seleccionados'))).toBeInTheDocument();
+    expect(screen.getByText((content) => content.includes('selected'))).toBeInTheDocument();
   });
 
   it('disables checkboxes and shows auto-selected models when auto toggle is on', () => {
@@ -133,7 +133,7 @@ describe('CouncilMembersModal', () => {
     if (checkboxes[0]) fireEvent.click(checkboxes[0]);
 
     await waitFor(() => {
-      expect(screen.getByText('Selecciona al menos 2 modelos')).toBeInTheDocument();
+      expect(screen.getByText('Select at least 2 models')).toBeInTheDocument();
     });
   });
 
@@ -153,7 +153,7 @@ describe('CouncilMembersModal', () => {
       if ((cb as HTMLInputElement).checked) fireEvent.click(cb);
     }
 
-    const guardar = screen.getByText('Guardar');
+    const guardar = screen.getByText('Save');
     expect(guardar).toBeDisabled();
   });
 
@@ -171,7 +171,7 @@ describe('CouncilMembersModal', () => {
       onSave,
     });
 
-    const guardar = screen.getByText('Guardar');
+    const guardar = screen.getByText('Save');
     fireEvent.click(guardar);
     expect(onSave).toHaveBeenCalledWith(
       expect.arrayContaining(['openai:gpt-4o', 'anthropic:claude-3-opus']),
@@ -183,17 +183,17 @@ describe('CouncilMembersModal', () => {
     const onReset = vi.fn();
     renderModal({ onReset });
     // Auto mode is on by default
-    const guardar = screen.getByText('Guardar');
+    const guardar = screen.getByText('Save');
     await act(async () => {
       fireEvent.click(guardar);
     });
     expect(onReset).toHaveBeenCalled();
   });
 
-  it('calls onClose when Cancelar is clicked', () => {
+  it('calls onClose when Cancel is clicked', () => {
     const onClose = vi.fn();
     renderModal({ onClose });
-    fireEvent.click(screen.getByText('Cancelar'));
+    fireEvent.click(screen.getByText('Cancel'));
     expect(onClose).toHaveBeenCalled();
   });
 

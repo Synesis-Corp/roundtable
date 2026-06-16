@@ -1,5 +1,7 @@
 /** Loading / error / empty states for the Usage dashboard. */
 
+import { useTranslation } from 'react-i18next';
+
 export function UsageLoading({ wrap }: { wrap: string }) {
   return (
     <div className={wrap}>
@@ -28,6 +30,7 @@ export function UsageError({
   error: string;
   onRetry: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className={wrap}>
       <div className="flex flex-col items-center justify-center py-20">
@@ -52,7 +55,7 @@ export function UsageError({
           className="px-5 py-2.5 rounded-xl font-medium text-sm transition-all hover:opacity-90 active:scale-95"
           style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
         >
-          Reintentar
+          {t('usage.retry')}
         </button>
       </div>
     </div>
@@ -60,6 +63,7 @@ export function UsageError({
 }
 
 export function UsageEmpty({ wrap }: { wrap: string }) {
+  const { t } = useTranslation();
   return (
     <div className={wrap}>
       <div className="flex flex-col items-center justify-center py-20">
@@ -78,8 +82,8 @@ export function UsageEmpty({ wrap }: { wrap: string }) {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-[var(--text-1)] mb-1">Sin datos de uso</h3>
-        <p className="text-sm text-[var(--text-3)]">Empezá a chatear para ver tus métricas</p>
+        <h3 className="text-lg font-medium text-[var(--text-1)] mb-1">{t('usage.empty.title')}</h3>
+        <p className="text-sm text-[var(--text-3)]">{t('usage.empty.body')}</p>
       </div>
     </div>
   );

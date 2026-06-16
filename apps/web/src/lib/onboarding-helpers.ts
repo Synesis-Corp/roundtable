@@ -9,25 +9,25 @@ export const IS_NEW_KEY = 'roundtable:is-new';
 
 /** Copy keys — the persona decision lives in the helper; JSX maps them to text. */
 export type OnboardingCopyKey =
-  | 'onboarding.new.title'
-  | 'onboarding.new.body'
-  | 'onboarding.new.cta'
-  | 'onboarding.returning.title'
-  | 'onboarding.returning.body'
-  | 'onboarding.returning.cta';
+  | 'onboarding.copy.new.title'
+  | 'onboarding.copy.new.body'
+  | 'onboarding.copy.new.cta'
+  | 'onboarding.copy.returning.title'
+  | 'onboarding.copy.returning.body'
+  | 'onboarding.copy.returning.cta';
 
 export interface OnboardingNew {
   kind: 'new';
-  titleKey: 'onboarding.new.title';
-  bodyKey: 'onboarding.new.body';
-  ctaKey: 'onboarding.new.cta';
+  titleKey: 'onboarding.copy.new.title';
+  bodyKey: 'onboarding.copy.new.body';
+  ctaKey: 'onboarding.copy.new.cta';
 }
 
 export interface OnboardingReturning {
   kind: 'returning';
-  titleKey: 'onboarding.returning.title';
-  bodyKey: 'onboarding.returning.body';
-  ctaKey: 'onboarding.returning.cta';
+  titleKey: 'onboarding.copy.returning.title';
+  bodyKey: 'onboarding.copy.returning.body';
+  ctaKey: 'onboarding.copy.returning.cta';
 }
 
 /** Discriminated union — the full result of the persona decision. */
@@ -70,38 +70,38 @@ export function getOnboardingState(input: OnboardingInput): OnboardingState {
   if (input.isNewFlag) {
     return {
       kind: 'new',
-      titleKey: 'onboarding.new.title',
-      bodyKey: 'onboarding.new.body',
-      ctaKey: 'onboarding.new.cta',
+      titleKey: 'onboarding.copy.new.title',
+      bodyKey: 'onboarding.copy.new.body',
+      ctaKey: 'onboarding.copy.new.cta',
     };
   }
   return {
     kind: 'returning',
-    titleKey: 'onboarding.returning.title',
-    bodyKey: 'onboarding.returning.body',
-    ctaKey: 'onboarding.returning.cta',
+    titleKey: 'onboarding.copy.returning.title',
+    bodyKey: 'onboarding.copy.returning.body',
+    ctaKey: 'onboarding.copy.returning.cta',
   };
 }
 
 // ─── Copy map ─────────────────────────────────────────────────────────────────
 
 /**
- * UI copy strings keyed by `OnboardingCopyKey`.
+ * UI copy keys (i18n). The actual strings live in the locale files
+ * (`apps/web/src/i18n/locales/{en,es}.json`) under the `onboarding.copy`
+ * namespace. JSX consumers call `t(key)` directly — the helper stays free
+ * of JSX/React and only exports the key names.
  *
- * All strings live here (single source) so JSX components never inline literal
- * copy that could diverge. The helper stays free of JSX/React — it only exports
- * plain strings.
+ * Kept as a Record so TypeScript catches typos at compile time (the key
+ * passed to `t()` must exist in this list).
  */
-export const ONBOARDING_COPY: Record<OnboardingCopyKey, string> = {
-  'onboarding.new.title': 'Conecta tu primer proveedor para empezar',
-  'onboarding.new.body':
-    'Roundtable necesita una clave de API para hablar con los modelos. Añádela en Proveedores y empieza a trabajar.',
-  'onboarding.new.cta': 'Ir a Proveedores →',
-  'onboarding.returning.title': 'Todavía no tienes proveedores conectados',
-  'onboarding.returning.body':
-    'Sin un proveedor activo no puedes enviar mensajes. Conéctate ahora y todo estará listo.',
-  'onboarding.returning.cta': 'Ir a Proveedores →',
-};
+export const ONBOARDING_KEYS = {
+  'onboarding.copy.new.title': 'onboarding.copy.new.title',
+  'onboarding.copy.new.body': 'onboarding.copy.new.body',
+  'onboarding.copy.new.cta': 'onboarding.copy.new.cta',
+  'onboarding.copy.returning.title': 'onboarding.copy.returning.title',
+  'onboarding.copy.returning.body': 'onboarding.copy.returning.body',
+  'onboarding.copy.returning.cta': 'onboarding.copy.returning.cta',
+} as const satisfies Record<OnboardingCopyKey, string>;
 
 // ─── Flag clear helper ────────────────────────────────────────────────────────
 

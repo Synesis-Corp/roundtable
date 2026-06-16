@@ -1,11 +1,15 @@
 import { Icons } from '../lib/usage-icons';
+import { useTranslation } from 'react-i18next';
 
 /** Insight cards rendered below the usage table (empty list → renders nothing). */
 export function UsageInsights({ insights }: { insights: string[] }) {
+  const { t } = useTranslation();
   if (insights.length === 0) return null;
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-6">
-      <h3 className="text-sm font-semibold text-[var(--text-1)] mb-4">Insights</h3>
+      <h3 className="text-sm font-semibold text-[var(--text-1)] mb-4">
+        {t('usage.insights.title')}
+      </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {insights.map((insight, index) => (
           <div

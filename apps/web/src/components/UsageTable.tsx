@@ -1,4 +1,5 @@
 import type { UsageRow } from '../lib/usage-helpers';
+import { useTranslation } from 'react-i18next';
 import { getProviderColor, formatCost, formatLatency } from '../lib/usage-helpers';
 import { Icons } from '../lib/usage-icons';
 
@@ -9,11 +10,12 @@ interface UsageTableProps {
 
 /** Per-model detail table with input/output/total tokens, requests, cost, latency. */
 export function UsageTable({ rows, hasEstimatedCosts }: UsageTableProps) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] overflow-hidden mb-8">
       <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-[var(--text-1)]">Detalle por modelo</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-1)]">{t('usage.table.title')}</h3>
           {hasEstimatedCosts && (
             <div
               className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
@@ -22,31 +24,42 @@ export function UsageTable({ rows, hasEstimatedCosts }: UsageTableProps) {
                 color: 'var(--accent-text)',
                 border: '1px solid var(--accent-line)',
               }}
-              title="Algunos costos son estimados porque no hay breakdown de input/output"
+              title={t('usage.table.estimatedTooltip')}
             >
               {Icons.info}
-              <span>Estimado</span>
+              <span>{t('usage.table.estimatedBadge')}</span>
             </div>
           )}
         </div>
         <span className="text-xs text-[var(--text-3)]">
-          {rows.length} {rows.length === 1 ? 'modelo' : 'modelos'}
+          {t(`usage.table.modelCount_${rows.length === 1 ? 'one' : 'other'}`, {
+            count: rows.length,
+          })}
         </span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--border)]">
-              {['Provider', 'Modelo', 'Input', 'Output', 'Total', 'Reqs', 'Costo', 'Latencia'].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="px-6 py-3 text-left text-xs font-medium text-[var(--text-3)] uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                )
-              )}
+              {(
+                [
+                  { key: 'provider', label: t('usage.table.headers.provider') },
+                  { key: 'model', label: t('usage.table.headers.model') },
+                  { key: 'input', label: t('usage.table.headers.input') },
+                  { key: 'output', label: t('usage.table.headers.output') },
+                  { key: 'total', label: t('usage.table.headers.total') },
+                  { key: 'reqs', label: t('usage.table.headers.reqs') },
+                  { key: 'cost', label: t('usage.table.headers.cost') },
+                  { key: 'latency', label: t('usage.table.headers.latency') },
+                ] as const
+              ).map(({ key, label }) => (
+                <th
+                  key={key}
+                  className="px-6 py-3 text-left text-xs font-medium text-[var(--text-3)] uppercase tracking-wider"
+                >
+                  {label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
@@ -89,7 +102,7 @@ export function UsageTable({ rows, hasEstimatedCosts }: UsageTableProps) {
                       <span
                         className="w-1.5 h-1.5 rounded-full shrink-0"
                         style={{ backgroundColor: 'var(--text-4)' }}
-                        title="Costo estimado (sin breakdown de input/output)"
+                        title={t('usage.table.estimatedCellTooltip')}
                       />
                     )}
                   </div>

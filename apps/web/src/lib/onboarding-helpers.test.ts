@@ -87,9 +87,9 @@ describe('getOnboardingState', () => {
       });
       expect(result.kind).toBe('new');
       if (result.kind === 'new') {
-        expect(result.titleKey).toBe('onboarding.new.title');
-        expect(result.bodyKey).toBe('onboarding.new.body');
-        expect(result.ctaKey).toBe('onboarding.new.cta');
+        expect(result.titleKey).toBe('onboarding.copy.new.title');
+        expect(result.bodyKey).toBe('onboarding.copy.new.body');
+        expect(result.ctaKey).toBe('onboarding.copy.new.cta');
       }
     });
   });
@@ -114,9 +114,9 @@ describe('getOnboardingState', () => {
       });
       expect(result.kind).toBe('returning');
       if (result.kind === 'returning') {
-        expect(result.titleKey).toBe('onboarding.returning.title');
-        expect(result.bodyKey).toBe('onboarding.returning.body');
-        expect(result.ctaKey).toBe('onboarding.returning.cta');
+        expect(result.titleKey).toBe('onboarding.copy.returning.title');
+        expect(result.bodyKey).toBe('onboarding.copy.returning.body');
+        expect(result.ctaKey).toBe('onboarding.copy.returning.cta');
       }
     });
 

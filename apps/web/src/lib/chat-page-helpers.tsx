@@ -212,29 +212,39 @@ function IconBulb({ className = 'w-[16px] h-[16px]' }: { className?: string }) {
 
 export interface QuickAction {
   icon: React.ReactNode;
-  label: string;
-  prefix: string;
+  /** i18n key under `chat.quickActions.*` for the visible label. */
+  labelKey:
+    | 'chat.quickActions.image'
+    | 'chat.quickActions.write'
+    | 'chat.quickActions.search'
+    | 'chat.quickActions.ideas';
+  /** Prompt text key injected into the composer when the action is picked. */
+  prefixKey:
+    | 'chat.quickActionPrefixes.image'
+    | 'chat.quickActionPrefixes.write'
+    | 'chat.quickActionPrefixes.search'
+    | 'chat.quickActionPrefixes.ideas';
 }
 
 export const QUICK_ACTIONS: QuickAction[] = [
   {
     icon: <IconImage />,
-    label: 'Crear imagen',
-    prefix: 'Crea una imagen de ',
+    labelKey: 'chat.quickActions.image',
+    prefixKey: 'chat.quickActionPrefixes.image',
   },
   {
     icon: <IconPencil />,
-    label: 'Escribir o editar',
-    prefix: 'Ayúdame a escribir ',
+    labelKey: 'chat.quickActions.write',
+    prefixKey: 'chat.quickActionPrefixes.write',
   },
   {
     icon: <IconSearch />,
-    label: 'Buscar info',
-    prefix: 'Busca información sobre ',
+    labelKey: 'chat.quickActions.search',
+    prefixKey: 'chat.quickActionPrefixes.search',
   },
   {
     icon: <IconBulb />,
-    label: 'Lluvia de ideas',
-    prefix: 'Generemos ideas para ',
+    labelKey: 'chat.quickActions.ideas',
+    prefixKey: 'chat.quickActionPrefixes.ideas',
   },
 ];

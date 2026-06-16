@@ -81,7 +81,7 @@ export function ConversationList({
                   const isActive = activeConversationId === conv.id;
                   const lastProvider = conv.messages?.[conv.messages.length - 1]?.providerId;
                   const providerColor = getProviderColor(lastProvider);
-                  const providerLabel = getProviderLabel(lastProvider);
+                  const providerLabel = getProviderLabel(lastProvider, t);
                   const isMulti = conv.messages?.some((m) => m.providerId === 'multi');
                   return (
                     <Link

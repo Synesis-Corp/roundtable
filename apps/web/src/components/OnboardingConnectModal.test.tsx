@@ -118,8 +118,8 @@ describe('OnboardingConnectModal', () => {
 
   it('renders the dialog with header and action buttons when open=true', () => {
     renderModal();
-    expect(screen.getByRole('dialog', { name: /conectar proveedor/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /cancelar/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /connect provider/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
     expect(screen.getByTestId('onboarding-connect-submit')).toBeInTheDocument();
   });
 
@@ -135,7 +135,7 @@ describe('OnboardingConnectModal', () => {
 
   it('calls onClose when the user clicks the Cancelar button', () => {
     const { onClose } = renderModal();
-    fireEvent.click(screen.getByRole('button', { name: /cancelar/i }));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -178,9 +178,9 @@ describe('OnboardingConnectModal', () => {
   it('toggles the API key input type when clicking the show/hide button', async () => {
     renderModal();
     const input = screen.getByTestId('api-key-input') as HTMLInputElement;
-    fireEvent.click(screen.getByRole('button', { name: /mostrar api key/i }));
+    fireEvent.click(screen.getByRole('button', { name: /show api key/i }));
     await waitFor(() => expect(input.type).toBe('text'));
-    fireEvent.click(screen.getByRole('button', { name: /ocultar api key/i }));
+    fireEvent.click(screen.getByRole('button', { name: /hide api key/i }));
     await waitFor(() => expect(input.type).toBe('password'));
   });
 

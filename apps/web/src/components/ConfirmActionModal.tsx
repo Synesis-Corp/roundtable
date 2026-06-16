@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 interface ConfirmActionModalProps {
   title: string;
   message: React.ReactNode;
@@ -13,13 +15,16 @@ interface ConfirmActionModalProps {
 export function ConfirmActionModal({
   title,
   message,
-  confirmLabel = 'Confirmar',
-  cancelLabel = 'Cancelar',
+  confirmLabel,
+  cancelLabel,
   loading = false,
   destructive = false,
   onCancel,
   onConfirm,
 }: ConfirmActionModalProps) {
+  const { t } = useTranslation();
+  const resolvedConfirmLabel = confirmLabel ?? t('modal.confirm.confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('modal.confirm.cancel');
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -64,7 +69,7 @@ export function ConfirmActionModal({
               cursor: loading ? 'default' : 'pointer',
             }}
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <button
             type="button"
@@ -82,7 +87,7 @@ export function ConfirmActionModal({
               cursor: loading ? 'default' : 'pointer',
             }}
           >
-            {loading ? 'Procesando…' : confirmLabel}
+            {loading ? t('modal.confirm.processing') : resolvedConfirmLabel}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { storage } from '../lib/storage';
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useCallback } from 'react';
 import type { Conversation } from '@chat/sdk';
 import { apiGet } from '../lib/api-client';
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function ConversationHistory({ onSelectConversation }: Props) {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const token = storage.get('token');
@@ -36,10 +38,10 @@ export default function ConversationHistory({ onSelectConversation }: Props) {
     const diffHrs = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMin < 1) return 'Just now';
-    if (diffMin < 60) return `${diffMin}m`;
-    if (diffHrs < 24) return `${diffHrs}h`;
-    if (diffDays < 7) return `${diffDays}d`;
+    if (diffMin < 1) return t('shell.history.justNow');
+    if (diffMin < 60) return t('shell.history.minutes', { count: diffMin });
+    if (diffHrs < 24) return t('shell.history.hours', { count: diffHrs });
+    if (diffDays < 7) return t('shell.history.days', { count: diffDays });
     return date.toLocaleDateString();
   };
 
@@ -59,9 +61,9 @@ export default function ConversationHistory({ onSelectConversation }: Props) {
 
   return (
     <div className="flex-1 overflow-y-auto p-3">
-      <div className="label-text px-2 mb-2">Recent</div>
+      <div className="label-text px-2 mb-2">{t('shell.history.recent')}</div>
       {conversations.length === 0 ? (
-        <p className="text-xs text-gray-600 px-2">No conversations yet</p>
+        <p className="text-xs text-gray-600 px-2">{t('shell.history.empty')}</p>
       ) : (
         <div className="space-y-0.5">
           {conversations.map((conv) => (

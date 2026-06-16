@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useActiveModels } from '../hooks/useActiveModels';
 
 export interface ActiveModelsModalProps {
@@ -22,6 +23,7 @@ export function ActiveModelsModal({
   onClose,
   onSaved,
 }: ActiveModelsModalProps) {
+  const { t } = useTranslation();
   const { models, activeIds, loading, error, save } = useActiveModels(providerId);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -54,7 +56,9 @@ export function ActiveModelsModal({
       onSaved?.();
       onClose();
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'No se pudo guardar');
+      setSaveError(
+        err instanceof Error ? err.message : t('settings.activeModels.saveErrorFallback')
+      );
     } finally {
       setSaving(false);
     }
@@ -69,7 +73,7 @@ export function ActiveModelsModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={`Modelos activos de ${providerName}`}
+        aria-label={t('settings.activeModels.aria', { provider: providerName })}
         className="w-full max-w-md overflow-hidden"
         style={{
           backgroundColor: 'var(--bg-surface)',
@@ -80,23 +84,25 @@ export function ActiveModelsModal({
       >
         <div style={{ padding: 20, borderBottom: '1px solid var(--border)' }}>
           <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-1)' }}>
-            Modelos activos · {providerName}
+            {t('settings.activeModels.title', { provider: providerName })}
           </h2>
           <p className="mt-1" style={{ fontSize: 12, color: 'var(--text-3)' }}>
-            Elegí qué modelos mostrar en todo el sistema. Con todos seleccionados se muestran todos.
+            {t('settings.activeModels.body')}
           </p>
         </div>
 
         <div style={{ maxHeight: 360, overflowY: 'auto', padding: '8px 12px' }}>
           {loading && (
-            <p style={{ fontSize: 13, color: 'var(--text-3)', padding: 12 }}>Cargando…</p>
+            <p style={{ fontSize: 13, color: 'var(--text-3)', padding: 12 }}>
+              {t('settings.activeModels.loading')}
+            </p>
           )}
           {error && !loading && (
             <p style={{ fontSize: 13, color: 'var(--m-rose)', padding: 12 }}>{error}</p>
           )}
           {!loading && !error && models.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--text-3)', padding: 12 }}>
-              No hay modelos disponibles para este proveedor.
+              {t('settings.activeModels.empty')}
             </p>
           )}
           {!loading &&
@@ -132,14 +138,14 @@ export function ActiveModelsModal({
               onClick={() => setSelected(new Set(models.map((m) => m.id)))}
               style={{ fontSize: 12, color: 'var(--text-3)' }}
             >
-              Todos
+              {t('settings.activeModels.all')}
             </button>
             <button
               type="button"
               onClick={() => setSelected(new Set())}
               style={{ fontSize: 12, color: 'var(--text-3)' }}
             >
-              Ninguno
+              {t('settings.activeModels.none')}
             </button>
           </div>
           <div className="flex items-center gap-2">
@@ -150,7 +156,7 @@ export function ActiveModelsModal({
               className="rounded-lg px-3 py-1.5 text-sm"
               style={{ color: 'var(--text-3)' }}
             >
-              Cancelar
+              {t('settings.activeModels.cancel')}
             </button>
             <button
               type="button"
@@ -159,7 +165,7 @@ export function ActiveModelsModal({
               className="rounded-lg px-4 py-1.5 text-sm font-medium disabled:opacity-50"
               style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
             >
-              {saving ? 'Guardando…' : 'Guardar'}
+              {saving ? t('settings.activeModels.saving') : t('settings.activeModels.save')}
             </button>
           </div>
         </div>
