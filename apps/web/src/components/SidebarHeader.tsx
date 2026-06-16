@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface SidebarHeaderProps {
   /** Returns false to cancel navigation when a stream is in progress. */
@@ -13,6 +14,7 @@ export function SidebarHeader({
   onCloseMobile,
   onToggleDesktopCollapsed,
 }: SidebarHeaderProps) {
+  const { t } = useTranslation();
   return (
     <div
       className="p-3 flex items-center justify-between"
@@ -49,7 +51,7 @@ export function SidebarHeader({
               color: "var(--text-3)",
             }}
           >
-            orchestrator
+            {t("shell.brandSubtitle")}
           </span>
         </span>
       </Link>
@@ -57,8 +59,8 @@ export function SidebarHeader({
         {/* Desktop collapse */}
         <button
           onClick={onToggleDesktopCollapsed}
-          title="Collapse sidebar"
-          aria-label="Collapse sidebar"
+          title={t("shell.collapseSidebar")}
+          aria-label={t("shell.collapseSidebar")}
           className="hidden lg:inline-flex p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
           style={{ color: "var(--text-3)", borderRadius: "var(--r-sm)" }}
           onMouseEnter={(e) => {
@@ -87,7 +89,7 @@ export function SidebarHeader({
             (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)";
             (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
           }}
-          aria-label="Close sidebar"
+          aria-label={t("shell.closeSidebar")}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -1,0 +1,60 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Contraseña",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "or": "o"
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenido de nuevo",
+      "subtitle": "Inicia sesión para continuar en Roundtable",
+      "passwordPlaceholder": "Ingresa tu contraseña",
+      "submit": "Iniciar sesión",
+      "submitting": "Iniciando sesión…",
+      "noAccount": "¿No tienes una cuenta?",
+      "createAccount": "Crear cuenta",
+      "errors": {
+        "noToken": "No se recibió un token",
+        "failed": "Error al iniciar sesión"
+      }
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Comienza con Roundtable",
+      "passwordPlaceholder": "Al menos 8 caracteres",
+      "confirmPassword": "Confirmar contraseña",
+      "confirmPlaceholder": "Repite tu contraseña",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta…",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "signIn": "Iniciar sesión",
+      "errors": {
+        "mismatch": "Las contraseñas no coinciden",
+        "tooShort": "La contraseña debe tener al menos 8 caracteres",
+        "failed": "Error al registrarse"
+      }
+    }
+  },
+  "shell": {
+    "newChat": "Nuevo chat",
+    "loading": "Cargando…",
+    "brandSubtitle": "orchestrator",
+    "collapseSidebar": "Contraer barra lateral",
+    "closeSidebar": "Cerrar barra lateral",
+    "openSidebar": "Abrir barra lateral",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar conversaciones…",
+    "searchAria": "Buscar conversaciones",
+    "closeSearch": "Cerrar búsqueda",
+    "userFallback": "Usuario",
+    "logout": "Cerrar sesión",
+    "conversationCount_one": "{{count}} conversación",
+    "conversationCount_other": "{{count}} conversaciones",
+    "emptyConversations": "Todavía no hay conversaciones.",
+    "noResults": "Sin resultados para «{{query}}».",
+    "lastModel": "Último modelo: {{label}}",
+    "renameConversation": "Renombrar conversación {{title}}",
+    "deleteConversation": "Eliminar conversación {{title}}"
+  }
+}

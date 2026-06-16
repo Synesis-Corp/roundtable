@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, Outlet, useParams } from "react-router-dom";
 import { Suspense, lazy } from "react";
+import { useTranslation } from "react-i18next";
 import { storage } from "./lib/storage";
 import Layout from "./components/Layout";
 import ChatPage from "./pages/ChatPage";
@@ -60,6 +61,7 @@ function AuthShell({ children }: { children: React.ReactNode }) {
 /** Lightweight fallback for lazy-loaded routes. Keeps the app shell visible
  *  (sidebar / topbar) so navigation feels stable while a chunk loads. */
 function RouteFallback() {
+  const { t } = useTranslation();
   return (
     <div
       role="status"
@@ -73,7 +75,7 @@ function RouteFallback() {
         fontSize: 13,
       }}
     >
-      Cargando…
+      {t("shell.loading")}
     </div>
   );
 }

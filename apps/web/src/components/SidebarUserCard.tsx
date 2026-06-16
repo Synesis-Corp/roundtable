@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 interface SidebarUserCardProps {
   userName: string;
@@ -14,8 +16,12 @@ export function SidebarUserCard({
   onCloseMobile,
   onLogout,
 }: SidebarUserCardProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-2">
+      <div className="flex justify-end px-1">
+        <LanguageSwitcher />
+      </div>
       <Link
         to="/settings"
         onClick={onCloseMobile}
@@ -49,10 +55,10 @@ export function SidebarUserCard({
             className="truncate"
             style={{ fontSize: 13, fontWeight: 500, color: "var(--text-1)" }}
           >
-            {userName || "User"}
+            {userName || t("shell.userFallback")}
           </div>
           <div style={{ fontSize: 11, color: "var(--text-3)" }}>
-            {conversationCount} {conversationCount === 1 ? "conversación" : "conversaciones"}
+            {t("shell.conversationCount", { count: conversationCount })}
           </div>
         </div>
         {/* Logout icon button */}
@@ -72,8 +78,8 @@ export function SidebarUserCard({
             (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)";
             (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
           }}
-          title="Cerrar sesión"
-          aria-label="Cerrar sesión"
+          title={t("shell.logout")}
+          aria-label={t("shell.logout")}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

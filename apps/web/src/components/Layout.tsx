@@ -1,4 +1,5 @@
 import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { StreamingContext } from "../lib/streaming-context";
 import { NEW_CHAT_EVENT } from "../lib/layout-helpers";
 import { useAuthSession } from "../hooks/useAuthSession";
@@ -17,6 +18,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const params = useParams<{ conversationId?: string }>();
   const activeConversationId = params.conversationId ?? null;
+  const { t } = useTranslation();
 
   const { token, userName, handleLogout } = useAuthSession();
   const { streaming, setStreaming, confirmLeaveIfStreaming } = useStreamingGuard();
@@ -122,7 +124,7 @@ export default function Layout() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Nuevo chat
+            {t("shell.newChat")}
           </button>
         </div>
 

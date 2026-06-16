@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface SidebarTopbarTogglesProps {
   desktopCollapsed: boolean;
   onOpenMobile: () => void;
@@ -15,6 +17,7 @@ export function SidebarTopbarToggles({
   onToggleDesktopCollapsed,
   onNewChat,
 }: SidebarTopbarTogglesProps) {
+  const { t } = useTranslation();
   return (
     <div className="absolute top-0 left-0 z-30 flex items-center gap-1 m-2">
       {/* Mobile open */}
@@ -30,8 +33,8 @@ export function SidebarTopbarToggles({
           (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)";
           (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
         }}
-        title="Open sidebar"
-        aria-label="Open sidebar"
+        title={t("shell.openSidebar")}
+        aria-label={t("shell.openSidebar")}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -51,8 +54,8 @@ export function SidebarTopbarToggles({
             (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)";
             (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
           }}
-          title="Open sidebar"
-          aria-label="Open sidebar"
+          title={t("shell.openSidebar")}
+          aria-label={t("shell.openSidebar")}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
@@ -73,8 +76,8 @@ export function SidebarTopbarToggles({
             (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)";
             (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
           }}
-          title="New chat"
-          aria-label="New chat"
+          title={t("shell.newChat")}
+          aria-label={t("shell.newChat")}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

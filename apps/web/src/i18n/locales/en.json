@@ -1,0 +1,60 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "or": "or"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to continue to Roundtable",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create account",
+      "errors": {
+        "noToken": "No token received",
+        "failed": "Login failed"
+      }
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Get started with Roundtable",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPlaceholder": "Repeat your password",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "errors": {
+        "mismatch": "Passwords do not match",
+        "tooShort": "Password must be at least 8 characters",
+        "failed": "Registration failed"
+      }
+    }
+  },
+  "shell": {
+    "newChat": "New chat",
+    "loading": "Loading…",
+    "brandSubtitle": "orchestrator",
+    "collapseSidebar": "Collapse sidebar",
+    "closeSidebar": "Close sidebar",
+    "openSidebar": "Open sidebar",
+    "search": "Search",
+    "searchPlaceholder": "Search conversations…",
+    "searchAria": "Search conversations",
+    "closeSearch": "Close search",
+    "userFallback": "User",
+    "logout": "Log out",
+    "conversationCount_one": "{{count}} conversation",
+    "conversationCount_other": "{{count}} conversations",
+    "emptyConversations": "No conversations yet.",
+    "noResults": "No results for «{{query}}».",
+    "lastModel": "Last model: {{label}}",
+    "renameConversation": "Rename conversation {{title}}",
+    "deleteConversation": "Delete conversation {{title}}"
+  }
+}

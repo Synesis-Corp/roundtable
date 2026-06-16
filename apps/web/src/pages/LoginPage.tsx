@@ -1,9 +1,11 @@
 import { storage } from "../lib/storage";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { apiPost } from "../lib/api-client";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import GitHubSignInButton from "../components/GitHubSignInButton";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,10 +27,10 @@ export default function LoginPage() {
         storage.set("token", data.token);
         navigate("/");
       } else {
-        setError("No token received");
+        setError(t("auth.login.errors.noToken"));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : t("auth.login.errors.failed"));
     } finally {
       setLoading(false);
     }
@@ -36,14 +39,17 @@ export default function LoginPage() {
   return (
     <div className="flex-1 flex items-center justify-center px-4 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.14),transparent_30rem)]">
       <div className="w-full max-w-md">
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitcher />
+        </div>
         <div className="text-center mb-8">
           <img
             src="/logo/app-icon-gradient.svg"
             alt="Roundtable"
             className="mx-auto mb-4 h-14 w-14 rounded-3xl shadow-2xl"
           />
-          <h1 className="heading text-3xl">Welcome back</h1>
-          <p className="text-sm text-gray-500 mt-2">Sign in to continue to Roundtable</p>
+          <h1 className="heading text-3xl">{t("auth.login.title")}</h1>
+          <p className="text-sm text-gray-500 mt-2">{t("auth.login.subtitle")}</p>
         </div>
 
         {error && (
@@ -54,27 +60,27 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">{t("common.email")}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              placeholder="you@example.com"
+              placeholder={t("common.emailPlaceholder")}
               className="input-dark w-full"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">{t("common.password")}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              placeholder="Enter your password"
+              placeholder={t("auth.login.passwordPlaceholder")}
               className="input-dark w-full"
             />
           </div>
@@ -87,17 +93,17 @@ export default function LoginPage() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="dot-pulse"><span /><span /><span /></span>
-                Signing in...
+                {t("auth.login.submitting")}
               </span>
             ) : (
-              "Sign in"
+              t("auth.login.submit")
             )}
           </button>
         </form>
 
         <div className="my-6 flex items-center gap-3 text-xs text-gray-500">
           <div className="h-px flex-1 bg-gray-700/60" />
-          <span>or</span>
+          <span>{t("common.or")}</span>
           <div className="h-px flex-1 bg-gray-700/60" />
         </div>
 
@@ -107,9 +113,9 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          Don't have an account?{" "}
+          {t("auth.login.noAccount")}{" "}
           <Link to="/register" className="text-blue-400 hover:text-blue-300 underline underline-offset-2 font-medium">
-            Create account
+            {t("auth.login.createAccount")}
           </Link>
         </p>
       </div>

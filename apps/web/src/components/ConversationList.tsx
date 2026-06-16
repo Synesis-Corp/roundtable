@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { Conversation } from "@chat/sdk";
 import { groupConversationsByDate, formatConversationTime } from "../lib/conversations";
 import { getProviderColor, getProviderLabel } from "../lib/layout-helpers";
@@ -30,6 +31,7 @@ export function ConversationList({
   onOpenRename,
   onRequestDelete,
 }: ConversationListProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex-1 overflow-y-auto px-3 py-2 mt-2">
       {loadingConversations && conversations.length === 0 ? (
@@ -46,14 +48,14 @@ export function ConversationList({
           className="flex flex-col items-center justify-center h-full px-2"
           style={{ fontSize: 12, color: "var(--text-3)" }}
         >
-          Todavía no hay conversaciones.
+          {t("shell.emptyConversations")}
         </div>
       ) : filteredConversations.length === 0 ? (
         <div
           className="flex flex-col items-center justify-center px-2 py-8 text-center"
           style={{ fontSize: 12, color: "var(--text-3)" }}
         >
-          Sin resultados para «{searchQuery.trim()}».
+          {t("shell.noResults", { query: searchQuery.trim() })}
         </div>
       ) : (
         <div>
@@ -112,8 +114,8 @@ export function ConversationList({
                         {/* Provider color dot — tooltip reveals which model answered last */}
                         <span
                           className="shrink-0 rounded-full"
-                          title={`Último modelo: ${providerLabel}`}
-                          aria-label={`Último modelo: ${providerLabel}`}
+                          title={t("shell.lastModel", { label: providerLabel })}
+                          aria-label={t("shell.lastModel", { label: providerLabel })}
                           role="img"
                           style={{
                             width: 7,
@@ -164,7 +166,7 @@ export function ConversationList({
                         {/* Rename — appears on hover/focus */}
                         <button
                           type="button"
-                          aria-label={`Renombrar conversación ${conv.title}`}
+                          aria-label={t("shell.renameConversation", { title: conv.title })}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -196,7 +198,7 @@ export function ConversationList({
                         {/* Delete (soft) — appears on hover/focus */}
                         <button
                           type="button"
-                          aria-label={`Eliminar conversación ${conv.title}`}
+                          aria-label={t("shell.deleteConversation", { title: conv.title })}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();

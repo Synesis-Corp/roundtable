@@ -62,6 +62,25 @@ Una tarea no esta cerrada si falta cualquiera de estas piezas:
 - [ ] Verificacion de runtime (health/smoke) si toco deploy
 - [ ] Documentacion sincronizada con el estado real
 - [ ] Rollback entendible (tag/imagen/commit estable identificable)
+- [ ] Espejo publico sincronizado si el commit toco codigo/docs publicables (regla 9)
+
+## 9. El espejo publico se sincroniza A MANO tras cada commit
+
+Este repo privado es la **fuente unica de verdad**. Existe un espejo publico de
+solo lectura en `Synesis-Corp/roundtable` (AGPL-3.0). La sincronizacion **NO es
+automatica** — decision tomada: control manual para revisar que sale antes de
+exponer.
+
+**Regla:** tras cada commit que toque **codigo o documentacion publicable**, el
+mantenedor ejecuta `scripts/sync-public.sh` (script que vive solo en este repo
+privado). Publica un **snapshot curado** (quita el denylist: `openspec/`, docs de
+ops con infra real, tooling de agentes, `.turbo`) y **ABORTA** si un leak-guard
+detecta fingerprints de infra interna (IP/server/paths). Recomendado correr
+`DRY_RUN=1 scripts/sync-public.sh` primero para revisar el set.
+
+Un commit que cambia codigo publicable **no esta "terminado"** (regla 8) si el
+espejo publico quedo desincronizado. Commits que tocan solo archivos del denylist
+(ej. `openspec/`) no necesitan sync: el script es idempotente y no genera diff.
 
 ---
 

@@ -1,4 +1,5 @@
 import type { RefObject } from "react";
+import { useTranslation } from "react-i18next";
 
 interface SidebarSearchProps {
   searchOpen: boolean;
@@ -19,6 +20,7 @@ export function SidebarSearch({
   onQueryChange,
   onToggle,
 }: SidebarSearchProps) {
+  const { t } = useTranslation();
   return (
     <nav className="px-3">
       <div className="relative">
@@ -40,8 +42,8 @@ export function SidebarSearch({
             onKeyDown={(e) => {
               if (e.key === "Escape") onToggle();
             }}
-            placeholder="Buscar conversaciones…"
-            aria-label="Buscar conversaciones"
+            placeholder={t("shell.searchPlaceholder")}
+            aria-label={t("shell.searchAria")}
             className="w-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
             style={{
               fontSize: 13,
@@ -56,7 +58,7 @@ export function SidebarSearch({
           <button
             onClick={onToggle}
             aria-expanded={false}
-            aria-label="Buscar conversaciones"
+            aria-label={t("shell.searchAria")}
             className="w-full text-left transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
             style={{
               fontSize: 13,
@@ -75,7 +77,7 @@ export function SidebarSearch({
               (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
             }}
           >
-            Buscar
+            {t("shell.search")}
           </button>
         )}
 
@@ -83,7 +85,7 @@ export function SidebarSearch({
           <button
             type="button"
             onClick={onToggle}
-            aria-label="Cerrar búsqueda"
+            aria-label={t("shell.closeSearch")}
             className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 focus:outline-none"
             style={{ color: "var(--text-3)", borderRadius: "var(--r-xs)" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-1)"; }}
