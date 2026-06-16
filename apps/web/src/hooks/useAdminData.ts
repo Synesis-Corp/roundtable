@@ -53,12 +53,112 @@ export interface AdminModes {
   modes: ModeCount[];
 }
 
+export interface LatencyProvider {
+  providerId: string;
+  avgLatencyMs: number;
+  requestCount: number;
+}
+
+export interface AdminLatency {
+  period: string;
+  providers: LatencyProvider[];
+}
+
+export interface CostRow {
+  providerId: string;
+  modelId: string;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  requestCount: number;
+  estimatedCostUsd: number;
+}
+
+export interface CostByProvider {
+  providerId: string;
+  totalCostUsd: number;
+  totalTokens: number;
+  requestCount: number;
+}
+
+export interface AdminCosts {
+  period: string;
+  totalCostUsd: number;
+  byProvider: CostByProvider[];
+  byModel: CostRow[];
+}
+
+export interface AdminAdoption {
+  totalUsers: number;
+  activeUsers: number;
+  usersWithProviders: number;
+  councilUsers: number;
+  activationRate: number;
+  providerConnectionRate: number;
+  councilAdoptionRate: number;
+}
+
+export interface AdminRetention {
+  activeLastWeek: number;
+  activeThisWeek: number;
+  retained: number;
+  retentionRate: number;
+}
+
+export interface TokenRatioProvider {
+  providerId: string;
+  inputTokens: number;
+  outputTokens: number;
+  ratio: number;
+  requestCount: number;
+}
+
+export interface AdminTokenRatio {
+  period: string;
+  providers: TokenRatioProvider[];
+}
+
+export interface TimeBucket {
+  label: string;
+  max: number;
+  count: number;
+}
+
+export interface AdminTimeToFirstChat {
+  averageHours: number;
+  medianHours: number;
+  totalUsersWithChat: number;
+  buckets: TimeBucket[];
+}
+
+export interface CountryCount {
+  country: string;
+  count: number;
+}
+
+export interface TimezoneCount {
+  timezone: string;
+  count: number;
+}
+
+export interface AdminDemographics {
+  countries: CountryCount[];
+  timezones: TimezoneCount[];
+}
+
 interface AdminData {
   overview: AdminOverview | null;
   registrations: AdminRegistrations | null;
   activeUsers: AdminActiveUsers | null;
   usage: AdminUsage | null;
   modes: AdminModes | null;
+  latency: AdminLatency | null;
+  costs: AdminCosts | null;
+  adoption: AdminAdoption | null;
+  retention: AdminRetention | null;
+  tokenRatio: AdminTokenRatio | null;
+  timeToFirstChat: AdminTimeToFirstChat | null;
+  demographics: AdminDemographics | null;
   loading: boolean;
   error: string | null;
   period: string;
@@ -75,6 +175,13 @@ export function useAdminData(): AdminData {
   const [activeUsers, setActiveUsers] = useState<AdminActiveUsers | null>(null);
   const [usage, setUsage] = useState<AdminUsage | null>(null);
   const [modes, setModes] = useState<AdminModes | null>(null);
+  const [latency, setLatency] = useState<AdminLatency | null>(null);
+  const [costs, setCosts] = useState<AdminCosts | null>(null);
+  const [adoption, setAdoption] = useState<AdminAdoption | null>(null);
+  const [retention, setRetention] = useState<AdminRetention | null>(null);
+  const [tokenRatio, setTokenRatio] = useState<AdminTokenRatio | null>(null);
+  const [timeToFirstChat, setTimeToFirstChat] = useState<AdminTimeToFirstChat | null>(null);
+  const [demographics, setDemographics] = useState<AdminDemographics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,6 +198,13 @@ export function useAdminData(): AdminData {
           apiGet<AdminActiveUsers>(`/admin/metrics/active-users?period=${period}`),
           apiGet<AdminUsage>(`/admin/metrics/usage?period=${period}`),
           apiGet<AdminModes>(`/admin/metrics/modes?period=${period}`),
+          apiGet<AdminLatency>(`/admin/metrics/latency?period=${period}`),
+          apiGet<AdminCosts>(`/admin/metrics/costs?period=${period}`),
+          apiGet<AdminAdoption>('/admin/metrics/adoption'),
+          apiGet<AdminRetention>('/admin/metrics/retention'),
+          apiGet<AdminTokenRatio>(`/admin/metrics/token-ratio?period=${period}`),
+          apiGet<AdminTimeToFirstChat>('/admin/metrics/time-to-first-chat'),
+          apiGet<AdminDemographics>('/admin/metrics/demographics'),
         ]);
         if (cancelled) return;
         setOverview(results[0]);
@@ -98,6 +212,13 @@ export function useAdminData(): AdminData {
         setActiveUsers(results[2]);
         setUsage(results[3]);
         setModes(results[4]);
+        setLatency(results[5]);
+        setCosts(results[6]);
+        setAdoption(results[7]);
+        setRetention(results[8]);
+        setTokenRatio(results[9]);
+        setTimeToFirstChat(results[10]);
+        setDemographics(results[11]);
       } catch {
         if (cancelled) return;
         setError('Failed to load admin metrics');
@@ -120,6 +241,13 @@ export function useAdminData(): AdminData {
     activeUsers,
     usage,
     modes,
+    latency,
+    costs,
+    adoption,
+    retention,
+    tokenRatio,
+    timeToFirstChat,
+    demographics,
     loading,
     error,
     period,

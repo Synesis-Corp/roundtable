@@ -3,7 +3,8 @@ import bcrypt from 'bcrypt';
 import { OAuth2Client } from 'google-auth-library';
 import { RegisterSchema, LoginSchema, GoogleAuthSchema } from '@chat/sdk';
 import { prisma } from '../lib/db';
-import { signToken } from '../middleware/auth';
+import { signToken, authMiddleware } from '../middleware/auth';
+import type { AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import {
   REFRESH_COOKIE_NAME,
@@ -368,6 +369,65 @@ router.get('/github/callback', async (req: Request, res: Response) => {
       .status(502)
       .type('html')
       .send(oauthCallbackHtml({ type: 'oauth-error', error: 'GitHub authentication failed' }));
+  }
+});
+
+router.patch('/profile', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const { displayName, country, timezone } = req.body as {
+      displayName?: string | null;
+      country?: string | null;
+      timezone?: string | null;
+    };
+
+    const data: Record<string, string | null> = {};
+    if (displayName !== undefined) data.displayName = displayName || null;
+    if (country !== undefined) data.country = country || null;
+    if (timezone !== undefined) data.timezone = timezone || null;
+
+    if (Object.keys(data).length === 0) {
+      res.status(400).json({ error: 'No fields to update' });
+      return;
+    }
+
+    const user = await prisma.user.update({ where: { id: userId }, data });
+
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      displayName: user.displayName,
+      country: user.country,
+      timezone: user.timezone,
+    });
+  } catch (err) {
+    req.log.error({ err }, 'profile update failed');
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+router.get('/profile', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        displayName: true,
+        country: true,
+        timezone: true,
+      },
+    });
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+    res.json(user);
+  } catch (err) {
+    req.log.error({ err }, 'profile fetch failed');
+    res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
 

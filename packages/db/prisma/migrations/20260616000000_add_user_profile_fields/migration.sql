@@ -1,0 +1,3 @@
+ALTER TABLE "User" ADD COLUMN "displayName" TEXT;
+ALTER TABLE "User" ADD COLUMN "country" TEXT;
+ALTER TABLE "User" ADD COLUMN "timezone" TEXT;

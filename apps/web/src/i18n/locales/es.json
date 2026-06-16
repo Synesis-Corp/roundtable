@@ -599,20 +599,41 @@
       "activeToday": "Activos Hoy",
       "totalTokens": "Tokens Totales",
       "totalRequests": "Requests Totales",
-      "registeredToday": "Nuevos Hoy"
+      "registeredToday": "Nuevos Hoy",
+      "activationRate": "Activación %",
+      "providerConnectionRate": "Providers %",
+      "councilAdoption": "Consejo %",
+      "averageTime": "Tiempo Prom.",
+      "medianTime": "Tiempo Med.",
+      "usersWithChat": "Usuarios",
+      "activeLastWeek": "Sem. Anterior",
+      "activeThisWeek": "Esta Semana",
+      "retentionRate": "Retención"
     },
     "chart": {
       "registrations": "Registros por Día",
       "activeUsers": "Usuarios Activos por Día",
       "tokensByProvider": "Tokens por Proveedor",
       "tokens": "Tokens",
-      "modes": "Individual vs Consejo"
+      "modes": "Individual vs Consejo",
+      "latency": "Latencia Prom. por Proveedor",
+      "avgLatency": "Latencia Prom.",
+      "costs": "Costos Estimados por Modelo",
+      "estimatedCost": "Costo Estimado",
+      "tokenRatio": "Ratio Input/Output de Tokens",
+      "inputOutputRatio": "Ratio I/O",
+      "timeToFirstChat": "Tiempo Hasta Primer Chat",
+      "retention": "Retención a 7 Días",
+      "demographics": "Demográficos",
+      "countries": "Países",
+      "timezones": "Zonas Horarias"
     },
     "table": {
       "provider": "Proveedor",
       "model": "Modelo",
       "tokens": "Tokens",
       "requests": "Requests",
+      "cost": "Costo Est.",
       "empty": "Sin datos de uso aún"
     },
     "period": {
@@ -624,5 +645,18 @@
       "retry": "Reintentar"
     },
     "empty": "Sin datos aún — las métricas aparecen cuando los usuarios interactúan con la plataforma."
+  },
+  "profile": {
+    "title": "Perfil",
+    "subtitle": "Personalizá tu experiencia",
+    "displayName": "Nombre Visible",
+    "displayNamePlaceholder": "¿Cómo querés que te llamemos?",
+    "country": "País",
+    "countryPlaceholder": "ej. AR, US, ES",
+    "timezone": "Zona Horaria",
+    "timezonePlaceholder": "ej. America/Argentina/Buenos_Aires",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "¡Guardado!"
   }
 }

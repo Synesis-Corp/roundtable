@@ -10,6 +10,7 @@ import { ProviderRow } from '../components/ProviderRow';
 import { CouncilMembersModal } from '../components/CouncilMembersModal';
 import { ActiveModelsModal } from '../components/ActiveModelsModal';
 import { MemorySettingsSection } from '../components/MemorySettingsSection';
+import { ProfileForm } from '../components/ProfileForm';
 import { ConfirmActionModal } from '../components/ConfirmActionModal';
 import { getInitials } from '../lib/initials';
 import UsagePage from './UsagePage';
@@ -171,8 +172,6 @@ export default function SettingsPage() {
 
   return (
     <div className="flex-1 overflow-y-auto" style={{ backgroundColor: 'var(--bg-app)' }}>
-      {/* Constant width across all tabs so the header + tab bar never shift or
-          resize when switching sections (the usage charts fit fine at 4xl). */}
       <div className="mx-auto px-4 py-8 max-w-4xl">
         {/* Account identity */}
         <div className="flex items-center gap-3 mb-6">
@@ -199,6 +198,8 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        <ProfileForm />
 
         <h1
           style={{

@@ -13,7 +13,10 @@ model User {
   passwordHash   String?          // null for OAuth-only accounts (e.g. Google, GitHub)
   googleId       String?          @unique // Google account subject (sub claim)
   githubId       String?          @unique // GitHub account id (numeric, stored as decimal string for SQLite compat — Postgres keeps it as text)
-  name           String?          // display name from the OAuth profile
+  name           String?          // full name from the OAuth profile or self-entered
+  displayName    String?          // how the user wants to be called (preferred name / nickname)
+  country        String?          // ISO 3166-1 alpha-2 country code (self-reported)
+  timezone       String?          // IANA timezone (e.g. "America/Argentina/Buenos_Aires")
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   conversations  Conversation[]

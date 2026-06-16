@@ -601,20 +601,41 @@
       "activeToday": "Active Today",
       "totalTokens": "Total Tokens",
       "totalRequests": "Total Requests",
-      "registeredToday": "New Today"
+      "registeredToday": "New Today",
+      "activationRate": "Activation %",
+      "providerConnectionRate": "Providers %",
+      "councilAdoption": "Council %",
+      "averageTime": "Avg Time",
+      "medianTime": "Median Time",
+      "usersWithChat": "Users",
+      "activeLastWeek": "Last Week",
+      "activeThisWeek": "This Week",
+      "retentionRate": "Retention"
     },
     "chart": {
       "registrations": "Registrations per Day",
       "activeUsers": "Active Users per Day",
       "tokensByProvider": "Tokens by Provider",
       "tokens": "Tokens",
-      "modes": "Single vs Council"
+      "modes": "Single vs Council",
+      "latency": "Avg Latency by Provider",
+      "avgLatency": "Avg Latency",
+      "costs": "Estimated Costs by Model",
+      "estimatedCost": "Estimated Cost",
+      "tokenRatio": "Input/Output Token Ratio",
+      "inputOutputRatio": "Input/Output Ratio",
+      "timeToFirstChat": "Time to First Chat",
+      "retention": "7-Day Retention",
+      "demographics": "Demographics",
+      "countries": "Countries",
+      "timezones": "Timezones"
     },
     "table": {
       "provider": "Provider",
       "model": "Model",
       "tokens": "Tokens",
       "requests": "Requests",
+      "cost": "Est. Cost",
       "empty": "No usage data yet"
     },
     "period": {
@@ -626,5 +647,18 @@
       "retry": "Retry"
     },
     "empty": "No data available yet — metrics appear as users interact with the platform."
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Personalize your experience",
+    "displayName": "Display Name",
+    "displayNamePlaceholder": "How should we call you?",
+    "country": "Country",
+    "countryPlaceholder": "e.g. AR, US, ES",
+    "timezone": "Timezone",
+    "timezonePlaceholder": "e.g. America/Argentina/Buenos_Aires",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved!"
   }
 }
