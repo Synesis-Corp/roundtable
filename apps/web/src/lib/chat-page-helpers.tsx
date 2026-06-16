@@ -7,11 +7,12 @@ import type { CouncilInfo, CouncilVote } from '../types/chat';
 
 export const NEW_CHAT_EVENT = 'roundtable:new-chat';
 
-export function getGreeting(): string {
+/** Time-of-day bucket; the caller maps it to a localized greeting via i18n. */
+export function getGreeting(): "morning" | "afternoon" | "evening" {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Buenos días';
-  if (hour < 18) return 'Buenas tardes';
-  return 'Buenas noches';
+  if (hour < 12) return "morning";
+  if (hour < 18) return "afternoon";
+  return "evening";
 }
 
 export function getCouncilProviderColor(provider: string): string {

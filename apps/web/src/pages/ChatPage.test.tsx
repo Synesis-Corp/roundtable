@@ -243,7 +243,7 @@ describe("ChatPage — Onboarding CTA (single mode)", () => {
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.queryByText("¿En qué trabajamos hoy?")).not.toBeInTheDocument();
+    expect(screen.queryByText("What are we working on today?")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /settings|proveedor|configuraci/i })).toBeInTheDocument();
   });
 
@@ -258,7 +258,7 @@ describe("ChatPage — Onboarding CTA (single mode)", () => {
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.getByText("¿En qué trabajamos hoy?")).toBeInTheDocument();
+    expect(screen.getByText("What are we working on today?")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /settings|proveedor|configuraci/i })).toBeInTheDocument();
   });
 
@@ -402,7 +402,7 @@ describe("ChatPage — onboarding wizard (Fase 2.3)", () => {
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.getByRole("button", { name: /conectar aquí/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /connect here/i })).toBeInTheDocument();
   });
 
   it("onboarding CTA exposes a 'Conectar aquí' button (kind=returning)", () => {
@@ -416,7 +416,7 @@ describe("ChatPage — onboarding wizard (Fase 2.3)", () => {
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.getByRole("button", { name: /conectar aquí/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /connect here/i })).toBeInTheDocument();
   });
 
   it("clicking 'Conectar aquí' opens the wizard (NOT the inline modal)", () => {
@@ -433,7 +433,7 @@ describe("ChatPage — onboarding wizard (Fase 2.3)", () => {
     // Wizard starts closed
     expect(screen.queryByTestId("onboarding-wizard-stub")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: /conectar aquí/i }));
+    fireEvent.click(screen.getByRole("button", { name: /connect here/i }));
 
     // Now the wizard is open (visible in the DOM)
     expect(screen.getByTestId("onboarding-wizard-stub")).toBeInTheDocument();

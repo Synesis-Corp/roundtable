@@ -13,19 +13,21 @@ import { MemorySettingsSection } from "../components/MemorySettingsSection";
 import { ConfirmActionModal } from "../components/ConfirmActionModal";
 import { getInitials } from "../lib/initials";
 import UsagePage from "./UsagePage";
+import { useTranslation, Trans } from "react-i18next";
 
 type ProviderFilter = "all" | "connected" | "popular";
 type SettingsTab = "providers" | "usage" | "council" | "memory";
 
-const TABS: { key: SettingsTab; label: string }[] = [
-  { key: "providers", label: "Proveedores" },
-  { key: "usage", label: "Uso" },
-  { key: "council", label: "Consejo" },
-  { key: "memory", label: "Memoria" },
+const TABS: { key: SettingsTab; labelKey: string }[] = [
+  { key: "providers", labelKey: "settings.tabs.providers" },
+  { key: "usage", labelKey: "settings.tabs.usage" },
+  { key: "council", labelKey: "settings.tabs.council" },
+  { key: "memory", labelKey: "settings.tabs.memory" },
 ];
 
 export default function SettingsPage() {
   const location = useLocation();
+  const { t } = useTranslation();
   const {
     providers,
     popularProviders,
@@ -84,7 +86,7 @@ export default function SettingsPage() {
     }
   }, [token]);
 
-  const userName = userEmail ? userEmail.split("@")[0] : "User";
+  const userName = userEmail ? userEmail.split("@")[0] : t("shell.userFallback");
 
   const connectedCount = userProviders.length;
   const totalProviders = providers.length;
@@ -179,7 +181,7 @@ export default function SettingsPage() {
           </div>
           <div className="min-w-0">
             <div className="truncate" style={{ fontSize: 14, fontWeight: 500, color: "var(--text-1)" }}>
-              {userName || "User"}
+              {userName || t("shell.userFallback")}
             </div>
             <div className="truncate" style={{ fontSize: 12, color: "var(--text-3)" }}>
               {userEmail}
@@ -188,24 +190,24 @@ export default function SettingsPage() {
         </div>
 
         <h1 style={{ fontSize: 26, fontWeight: 600, color: "var(--text-1)", letterSpacing: "-0.02em" }}>
-          Ajustes
+          {t("settings.title")}
         </h1>
 
         {/* Tabs — equal width for a consistent, balanced segmented control */}
         <div
           className="mt-4 mb-6 grid grid-cols-4 gap-1 p-1 rounded-xl w-full max-w-xl"
           role="tablist"
-          aria-label="Secciones de ajustes"
+          aria-label={t("settings.sectionsAria")}
           style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border)" }}
         >
-          {TABS.map((t) => {
-            const isActive = activeTab === t.key;
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
             return (
               <button
-                key={t.key}
+                key={tab.key}
                 role="tab"
                 aria-selected={isActive}
-                onClick={() => setActiveTab(t.key)}
+                onClick={() => setActiveTab(tab.key)}
                 className="py-1.5 text-[13px] font-medium rounded-lg text-center transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-surface)]"
                 style={{
                   backgroundColor: isActive ? "var(--accent-quiet)" : "transparent",
@@ -213,7 +215,7 @@ export default function SettingsPage() {
                   border: isActive ? "1px solid var(--accent-line)" : "1px solid transparent",
                 }}
               >
-                {t.label}
+                {t(tab.labelKey)}
               </button>
             );
           })}
@@ -238,7 +240,7 @@ export default function SettingsPage() {
                 onClick={() => setCodexNotice(null)}
                 className="shrink-0 p-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                 style={{ color: "var(--text-3)", borderRadius: "var(--r-xs)" }}
-                aria-label="Cerrar notificación"
+                aria-label={t("settings.dismissNotice")}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -258,10 +260,10 @@ export default function SettingsPage() {
                   style={{ backgroundColor: "rgba(92,176,139,0.14)", color: "var(--m-green)", border: "1px solid rgba(92,176,139,0.32)" }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--m-green)" }} />
-                  {connectedCount} conectados
+                  {t("settings.connectedCount", { count: connectedCount })}
                 </span>
                 <span style={{ fontSize: 12, color: "var(--text-3)" }}>
-                  de {totalProviders} · participan en el Consejo
+                  {t("settings.ofTotalCouncil", { total: totalProviders })}
                 </span>
               </div>
 
@@ -271,7 +273,7 @@ export default function SettingsPage() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Buscar proveedores..."
+                    placeholder={t("settings.searchProviders")}
                     className="w-44 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                     style={{
                       backgroundColor: "var(--bg-input)",
@@ -303,9 +305,9 @@ export default function SettingsPage() {
                     padding: "7px 24px 7px 10px",
                   }}
                 >
-                  <option value="all">Todos</option>
-                  <option value="connected">Conectados</option>
-                  <option value="popular">Populares</option>
+                  <option value="all">{t("settings.filter.all")}</option>
+                  <option value="connected">{t("settings.filter.connected")}</option>
+                  <option value="popular">{t("settings.filter.popular")}</option>
                 </select>
               </div>
             </div>
@@ -331,9 +333,9 @@ export default function SettingsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <p className="font-medium text-center" style={{ fontSize: 15, color: "var(--text-1)" }}>Sin proveedores conectados</p>
+                <p className="font-medium text-center" style={{ fontSize: 15, color: "var(--text-1)" }}>{t("settings.empty.title")}</p>
                 <p className="text-center mt-1 max-w-sm" style={{ fontSize: 13, color: "var(--text-3)" }}>
-                  Conecta al menos un proveedor para empezar a chatear. Los proveedores conectados participan en el modo Consejo.
+                  {t("settings.empty.body")}
                 </p>
               </div>
             )}
@@ -341,7 +343,7 @@ export default function SettingsPage() {
             {/* Connected providers — always first, so your setup is front-and-center */}
             {connectedList.length > 0 && (
               <div>
-                <h2 className="uppercase font-medium mb-3" style={{ fontSize: 11, letterSpacing: "0.08em", color: "var(--text-3)" }}>Conectados</h2>
+                <h2 className="uppercase font-medium mb-3" style={{ fontSize: 11, letterSpacing: "0.08em", color: "var(--text-3)" }}>{t("settings.group.connected")}</h2>
                 <div className="space-y-3">{connectedList.map((p) => renderProviderRow(p, isPopularProvider(p.id)))}</div>
               </div>
             )}
@@ -349,7 +351,7 @@ export default function SettingsPage() {
             {/* Popular, not yet connected */}
             {popularUnconnected.length > 0 && (
               <div>
-                <h2 className="uppercase font-medium mb-3" style={{ fontSize: 11, letterSpacing: "0.08em", color: "var(--text-3)" }}>Populares</h2>
+                <h2 className="uppercase font-medium mb-3" style={{ fontSize: 11, letterSpacing: "0.08em", color: "var(--text-3)" }}>{t("settings.group.popular")}</h2>
                 <div className="space-y-3">{popularUnconnected.map((p) => renderProviderRow(p, true))}</div>
               </div>
             )}
@@ -359,7 +361,7 @@ export default function SettingsPage() {
               isBrowsing || showAllProviders ? (
                 <div>
                   <h2 className="uppercase font-medium mb-3" style={{ fontSize: 11, letterSpacing: "0.08em", color: "var(--text-3)" }}>
-                    {isBrowsing ? "Resultados" : "Todos los proveedores"}
+                    {isBrowsing ? t("settings.group.results") : t("settings.group.all")}
                   </h2>
                   <div className="space-y-3">{otherUnconnected.map((p) => renderProviderRow(p, false))}</div>
                 </div>
@@ -375,7 +377,7 @@ export default function SettingsPage() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
-                  Ver todos los proveedores ({otherUnconnected.length})
+                  {t("settings.showAll", { count: otherUnconnected.length })}
                 </button>
               )
             )}
@@ -402,9 +404,9 @@ export default function SettingsPage() {
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-1)" }}>Miembros del Consejo</h2>
+                  <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--text-1)" }}>{t("settings.council.membersTitle")}</h2>
                   <p className="mt-1" style={{ fontSize: 13, color: "var(--text-2)", lineHeight: 1.5 }}>
-                    Varios modelos proponen, debaten y votan para converger en una sola respuesta.
+                    {t("settings.council.membersDesc")}
                   </p>
                 </div>
                 <span
@@ -416,15 +418,15 @@ export default function SettingsPage() {
                   }}
                 >
                   {councilConfig?.mode === "manual"
-                    ? `Manual · ${councilConfig.modelIds.length} modelos`
-                    : "Automático"}
+                    ? t("settings.council.manualBadge", { count: councilConfig.modelIds.length })
+                    : t("settings.council.auto")}
                 </span>
               </div>
 
               {/* Who participates right now */}
               <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
                 <p className="mb-2 uppercase font-medium" style={{ fontSize: 11, letterSpacing: "0.06em", color: "var(--text-3)" }}>
-                  Participan ahora
+                  {t("settings.council.participatingNow")}
                 </p>
                 {councilConfig?.mode === "manual" && councilConfig.modelIds.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
@@ -444,8 +446,10 @@ export default function SettingsPage() {
                   </div>
                 ) : (
                   <p style={{ fontSize: 13, color: "var(--text-3)", lineHeight: 1.5 }}>
-                    <span style={{ color: "var(--text-2)", fontWeight: 500 }}>Selección automática</span> — el
-                    Consejo elige un modelo fuerte y uno liviano por cada proveedor conectado.
+                    <Trans
+                      i18nKey="settings.council.autoSelection"
+                      components={{ accent: <span style={{ color: "var(--text-2)", fontWeight: 500 }} /> }}
+                    />
                   </p>
                 )}
               </div>
@@ -460,11 +464,11 @@ export default function SettingsPage() {
                     onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--accent-hover)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--accent)"; }}
                   >
-                    Miembros del Consejo
+                    {t("settings.council.membersButton")}
                   </button>
                 ) : (
                   <p className="text-sm" style={{ color: "var(--m-amber)" }}>
-                    Conecta al menos 2 proveedores para configurar el Consejo.
+                    {t("settings.council.needTwo")}
                   </p>
                 )}
                 {councilConfig?.mode === "manual" && (
@@ -475,7 +479,7 @@ export default function SettingsPage() {
                     onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-1)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-3)"; }}
                   >
-                    Restablecer a automático
+                    {t("settings.council.resetAuto")}
                   </button>
                 )}
               </div>
@@ -508,16 +512,16 @@ export default function SettingsPage() {
 
         {pendingDisconnect && (
           <ConfirmActionModal
-            title="Desconectar proveedor"
+            title={t("settings.disconnect.title")}
             message={
-              <>
-                ¿Seguro que querés desconectar{" "}
-                <strong style={{ color: "var(--text-1)" }}>{pendingDisconnect.name}</strong>? Se
-                borrarán la API key guardada y la configuración asociada.
-              </>
+              <Trans
+                i18nKey="settings.disconnect.message"
+                values={{ name: pendingDisconnect.name }}
+                components={{ strong: <strong style={{ color: "var(--text-1)" }} /> }}
+              />
             }
-            confirmLabel="Desconectar"
-            cancelLabel="Cancelar"
+            confirmLabel={t("settings.disconnect.confirm")}
+            cancelLabel={t("settings.disconnect.cancel")}
             destructive
             loading={saving[pendingDisconnect.providerId] || false}
             onCancel={() => setPendingDisconnect(null)}

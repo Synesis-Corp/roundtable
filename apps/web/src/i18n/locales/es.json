@@ -56,5 +56,65 @@
     "lastModel": "Último modelo: {{label}}",
     "renameConversation": "Renombrar conversación {{title}}",
     "deleteConversation": "Eliminar conversación {{title}}"
+  },
+  "chat": {
+    "auto": "Auto",
+    "incognitoChip": "Incógnito · no se guarda",
+    "councilChip_one": "Consejo · {{count}} modelo",
+    "councilChip_other": "Consejo · {{count}} modelos",
+    "disclaimer": "Roundtable puede cometer errores. Verifica la información importante.",
+    "connectHere": "Conectar aquí",
+    "rejectedOne": "«{{names}}» no es compatible. Solo se permiten imágenes y PDFs.",
+    "rejectedMany": "{{count}} archivos no compatibles ({{names}}). Solo se permiten imágenes y PDFs.",
+    "greeting": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "welcome": {
+      "titlePrivate": "¿Qué quieres explorar en privado?",
+      "titleCouncil": "¿Qué resolvemos en consejo?",
+      "titleDefault": "¿En qué trabajamos hoy?",
+      "councilSubtitle_one": "<accent>{{count}} modelo</accent> va a proponer, debatir y votar para converger en una sola respuesta.",
+      "councilSubtitle_other": "<accent>{{count}} modelos</accent> van a proponer, debatir y votar para converger en una sola respuesta.",
+      "singleSubtitle": "Un prompt, varios modelos, una respuesta. Activa el <accent>Consejo</accent> para que los modelos deliberen y converjan."
+    },
+    "councilWarning": "Conecta al menos 2 proveedores para usar el Consejo",
+    "goToProviders": "Ir a Proveedores →"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "sectionsAria": "Secciones de ajustes",
+    "tabs": { "providers": "Proveedores", "usage": "Uso", "council": "Consejo", "memory": "Memoria" },
+    "dismissNotice": "Cerrar notificación",
+    "connectedCount_one": "{{count}} conectado",
+    "connectedCount_other": "{{count}} conectados",
+    "ofTotalCouncil": "de {{total}} · participan en el Consejo",
+    "searchProviders": "Buscar proveedores...",
+    "filter": { "all": "Todos", "connected": "Conectados", "popular": "Populares" },
+    "empty": {
+      "title": "Sin proveedores conectados",
+      "body": "Conecta al menos un proveedor para empezar a chatear. Los proveedores conectados participan en el modo Consejo."
+    },
+    "group": { "connected": "Conectados", "popular": "Populares", "results": "Resultados", "all": "Todos los proveedores" },
+    "showAll": "Ver todos los proveedores ({{count}})",
+    "council": {
+      "membersTitle": "Miembros del Consejo",
+      "membersDesc": "Varios modelos proponen, debaten y votan para converger en una sola respuesta.",
+      "manualBadge_one": "Manual · {{count}} modelo",
+      "manualBadge_other": "Manual · {{count}} modelos",
+      "auto": "Automático",
+      "participatingNow": "Participan ahora",
+      "autoSelection": "<accent>Selección automática</accent> — el Consejo elige un modelo fuerte y uno liviano por cada proveedor conectado.",
+      "membersButton": "Miembros del Consejo",
+      "needTwo": "Conecta al menos 2 proveedores para configurar el Consejo.",
+      "resetAuto": "Restablecer a automático"
+    },
+    "disconnect": {
+      "title": "Desconectar proveedor",
+      "message": "¿Seguro que quieres desconectar <strong>{{name}}</strong>? Se borrarán la API key guardada y la configuración asociada.",
+      "confirm": "Desconectar",
+      "cancel": "Cancelar"
+    }
   }
 }

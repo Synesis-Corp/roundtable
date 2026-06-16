@@ -89,7 +89,7 @@ function renderSettingsPage() {
 
 /** The council config now lives under the "Consejo" tab of the Settings hub. */
 function openCouncilTab() {
-  fireEvent.click(screen.getByRole("tab", { name: "Consejo" }));
+  fireEvent.click(screen.getByRole("tab", { name: "Council" }));
 }
 
 describe("SettingsPage — Council tab", () => {
@@ -105,19 +105,19 @@ describe("SettingsPage — Council tab", () => {
 
   it("renders the Settings tabs", () => {
     renderSettingsPage();
-    expect(screen.getByRole("tab", { name: "Proveedores" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Uso" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Consejo" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Memoria" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Providers" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Usage" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Council" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Memory" })).toBeInTheDocument();
   });
 
-  it('shows the "Miembros del Consejo" button in the Consejo tab when ≥2 providers are connected', () => {
+  it('shows the "Council members" button in the Consejo tab when ≥2 providers are connected', () => {
     renderSettingsPage();
     openCouncilTab();
-    expect(screen.getByRole("button", { name: "Miembros del Consejo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Council members" })).toBeInTheDocument();
   });
 
-  it('does NOT show the "Miembros del Consejo" button when <2 providers are connected', () => {
+  it('does NOT show the "Council members" button when <2 providers are connected', () => {
     mockUseSettings.mockReturnValue({
       userProviders: [{ providerId: "openai", maskedKey: "sk-****", isActive: true }],
       userProvidersLoading: false,
@@ -140,13 +140,13 @@ describe("SettingsPage — Council tab", () => {
 
     renderSettingsPage();
     openCouncilTab();
-    expect(screen.queryByRole("button", { name: "Miembros del Consejo" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Council members" })).not.toBeInTheDocument();
   });
 
   it("opens the council members modal when clicked", async () => {
     renderSettingsPage();
     openCouncilTab();
-    fireEvent.click(screen.getByRole("button", { name: "Miembros del Consejo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Council members" }));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe("SettingsPage — Council tab", () => {
   it("closes the modal when cancel is clicked", async () => {
     renderSettingsPage();
     openCouncilTab();
-    fireEvent.click(screen.getByRole("button", { name: "Miembros del Consejo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Council members" }));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
@@ -181,10 +181,10 @@ describe("SettingsPage — Council tab", () => {
     renderSettingsPage();
     openCouncilTab();
 
-    expect(screen.getByText("Participan ahora")).toBeInTheDocument();
+    expect(screen.getByText("Participating now")).toBeInTheDocument();
     expect(screen.getByText("GPT-4o")).toBeInTheDocument();
     expect(screen.getByText("DeepSeek Chat")).toBeInTheDocument();
-    expect(screen.getByText("Manual · 2 modelos")).toBeInTheDocument();
+    expect(screen.getByText("Manual · 2 models")).toBeInTheDocument();
   });
 
   it("opens a confirmation modal when disconnect is clicked", () => {
@@ -214,7 +214,7 @@ describe("SettingsPage — Council tab", () => {
     fireEvent.click(disconnectButtons[0]);
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Desconectar proveedor")).toBeInTheDocument();
+    expect(screen.getByText("Disconnect provider")).toBeInTheDocument();
     expect(requestDisconnect).toHaveBeenCalledWith("openai");
   });
 });

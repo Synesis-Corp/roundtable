@@ -56,5 +56,65 @@
     "lastModel": "Last model: {{label}}",
     "renameConversation": "Rename conversation {{title}}",
     "deleteConversation": "Delete conversation {{title}}"
+  },
+  "chat": {
+    "auto": "Auto",
+    "incognitoChip": "Incognito · not saved",
+    "councilChip_one": "Council · {{count}} model",
+    "councilChip_other": "Council · {{count}} models",
+    "disclaimer": "Roundtable can make mistakes. Verify important information.",
+    "connectHere": "Connect here",
+    "rejectedOne": "\"{{names}}\" is not supported. Only images and PDFs are allowed.",
+    "rejectedMany": "{{count}} unsupported files ({{names}}). Only images and PDFs are allowed.",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "welcome": {
+      "titlePrivate": "What do you want to explore privately?",
+      "titleCouncil": "What shall we solve in council?",
+      "titleDefault": "What are we working on today?",
+      "councilSubtitle_one": "<accent>{{count}} model</accent> will propose, debate and vote to converge on a single answer.",
+      "councilSubtitle_other": "<accent>{{count}} models</accent> will propose, debate and vote to converge on a single answer.",
+      "singleSubtitle": "One prompt, several models, one answer. Turn on the <accent>Council</accent> so the models deliberate and converge."
+    },
+    "councilWarning": "Connect at least 2 providers to use the Council",
+    "goToProviders": "Go to Providers →"
+  },
+  "settings": {
+    "title": "Settings",
+    "sectionsAria": "Settings sections",
+    "tabs": { "providers": "Providers", "usage": "Usage", "council": "Council", "memory": "Memory" },
+    "dismissNotice": "Dismiss notification",
+    "connectedCount_one": "{{count}} connected",
+    "connectedCount_other": "{{count}} connected",
+    "ofTotalCouncil": "of {{total}} · take part in the Council",
+    "searchProviders": "Search providers...",
+    "filter": { "all": "All", "connected": "Connected", "popular": "Popular" },
+    "empty": {
+      "title": "No providers connected",
+      "body": "Connect at least one provider to start chatting. Connected providers take part in Council mode."
+    },
+    "group": { "connected": "Connected", "popular": "Popular", "results": "Results", "all": "All providers" },
+    "showAll": "Show all providers ({{count}})",
+    "council": {
+      "membersTitle": "Council members",
+      "membersDesc": "Several models propose, debate and vote to converge on a single answer.",
+      "manualBadge_one": "Manual · {{count}} model",
+      "manualBadge_other": "Manual · {{count}} models",
+      "auto": "Automatic",
+      "participatingNow": "Participating now",
+      "autoSelection": "<accent>Automatic selection</accent> — the Council picks one strong and one light model per connected provider.",
+      "membersButton": "Council members",
+      "needTwo": "Connect at least 2 providers to configure the Council.",
+      "resetAuto": "Reset to automatic"
+    },
+    "disconnect": {
+      "title": "Disconnect provider",
+      "message": "Are you sure you want to disconnect <strong>{{name}}</strong>? The saved API key and associated configuration will be deleted.",
+      "confirm": "Disconnect",
+      "cancel": "Cancel"
+    }
   }
 }

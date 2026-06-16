@@ -2,6 +2,7 @@ import { storage } from "../lib/storage";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { OnboardingWizard } from "../components/OnboardingWizard";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 import { useSSE } from "../hooks/useSSE";
 import { useChatStreamHandlers } from "../hooks/useChatStreamHandlers";
 import { useChatActions } from "../hooks/useChatActions";
@@ -26,6 +27,7 @@ export default function ChatPage() {
   const { conversationId: routeConversationId } = useParams<{ conversationId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [selectedModel, setSelectedModel] = useState<string | null>(() => storage.get("selectedModel"));
@@ -263,7 +265,7 @@ export default function ChatPage() {
   };
 
   const selectedModelData = selectedModel ? models.find((m) => `${m.provider}:${m.id}` === selectedModel) : null;
-  const selectedLabel = selectedModelData?.name || "Auto";
+  const selectedLabel = selectedModelData?.name || t("chat.auto");
   const selectedProvider = selectedModelData?.provider ?? null;
 
   // Regression fixed 2026-06-14: if a `selectedModel` is in localStorage from
@@ -302,7 +304,7 @@ export default function ChatPage() {
       ? derivedTitle.length > 64
         ? `${derivedTitle.slice(0, 64)}…`
         : derivedTitle
-      : "Nuevo chat";
+      : t("shell.newChat");
 
   // Empty provider state for council mode
   const showEmptyProvidersWarning = multiMode && userProviders.length < 2 && showWelcome;
@@ -345,8 +347,8 @@ export default function ChatPage() {
        const names = rejected.map((f) => f.name).join(", ");
        setError(
          rejected.length === 1
-           ? `"${names}" no es compatible. Solo se permiten imágenes y PDFs.`
-           : `${rejected.length} archivos no compatibles (${names}). Solo se permiten imágenes y PDFs.`,
+           ? t("chat.rejectedOne", { names })
+           : t("chat.rejectedMany", { count: rejected.length, names }),
        );
      },
   };
@@ -413,7 +415,7 @@ export default function ChatPage() {
                   border: "1px solid var(--accent-line)",
                 }}
               >
-                Conectar aquí
+                {t("chat.connectHere")}
               </button>
               <span className="text-xs" style={{ color: "var(--text-4)" }}>o</span>
               <Link
@@ -474,7 +476,7 @@ export default function ChatPage() {
                     border: "1px solid rgba(245, 158, 11, 0.35)",
                   }}
                 >
-                  Incógnito · no se guarda
+                  {t("chat.incognitoChip")}
                 </span>
               ) : multiMode ? (
                 <span
@@ -485,7 +487,7 @@ export default function ChatPage() {
                     border: "1px solid var(--accent-line)",
                   }}
                 >
-                  Consejo · {councilInfo?.members.length ?? availableCouncilModelCount} modelo{(councilInfo?.members.length ?? availableCouncilModelCount) === 1 ? "" : "s"}
+                  {t("chat.councilChip", { count: councilInfo?.members.length ?? availableCouncilModelCount })}
                 </span>
               ) : selectedModelData ? (
                 <span
@@ -508,7 +510,7 @@ export default function ChatPage() {
                     border: "1px solid var(--border)",
                   }}
                 >
-                  Auto
+                  {t("chat.auto")}
                 </span>
               )}
             </div>
@@ -554,7 +556,7 @@ export default function ChatPage() {
             <div className="max-w-3xl mx-auto px-4 py-4">
               <ChatInputBar {...inputBarProps} stopStream={handleStopStream} />
               <p className="text-center mt-2" style={{ fontSize: 11, color: "var(--text-4)" }}>
-                Roundtable puede cometer errores. Verifica la información importante.
+                {t("chat.disclaimer")}
               </p>
             </div>
           </div>
@@ -570,16 +572,16 @@ export default function ChatPage() {
                 className="mx-auto mb-5 h-16 w-16 rounded-3xl shadow-2xl"
               />
               <p className="mb-3" style={{ fontSize: 15, color: "var(--text-2)" }}>
-                {getGreeting()}{userName ? `, ${userName}` : ""}
+                {t(`chat.greeting.${getGreeting()}`)}{userName ? `, ${userName}` : ""}
               </p>
               <h1 className="text-[32px] font-semibold tracking-tight" style={{ color: "var(--text-1)" }}>
                 {showOnboardingCta && onboarding.kind === "new"
                   ? ONBOARDING_COPY[onboarding.titleKey]
                   : incognito
-                    ? "¿Qué quieres explorar en privado?"
+                    ? t("chat.welcome.titlePrivate")
                     : multiMode
-                      ? "¿Qué resolvemos en consejo?"
-                      : "¿En qué trabajamos hoy?"}
+                      ? t("chat.welcome.titleCouncil")
+                      : t("chat.welcome.titleDefault")}
               </h1>
               {showOnboardingCta && onboarding.kind === "new" ? (
                 <OnboardingCta
@@ -590,18 +592,16 @@ export default function ChatPage() {
               ) : (
                 <p className="mt-3 max-w-md mx-auto leading-relaxed" style={{ fontSize: 15, color: "var(--text-3)" }}>
                   {multiMode ? (
-                    <>
-                      <span style={{ color: "var(--accent)", fontWeight: 500 }}>
-                        {availableCouncilModelCount} modelo{availableCouncilModelCount === 1 ? "" : "s"}
-                      </span>{" "}
-                      van a proponer, debatir y votar para converger en una sola respuesta.
-                    </>
+                    <Trans
+                      i18nKey="chat.welcome.councilSubtitle"
+                      count={availableCouncilModelCount}
+                      components={{ accent: <span style={{ color: "var(--accent)", fontWeight: 500 }} /> }}
+                    />
                   ) : (
-                    <>
-                      Un prompt, varios modelos, una respuesta. Activa el{" "}
-                      <span style={{ color: "var(--accent)", fontWeight: 500 }}>Consejo</span>
-                      {" "}para que los modelos deliberen y converjan.
-                    </>
+                    <Trans
+                      i18nKey="chat.welcome.singleSubtitle"
+                      components={{ accent: <span style={{ color: "var(--accent)", fontWeight: 500 }} /> }}
+                    />
                   )}
                 </p>
               )}
@@ -644,14 +644,14 @@ export default function ChatPage() {
                   </svg>
                   <div>
                     <p className="text-sm font-medium" style={{ color: "var(--m-amber)" }}>
-                      Conecta al menos 2 proveedores para usar el Consejo
+                      {t("chat.councilWarning")}
                     </p>
                     <Link
                       to="/settings"
                       className="text-sm underline underline-offset-2 transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                       style={{ color: "var(--accent)" }}
                     >
-                      Ir a Proveedores →
+                      {t("chat.goToProviders")}
                     </Link>
                   </div>
                 </div>
@@ -666,7 +666,7 @@ export default function ChatPage() {
 
             {/* Disclaimer */}
             <p className="text-center mt-8" style={{ fontSize: 11, color: "var(--text-4)" }}>
-              Roundtable puede cometer errores. Verifica la información importante.
+              {t("chat.disclaimer")}
             </p>
           </div>
         </div>
