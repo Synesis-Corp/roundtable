@@ -349,9 +349,59 @@ router.post('/', authMiddleware, async (req: AuthenticatedRequest, res) => {
 
 router.delete('/:id', authMiddleware, async (req: AuthenticatedRequest, res) => {
   try {
+    // Read the providerId BEFORE deleting — we need it to scrub dependent
+    // state (active models allow-list + manual CouncilConfig.modelIds).
+    const provider = await prisma.providerConfig.findUnique({
+      where: { id: req.params.id },
+      select: { providerId: true, userId: true },
+    });
+
+    if (!provider || provider.userId !== req.userId) {
+      // Either it never existed or it belongs to a different user. Treat as
+      // a no-op (idempotent) — the row is already gone from this user's POV.
+      res.status(204).send();
+      return;
+    }
+
+    const providerId = provider.providerId;
+
     await prisma.providerConfig.deleteMany({
       where: { id: req.params.id, userId: req.userId },
     });
+
+    // Drop the per-provider allow-list. Without this, the provider can be
+    // reconnected later and the old "Modelos activos" config would silently
+    // hide models the user has never re-validated.
+    await prisma.activeModelsConfig.deleteMany({
+      where: { userId: req.userId!, providerId },
+    });
+
+    // Clean up a manual CouncilConfig: strip members from the disconnected
+    // provider. If the surviving manual set falls below the 2-member minimum,
+    // delete the row entirely so the Council falls back to its auto default.
+    const council = await prisma.councilConfig.findUnique({
+      where: { userId: req.userId! },
+    });
+    if (council && council.mode === 'manual') {
+      const prefix = `${providerId}:`;
+      const filtered = council.modelIds.filter((id) => !id.startsWith(prefix));
+      if (filtered.length >= 2) {
+        await prisma.councilConfig.upsert({
+          where: { userId: req.userId! },
+          update: { modelIds: filtered, mode: 'manual' },
+          create: {
+            userId: req.userId!,
+            modelIds: filtered,
+            mode: 'manual',
+          },
+        });
+      } else {
+        await prisma.councilConfig.deleteMany({
+          where: { userId: req.userId! },
+        });
+      }
+    }
+
     res.status(204).send();
   } catch (err) {
     req.log.error({ err }, 'providers: failed to delete provider');

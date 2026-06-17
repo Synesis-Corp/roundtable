@@ -2,6 +2,7 @@ import { storage } from '../lib/storage';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiGet, apiPut, apiDelete } from '../lib/api-client';
+import { PROVIDERS_CHANGED_EVENT } from '../lib/provider-events';
 
 export interface CouncilConfig {
   id: string;
@@ -56,6 +57,20 @@ export function useCouncilConfig(): UseCouncilConfigReturn {
 
   useEffect(() => {
     fetchConfig();
+  }, [fetchConfig]);
+
+  // Disconnecting a provider scrubs dependent state on the server
+  // (ActiveModelsConfig + manual CouncilConfig.modelIds). The user expects to
+  // see the change immediately when they return to Settings — without this
+  // listener the cached config keeps showing the now-stale modelIds.
+  useEffect(() => {
+    const handler = () => {
+      fetchConfig();
+    };
+    window.addEventListener(PROVIDERS_CHANGED_EVENT, handler);
+    return () => {
+      window.removeEventListener(PROVIDERS_CHANGED_EVENT, handler);
+    };
   }, [fetchConfig]);
 
   const updateConfig = useCallback(

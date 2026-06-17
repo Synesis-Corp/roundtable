@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useCouncilConfig } from './useCouncilConfig';
+import { PROVIDERS_CHANGED_EVENT } from '../lib/provider-events';
 
 describe('useCouncilConfig', () => {
   beforeEach(() => {
@@ -135,5 +136,38 @@ describe('useCouncilConfig', () => {
     const { result } = renderHook(() => useCouncilConfig());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toContain('Server error');
+  });
+
+  it('refetches when PROVIDERS_CHANGED_EVENT fires (regression: stale manual config after disconnect)', async () => {
+    const initial = {
+      id: 'cfg-1',
+      userId: 'u-1',
+      modelIds: ['deepseek:deepseek-v4-flash', 'openai:gpt-5.4'],
+      mode: 'manual',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+    };
+    const cleaned = {
+      ...initial,
+      modelIds: ['openai:gpt-5.4'],
+    };
+    const fetchSpy = vi.fn((url: string, opts: RequestInit) => {
+      const callCount = fetchSpy.mock.calls.filter((c) => c[1]?.method === 'GET').length;
+      if (opts.method === 'GET') {
+        const body = callCount === 1 ? initial : cleaned;
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(body) });
+      }
+      return Promise.resolve({ ok: true, status: 204 });
+    });
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const { result } = renderHook(() => useCouncilConfig());
+    await waitFor(() => expect(result.current.config?.modelIds).toEqual(initial.modelIds));
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(PROVIDERS_CHANGED_EVENT));
+    });
+
+    await waitFor(() => expect(result.current.config?.modelIds).toEqual(cleaned.modelIds));
   });
 });

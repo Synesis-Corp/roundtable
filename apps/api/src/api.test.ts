@@ -49,6 +49,7 @@ const mockPrisma = {
     findUnique: vi.fn(),
     findMany: vi.fn(),
     upsert: vi.fn(),
+    deleteMany: vi.fn(() => Promise.resolve({ count: 0 })),
   },
   message: {
     create: vi.fn(),
@@ -2974,5 +2975,119 @@ describe('Admin Dashboard', () => {
         { mode: 'council', count: 30 },
       ]);
     });
+  });
+});
+
+describe('DELETE /providers/:id — cleanup of dependent state', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Default: provider config exists with the requested id and providerId='deepseek'.
+    mockPrisma.providerConfig.findUnique.mockImplementation(({ where }) => {
+      if (where.id === 'pc-deepseek') {
+        return Promise.resolve({ id: 'pc-deepseek', providerId: 'deepseek', userId: 'test-user' });
+      }
+      return Promise.resolve(null);
+    });
+    mockPrisma.providerConfig.deleteMany.mockResolvedValue({ count: 1 });
+    mockPrisma.activeModelsConfig.deleteMany.mockResolvedValue({ count: 0 });
+    mockPrisma.councilConfig.findUnique.mockResolvedValue(null);
+    mockPrisma.councilConfig.upsert.mockResolvedValue({});
+    mockPrisma.councilConfig.deleteMany.mockResolvedValue({ count: 0 });
+  });
+
+  it('removes the active models allow-list for the disconnected provider', async () => {
+    const res = await request(app)
+      .delete('/providers/pc-deepseek')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+
+    expect(res.status).toBe(204);
+    expect(mockPrisma.activeModelsConfig.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'test-user', providerId: 'deepseek' },
+    });
+  });
+
+  it('filters CouncilConfig.modelIds to drop the disconnected provider', async () => {
+    mockPrisma.councilConfig.findUnique.mockResolvedValue({
+      id: 'cc-1',
+      userId: 'test-user',
+      mode: 'manual',
+      modelIds: ['deepseek:deepseek-v4-flash', 'openai:gpt-5.4', 'kimi-for-coding:k2p5'],
+    });
+    mockPrisma.councilConfig.upsert.mockResolvedValue({
+      id: 'cc-1',
+      userId: 'test-user',
+      mode: 'manual',
+      modelIds: ['openai:gpt-5.4', 'kimi-for-coding:k2p5'],
+    });
+
+    const res = await request(app)
+      .delete('/providers/pc-deepseek')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+
+    expect(res.status).toBe(204);
+    expect(mockPrisma.councilConfig.upsert).toHaveBeenCalledWith({
+      where: { userId: 'test-user' },
+      update: {
+        modelIds: ['openai:gpt-5.4', 'kimi-for-coding:k2p5'],
+        mode: 'manual',
+      },
+      create: expect.objectContaining({
+        userId: 'test-user',
+        modelIds: ['openai:gpt-5.4', 'kimi-for-coding:k2p5'],
+        mode: 'manual',
+      }),
+    });
+    expect(mockPrisma.councilConfig.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('resets CouncilConfig to auto when filtering leaves fewer than 2 members', async () => {
+    mockPrisma.councilConfig.findUnique.mockResolvedValue({
+      id: 'cc-1',
+      userId: 'test-user',
+      mode: 'manual',
+      modelIds: ['deepseek:deepseek-v4-flash', 'openai:gpt-5.4'],
+    });
+
+    const res = await request(app)
+      .delete('/providers/pc-deepseek')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+
+    expect(res.status).toBe(204);
+    // Single surviving member is below the manual minimum of 2, so the row is
+    // removed and the Council falls back to its auto default.
+    expect(mockPrisma.councilConfig.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'test-user' },
+    });
+    expect(mockPrisma.councilConfig.upsert).not.toHaveBeenCalled();
+  });
+
+  it('does not touch CouncilConfig.modelIds when mode is auto', async () => {
+    mockPrisma.councilConfig.findUnique.mockResolvedValue({
+      id: 'cc-1',
+      userId: 'test-user',
+      mode: 'auto',
+      modelIds: [],
+    });
+
+    const res = await request(app)
+      .delete('/providers/pc-deepseek')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+
+    expect(res.status).toBe(204);
+    expect(mockPrisma.councilConfig.upsert).not.toHaveBeenCalled();
+    expect(mockPrisma.councilConfig.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('returns 204 even when the provider does not belong to the user (idempotent)', async () => {
+    mockPrisma.providerConfig.findUnique.mockResolvedValue(null);
+    mockPrisma.providerConfig.deleteMany.mockResolvedValue({ count: 0 });
+
+    const res = await request(app)
+      .delete('/providers/pc-foreign')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+
+    expect(res.status).toBe(204);
+    expect(mockPrisma.activeModelsConfig.deleteMany).not.toHaveBeenCalled();
+    expect(mockPrisma.councilConfig.upsert).not.toHaveBeenCalled();
   });
 });
