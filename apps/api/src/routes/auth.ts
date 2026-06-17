@@ -20,6 +20,7 @@ import {
   fetchPrimaryEmail,
   generateState,
 } from '../lib/github-auth';
+import { refreshCookiePath } from '../lib/refresh-token';
 
 const router = Router();
 const googleClient = new OAuth2Client();
@@ -47,13 +48,13 @@ function setGitHubStateCookie(res: Response, state: string): void {
     httpOnly: true,
     sameSite: 'lax', // "strict" would block the GitHub → our callback redirect
     secure: process.env.NODE_ENV === 'production',
-    path: '/auth',
+    path: refreshCookiePath(),
     maxAge: GITHUB_STATE_MAX_AGE_MS,
   });
 }
 
 function clearGitHubStateCookie(res: Response): void {
-  res.clearCookie(GITHUB_STATE_COOKIE, { path: '/auth' });
+  res.clearCookie(GITHUB_STATE_COOKIE, { path: refreshCookiePath() });
 }
 
 /**

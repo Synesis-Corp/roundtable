@@ -1433,6 +1433,21 @@ describe('API Integration', () => {
       expect(stateCookie).toBeDefined();
       expect(stateCookie).toMatch(/HttpOnly/);
       expect(stateCookie).toMatch(/Path=\/auth/);
+
+      // When the API is served behind a /api proxy prefix, the state cookie must
+      // follow REFRESH_COOKIE_PATH so the browser sends it on /api/auth/github/callback.
+      const originalPath = process.env.REFRESH_COOKIE_PATH;
+      process.env.REFRESH_COOKIE_PATH = '/api/auth';
+      const proxiedRes = await request(app).get('/auth/github');
+      const proxiedCookies = Array.isArray(proxiedRes.headers['set-cookie'])
+        ? proxiedRes.headers['set-cookie']
+        : [proxiedRes.headers['set-cookie']];
+      const proxiedStateCookie = proxiedCookies.find((c: string) =>
+        c.startsWith('github_oauth_state=')
+      );
+      expect(proxiedStateCookie).toMatch(/Path=\/api\/auth/);
+      if (originalPath === undefined) delete process.env.REFRESH_COOKIE_PATH;
+      else process.env.REFRESH_COOKIE_PATH = originalPath;
       // Pull the state value out and verify it matches the redirect URL.
       const stateValue = stateCookie!.split(';')[0].split('=')[1];
       expect(res.headers.location).toContain(`state=${stateValue}`);

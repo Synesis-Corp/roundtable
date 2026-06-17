@@ -61,6 +61,10 @@ services:
       # Admin dashboard — comma-separated list of emails with access to /admin.
       # When unset or empty, no user is admin. Set in .env for production.
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      # Public cookie path for auth routes. MUST be /api/auth when the API is
+      # served behind the web container's /api proxy; default /auth only works
+      # for direct API access in local dev.
+      REFRESH_COOKIE_PATH: ${REFRESH_COOKIE_PATH:-/auth}
     ports:
       # Bound to 127.0.0.1 ONLY. In production the web nginx proxies /api to
       # api:4000 over the compose network, so the API never needs a public host
