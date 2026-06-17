@@ -45,7 +45,7 @@ export function SidebarUserCard({
               width: 32,
               height: 32,
               borderRadius: 'var(--r-sm)',
-              background: 'linear-gradient(150deg, #f59e0b, #ef4444 70%)',
+              backgroundColor: 'var(--m-amber)',
             }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +91,7 @@ export function SidebarUserCard({
             width: 32,
             height: 32,
             borderRadius: 'var(--r-sm)',
-            background: 'linear-gradient(150deg, #5b91d6, #7c6cf0 70%)',
+            backgroundColor: 'var(--accent)',
           }}
         >
           {name ? name[0].toUpperCase() : 'U'}

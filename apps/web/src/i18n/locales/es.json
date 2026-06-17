@@ -94,7 +94,7 @@
     "incognitoChip": "Incógnito · no se guarda",
     "councilChip_one": "Consejo · {{count}} modelo",
     "councilChip_other": "Consejo · {{count}} modelos",
-    "disclaimer": "Roundtable puede cometer errores. Verifica la información importante.",
+    "disclaimer": "Puede cometer errores.",
     "connectHere": "Conectar aquí",
     "rejectedOne": "«{{names}}» no es compatible. Solo se permiten imágenes y PDFs.",
     "rejectedMany": "{{count}} archivos no compatibles ({{names}}). Solo se permiten imágenes y PDFs.",
@@ -107,9 +107,9 @@
       "titlePrivate": "¿Qué quieres explorar en privado?",
       "titleCouncil": "¿Qué resolvemos en consejo?",
       "titleDefault": "¿En qué trabajamos hoy?",
-      "councilSubtitle_one": "<accent>{{count}} modelo</accent> va a proponer, debatir y votar para converger en una sola respuesta.",
-      "councilSubtitle_other": "<accent>{{count}} modelos</accent> van a proponer, debatir y votar para converger en una sola respuesta.",
-      "singleSubtitle": "Un prompt, varios modelos, una respuesta. Activa el <accent>Consejo</accent> para que los modelos deliberen y converjan."
+      "councilSubtitle_one": "<accent>{{count}} modelo</accent> deliberará y convergerá.",
+      "councilSubtitle_other": "<accent>{{count}} modelos</accent> deliberarán y convergerán.",
+      "singleSubtitle": "Activa el <accent>Consejo</accent> para que varios modelos deliberen."
     },
     "councilWarning": "Conecta al menos 2 proveedores para usar el Consejo",
     "goToProviders": "Ir a Proveedores →",
@@ -129,7 +129,7 @@
       "incognitoMode": "Incógnito",
       "incognitoActivate": "Activar modo incógnito",
       "incognitoDeactivate": "Desactivar modo incógnito",
-      "incognitoNotice": "Este chat no se guardará. Solo se registrarán métricas de uso.",
+      "incognitoNotice": "No se guarda. Solo se registran métricas de uso.",
       "councilCount_one": "Sin modelos disponibles",
       "councilCount_other": "{{count}} modelos en consejo",
       "modelSelectorTitle": {
@@ -161,10 +161,10 @@
       "synthesize": "Sintetizan"
     },
     "quickActions": {
-      "image": "Crear imagen",
-      "write": "Escribir o editar",
-      "search": "Buscar info",
-      "ideas": "Lluvia de ideas"
+      "image": "Imagen",
+      "write": "Escribir",
+      "search": "Buscar",
+      "ideas": "Ideas"
     },
     "quickActionPrefixes": {
       "image": "Crea una imagen de ",

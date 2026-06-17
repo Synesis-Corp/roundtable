@@ -106,22 +106,25 @@ export default function Layout() {
         <div className="p-3">
           <button
             onClick={handleNewChat}
-            className="w-full flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
+            className="w-full flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]]"
             style={{
               padding: '10px 14px',
               borderRadius: 'var(--r-sm)',
-              backgroundColor: 'var(--accent-quiet)',
-              border: '1px solid var(--accent-line)',
-              color: 'var(--accent-text)',
+              backgroundColor: 'transparent',
+              border: '1px solid var(--border)',
+              color: 'var(--text-2)',
               fontSize: 13,
               fontWeight: 500,
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                'rgba(111,123,242,0.22)';
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--hover)';
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--accent-quiet)';
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-2)';
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
             }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

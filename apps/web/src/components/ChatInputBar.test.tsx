@@ -160,7 +160,7 @@ describe('ChatInputBar — incognito mode', () => {
       'aria-checked',
       'true'
     );
-    expect(screen.getByText(/this chat won't be saved/i)).toBeInTheDocument();
+    expect(screen.getByText(/not saved\. only usage metrics are recorded/i)).toBeInTheDocument();
   });
 });
 

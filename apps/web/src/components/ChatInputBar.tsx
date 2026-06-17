@@ -332,10 +332,10 @@ export function ChatInputBar(props: ChatInputBarProps) {
         className="transition-colors"
         style={{
           backgroundColor: 'var(--bg-input)',
-          border: isDragging ? '1px dashed var(--accent)' : '1px solid var(--border-strong)',
-          borderRadius: 'var(--r-lg)',
-          boxShadow: isDragging ? '0 0 0 3px var(--accent-quiet)' : 'var(--shadow-md)',
-          padding: '16px 16px 12px',
+          border: isDragging ? '1px dashed var(--accent)' : '1px solid var(--border)',
+          borderRadius: 'var(--r-xl)',
+          boxShadow: isDragging ? '0 0 0 3px var(--accent-quiet)' : 'none',
+          padding: '14px 14px 10px',
           transition: 'border-color 120ms, box-shadow 120ms',
         }}
       >
@@ -345,7 +345,6 @@ export function ChatInputBar(props: ChatInputBarProps) {
             className="mb-2 flex items-center gap-2 px-2 text-xs"
             style={{ color: 'var(--m-amber)' }}
           >
-            <span aria-hidden="true">◌</span>
             <span>{t('chat.input.incognitoNotice')}</span>
           </div>
         )}
@@ -546,9 +545,9 @@ export function ChatInputBar(props: ChatInputBarProps) {
             title={
               incognito ? t('chat.input.incognitoDeactivate') : t('chat.input.incognitoActivate')
             }
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors shrink-0 disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
+            className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-medium transition-colors shrink-0 disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
             style={{
-              backgroundColor: incognito ? 'rgba(245, 158, 11, 0.12)' : 'var(--hover)',
+              backgroundColor: incognito ? 'rgba(245, 158, 11, 0.12)' : 'transparent',
               color: incognito ? 'var(--m-amber)' : 'var(--text-3)',
               border: incognito ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid transparent',
             }}
@@ -564,7 +563,6 @@ export function ChatInputBar(props: ChatInputBarProps) {
               <path d="M3 11.5C5.4 7.8 8.4 6 12 6s6.6 1.8 9 5.5c-2.4 3.7-5.4 5.5-9 5.5s-6.6-1.8-9-5.5Z" />
               <path d="m4 4 16 16" />
             </svg>
-            <span className="hidden sm:inline">{t('chat.input.incognitoMode')}</span>
           </button>
 
           {/* Spacer */}

@@ -3,31 +3,31 @@
 @tailwind utilities;
 
 :root {
-  /* Superficies (neutro frío, oscuro por capas) */
-  --bg-app: #0d0e10;
-  --bg-sidebar: #141518;
-  --bg-surface: #191b1e;
-  --bg-elevated: #202327;
-  --bg-input: #1c1e22;
-  --hover: rgba(255, 255, 255, 0.045);
-  --hover-strong: rgba(255, 255, 255, 0.07);
+  /* Superficies — dark cálido/editorial */
+  --bg-app: #111113;
+  --bg-sidebar: #171719;
+  --bg-surface: #1d1d20;
+  --bg-elevated: #242427;
+  --bg-input: #222225;
+  --hover: rgba(255, 255, 255, 0.05);
+  --hover-strong: rgba(255, 255, 255, 0.085);
 
   /* Líneas */
-  --border: rgba(255, 255, 255, 0.075);
+  --border: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.13);
 
   /* Texto */
-  --text-1: #ededef;
-  --text-2: #9a9ea6;
-  --text-3: #686c74;
-  --text-4: #4a4e55;
+  --text-1: #f1f1f3;
+  --text-2: #9fa0a8;
+  --text-3: #6c6d75;
+  --text-4: #4e4f56;
 
   /* Acento — índigo suavizado */
-  --accent: #6f7bf2;
-  --accent-hover: #818cf6;
-  --accent-quiet: rgba(111, 123, 242, 0.14);
-  --accent-line: rgba(111, 123, 242, 0.32);
-  --accent-text: #aab2f9;
+  --accent: #747bed;
+  --accent-hover: #868df3;
+  --accent-quiet: rgba(116, 123, 237, 0.14);
+  --accent-line: rgba(116, 123, 237, 0.32);
+  --accent-text: #b0b6fa;
 
   /* Color por proveedor */
   --m-green: #5cb08b;
@@ -44,8 +44,12 @@
   --r-xl: 24px;
   --r-pill: 999px;
 
+  /* Tipografía */
+  --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', ui-serif, serif;
+
   /* Sombras */
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.32);
 }
 
 * {
@@ -190,6 +194,13 @@ body {
     @apply font-mono text-sm rounded px-1.5 py-0.5;
     background-color: var(--bg-app);
     color: var(--text-2);
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+  .font-sans {
+    font-family: var(--font-sans);
   }
 
   /* Markdown content styles */

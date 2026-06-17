@@ -42,17 +42,6 @@ export function SidebarHeader({
           <span className="block" style={{ fontSize: 15, fontWeight: 600 }}>
             Roundtable
           </span>
-          <span
-            className="block uppercase"
-            style={{
-              fontSize: 10,
-              fontWeight: 500,
-              letterSpacing: '0.14em',
-              color: 'var(--text-3)',
-            }}
-          >
-            {t('shell.brandSubtitle')}
-          </span>
         </span>
       </Link>
       <div className="flex items-center gap-1">

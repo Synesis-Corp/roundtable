@@ -96,7 +96,7 @@
     "incognitoChip": "Incognito · not saved",
     "councilChip_one": "Council · {{count}} model",
     "councilChip_other": "Council · {{count}} models",
-    "disclaimer": "Roundtable can make mistakes. Verify important information.",
+    "disclaimer": "May make mistakes.",
     "connectHere": "Connect here",
     "rejectedOne": "\"{{names}}\" is not supported. Only images and PDFs are allowed.",
     "rejectedMany": "{{count}} unsupported files ({{names}}). Only images and PDFs are allowed.",
@@ -109,9 +109,9 @@
       "titlePrivate": "What do you want to explore privately?",
       "titleCouncil": "What shall we solve in council?",
       "titleDefault": "What are we working on today?",
-      "councilSubtitle_one": "<accent>{{count}} model</accent> will propose, debate and vote to converge on a single answer.",
-      "councilSubtitle_other": "<accent>{{count}} models</accent> will propose, debate and vote to converge on a single answer.",
-      "singleSubtitle": "One prompt, several models, one answer. Turn on the <accent>Council</accent> so the models deliberate and converge."
+      "councilSubtitle_one": "<accent>{{count}} model</accent> will deliberate and converge.",
+      "councilSubtitle_other": "<accent>{{count}} models</accent> will deliberate and converge.",
+      "singleSubtitle": "Turn on <accent>Council</accent> to have several models deliberate."
     },
     "councilWarning": "Connect at least 2 providers to use the Council",
     "goToProviders": "Go to Providers →",
@@ -131,7 +131,7 @@
       "incognitoMode": "Incognito",
       "incognitoActivate": "Turn on incognito mode",
       "incognitoDeactivate": "Turn off incognito mode",
-      "incognitoNotice": "This chat won't be saved. Only usage metrics are recorded.",
+      "incognitoNotice": "Not saved. Only usage metrics are recorded.",
       "councilCount_one": "No models available",
       "councilCount_other": "{{count}} models in council",
       "modelSelectorTitle": {
@@ -163,10 +163,10 @@
       "synthesize": "Synthesize"
     },
     "quickActions": {
-      "image": "Create image",
-      "write": "Write or edit",
-      "search": "Search info",
-      "ideas": "Brainstorm"
+      "image": "Image",
+      "write": "Write",
+      "search": "Search",
+      "ideas": "Ideas"
     },
     "quickActionPrefixes": {
       "image": "Create an image of ",
