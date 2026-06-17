@@ -98,6 +98,7 @@ const mockPrisma = {
   },
   $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
   $queryRaw: vi.fn(),
+  $queryRawUnsafe: vi.fn(),
 };
 
 vi.mock('@chat/db', () => ({
@@ -2452,6 +2453,48 @@ describe('GET /usage', () => {
     expect(res.status).toBe(401);
   });
 
+  it('GET /usage/heatmap returns daily token totals for the user (period=6m default)', async () => {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    mockPrisma.$queryRawUnsafe.mockResolvedValueOnce([
+      { day: new Date(`${todayStr}T00:00:00.000Z`), tokens: BigInt(1234) },
+      { day: new Date(`${yesterdayStr}T00:00:00.000Z`), tokens: BigInt(0) },
+    ]);
+
+    const res = await request(app)
+      .get('/usage/heatmap')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.period).toBe('6m');
+    expect(Array.isArray(res.body.days)).toBe(true);
+    expect(res.body.days).toHaveLength(180);
+    expect(res.body.days[res.body.days.length - 1].date).toBe(todayStr);
+    expect(res.body.days[res.body.days.length - 1].tokens).toBe(1234);
+    expect(res.body.totalTokens).toBe(1234);
+    expect(res.body.peakTokens).toBe(1234);
+    expect(res.body.activeDays).toBe(1);
+  });
+
+  it('GET /usage/heatmap respects period=3m and period=12m', async () => {
+    mockPrisma.$queryRawUnsafe.mockResolvedValueOnce([]);
+
+    const res3 = await request(app)
+      .get('/usage/heatmap?period=3m')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+    expect(res3.body.days).toHaveLength(90);
+
+    mockPrisma.$queryRawUnsafe.mockResolvedValueOnce([]);
+    const res12 = await request(app)
+      .get('/usage/heatmap?period=12m')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+    expect(res12.body.days).toHaveLength(365);
+  });
+
   it('calculates estimated cost using static pricing', async () => {
     mockPrisma.usageEvent.groupBy.mockResolvedValue([
       {
@@ -2975,6 +3018,38 @@ describe('Admin Dashboard', () => {
         { mode: 'council', count: 30 },
       ]);
     });
+  });
+});
+
+describe('GET /admin/metrics/usage-heatmap', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.ADMIN_EMAILS = 'admin@example.com';
+  });
+
+  afterEach(() => {
+    delete process.env.ADMIN_EMAILS;
+  });
+
+  it('returns 180 days of global usage for an admin', async () => {
+    mockPrisma.$queryRawUnsafe.mockResolvedValueOnce([]);
+
+    const res = await request(app)
+      .get('/admin/metrics/usage-heatmap')
+      .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.days).toHaveLength(180);
+    expect(res.body.totalTokens).toBe(0);
+    expect(res.body.activeDays).toBe(0);
+  });
+
+  it('rejects non-admin users with 403', async () => {
+    const res = await request(app)
+      .get('/admin/metrics/usage-heatmap')
+      .set('Authorization', `Bearer ${TEST_TOKEN}`);
+
+    expect(res.status).toBe(403);
   });
 });
 

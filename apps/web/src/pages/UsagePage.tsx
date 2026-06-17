@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useUsageData } from '../hooks/useUsageData';
+import { useUsageHeatmap } from '../hooks/useUsageHeatmap';
 import { UsageLoading, UsageError, UsageEmpty } from '../components/UsageStates';
 import { UsageKpiCards } from '../components/UsageKpiCards';
 import {
@@ -9,6 +10,7 @@ import {
 } from '../components/UsageCharts';
 import { UsageTable } from '../components/UsageTable';
 import { UsageInsights } from '../components/UsageInsights';
+import { UsageHeatmap } from '../components/UsageHeatmap';
 
 // Re-exported for tests that import it from this module's public surface.
 export { ScatterTooltipContent } from '../components/UsageCharts';
@@ -30,10 +32,23 @@ export default function UsagePage({ embedded = false }: { embedded?: boolean } =
     tokensPerRequest,
     hasEstimatedCosts,
   } = useUsageData();
+  const heatmap = useUsageHeatmap();
 
   if (loading) return <UsageLoading wrap={wrap} />;
   if (error) return <UsageError wrap={wrap} error={error} onRetry={() => fetchUsage(period)} />;
-  if (!view || view.rows.length === 0) return <UsageEmpty wrap={wrap} />;
+  if (!view || view.rows.length === 0) {
+    return (
+      <div className={wrap}>
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-[var(--text-1)]">{t('usage.title')}</h1>
+        </div>
+        <div className="mb-6">
+          <UsageHeatmap data={heatmap.data} loading={heatmap.loading} error={heatmap.error} />
+        </div>
+        <UsageEmpty wrap="" />
+      </div>
+    );
+  }
 
   return (
     <div className={wrap}>
@@ -74,6 +89,10 @@ export default function UsagePage({ embedded = false }: { embedded?: boolean } =
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="mb-6">
+        <UsageHeatmap data={heatmap.data} loading={heatmap.loading} error={heatmap.error} />
       </div>
 
       <UsageKpiCards

@@ -570,6 +570,17 @@
   },
   "usage": {
     "title": "AI Usage",
+    "heatmap": {
+      "title": "Usage Heatmap",
+      "loading": "Loading heatmap…",
+      "error": "Heatmap failed: {{error}}",
+      "periodLabel": "Last {{period}}",
+      "less": "Less",
+      "more": "More",
+      "totalLabel": "Total tokens (period)",
+      "peakLabel": "Peak day",
+      "activeDaysLabel": "Active days"
+    },
     "summary": "{{period}} · {{modelsCount}} {{modelsLabel}} · {{providersCount}} {{providersLabel}}",
     "summaryAll": "All time",
     "summary30d": "Last 30 days",

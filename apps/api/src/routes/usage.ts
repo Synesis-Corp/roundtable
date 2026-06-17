@@ -9,6 +9,7 @@ import { Router } from 'express';
 import { prisma } from '../lib/db';
 import { authMiddleware, type AuthenticatedRequest } from '../middleware/auth';
 import { getModelPrice, calculateCost } from '../lib/model-pricing';
+import { getDailyUsageHeatmap } from '../lib/usage-heatmap';
 
 const router = Router();
 
@@ -169,6 +170,26 @@ router.get('/', authMiddleware, async (req: AuthenticatedRequest, res) => {
   } catch (err) {
     req.log.error({ err }, 'usage aggregation failed');
     res.status(500).json({ error: 'Failed to fetch usage data' });
+  }
+});
+
+/**
+ * GET /usage/heatmap
+ * Daily token totals for the last `period` days. Returns every day in the
+ * range (zero days included) so the client can render without gap-filling.
+ */
+router.get('/heatmap', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  try {
+    const period = req.query.period === '3m' ? '3m' : req.query.period === '12m' ? '12m' : '6m';
+    const periodDays = period === '3m' ? 90 : period === '12m' ? 365 : 180;
+    const heatmap = await getDailyUsageHeatmap({
+      userId: req.userId!,
+      periodDays,
+    });
+    res.json({ period, ...heatmap });
+  } catch (err) {
+    req.log.error({ err }, 'usage heatmap aggregation failed');
+    res.status(500).json({ error: 'Failed to fetch usage heatmap' });
   }
 });
 

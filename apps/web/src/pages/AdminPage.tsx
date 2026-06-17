@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { UsageHeatmap } from '../components/UsageHeatmap';
+import { useAdminUsageHeatmap } from '../hooks/useAdminUsageHeatmap';
 import {
   BarChart,
   Bar,
@@ -668,6 +670,7 @@ export default function AdminPage() {
     period,
     setPeriod,
   } = useAdminData();
+  const heatmap = useAdminUsageHeatmap();
 
   if (loading) return <AdminLoading />;
   if (error) return <AdminError error={error} onRetry={() => setPeriod(period)} />;
@@ -704,6 +707,8 @@ export default function AdminPage() {
       </div>
 
       <AdminKPIs overview={overview} adoption={adoption} />
+
+      <UsageHeatmap data={heatmap.data} loading={heatmap.loading} error={heatmap.error} />
 
       <div className="space-y-6">
         {registrations && activeUsers && (

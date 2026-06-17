@@ -572,6 +572,17 @@
   },
   "usage": {
     "title": "Uso de IA",
+    "heatmap": {
+      "title": "Mapa de uso",
+      "loading": "Cargando mapa…",
+      "error": "Mapa falló: {{error}}",
+      "periodLabel": "Últimos {{period}}",
+      "less": "Menos",
+      "more": "Más",
+      "totalLabel": "Tokens totales (período)",
+      "peakLabel": "Día pico",
+      "activeDaysLabel": "Días activos"
+    },
     "summary": "{{period}} · {{modelsCount}} {{modelsLabel}} · {{providersCount}} {{providersLabel}}",
     "summaryAll": "Histórico completo",
     "summary30d": "Últimos 30 días",

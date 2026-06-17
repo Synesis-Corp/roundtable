@@ -7,6 +7,7 @@ import { Router } from 'express';
 import { prisma } from '../lib/db';
 import { authMiddleware } from '../middleware/auth';
 import { requireAdmin } from '../middleware/admin';
+import { getDailyUsageHeatmap } from '../lib/usage-heatmap';
 import { fillDateRange } from '../lib/date-range';
 import { getModelPrice, calculateCost } from '../lib/model-pricing';
 
@@ -103,6 +104,18 @@ router.get('/metrics/active-users', async (req, res) => {
   } catch (err) {
     req.log?.error({ err }, 'admin metrics active-users failed');
     res.status(500).json({ error: 'Failed to fetch active user metrics' });
+  }
+});
+
+router.get('/metrics/usage-heatmap', async (req, res) => {
+  try {
+    const period = req.query.period === '3m' ? '3m' : req.query.period === '12m' ? '12m' : '6m';
+    const periodDays = period === '3m' ? 90 : period === '12m' ? 365 : 180;
+    const heatmap = await getDailyUsageHeatmap({ periodDays });
+    res.json({ period, ...heatmap });
+  } catch (err) {
+    req.log?.error?.({ err }, 'admin metrics usage-heatmap failed');
+    res.status(500).json({ error: 'Failed to fetch usage heatmap' });
   }
 });
 
