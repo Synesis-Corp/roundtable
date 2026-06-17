@@ -245,6 +245,13 @@ const { app } = await import('./index');
 // Same — provider-health pulls in lib/db, so import it after the @chat/db mock.
 const { providerHealthCache } = await import('./lib/provider-health');
 
+// Block unexpected outbound network calls during integration tests.
+// /usage triggers model-pricing which would otherwise hit OpenRouter.
+vi.stubGlobal(
+  'fetch',
+  vi.fn(() => Promise.resolve({ ok: false, status: 404 } as Response))
+);
+
 describe('API Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
