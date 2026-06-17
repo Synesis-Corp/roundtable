@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HeatmapDay, HeatmapResponse } from '../hooks/useUsageHeatmap';
 
 const CELL = 14;
 const GAP = 3;
+// Display order in the leftmost label column. We pad the first week so that
+// `getUTCDay()` (0 = Sun) maps cleanly: row 0 = Mon, row 6 = Sun.
 const ROW_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 interface Props {
@@ -31,12 +33,11 @@ function formatTokens(n: number): string {
 
 interface WeekColumn {
   startDate: string; // Sunday of the week, ISO date
-  days: (HeatmapDay | null)[]; // length 7, Sun..Sat
+  days: (HeatmapDay | null)[]; // length 7, indexed 0..6 = Sun..Sat
 }
 
 function groupByWeek(days: HeatmapDay[]): WeekColumn[] {
   if (days.length === 0) return [];
-  // Pad the first week so that index 0 is the Sunday before/at the first day.
   const first = new Date(`${days[0].date}T00:00:00.000Z`);
   const firstDow = first.getUTCDay(); // 0 = Sunday
   const padded: (HeatmapDay | null)[] = [...Array(firstDow).fill(null), ...days.map((d) => d)];
@@ -86,7 +87,21 @@ export function UsageHeatmap({ data, loading, error }: Props) {
 
   if (!data) return null;
 
-  const monthLabelEvery = 4;
+  // Render one month label per visible month boundary. We start the label at
+  // the first week of each new month — the previous month label sits exactly
+  // under its first column, just like GitHub's contribution graph.
+  const seenMonths = new Set<string>();
+  const monthLabels: { col: number; label: string }[] = [];
+  weeks.forEach((w, idx) => {
+    const d = new Date(`${w.startDate}T00:00:00.000Z`);
+    const key = `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+    if (seenMonths.has(key)) return;
+    seenMonths.add(key);
+    monthLabels.push({
+      col: idx,
+      label: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
+    });
+  });
 
   return (
     <div
@@ -106,95 +121,97 @@ export function UsageHeatmap({ data, loading, error }: Props) {
       <div className="flex gap-6">
         <div className="flex-1 min-w-0">
           <div
-            className="grid items-center mb-2 text-[10px] uppercase tracking-wide"
-            style={{ gridTemplateColumns: '32px 1fr', color: 'var(--text-3)' }}
-          >
-            <span />
-            <div className="relative" style={{ height: 14 }}>
-              {weeks.map((w, idx) => {
-                if (idx % monthLabelEvery !== 0) return null;
-                const d = new Date(`${w.startDate}T00:00:00.000Z`);
-                const month = d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
-                return (
-                  <span key={w.startDate} className="absolute" style={{ left: idx * (CELL + GAP) }}>
-                    {month}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-
-          <div
-            className="grid"
+            data-testid="usage-heatmap-grid"
             style={{
-              gridTemplateColumns: '32px 1fr',
-              gridTemplateRows: `repeat(7, ${CELL}px)`,
+              display: 'grid',
+              gridTemplateColumns: `32px repeat(${weeks.length}, ${CELL}px)`,
+              gridTemplateRows: `auto repeat(7, ${CELL}px)`,
               columnGap: GAP,
               rowGap: GAP,
+              color: 'var(--text-3)',
             }}
           >
-            {ROW_LABELS.map((label) => (
-              <div
-                key={label}
-                className="text-[10px] uppercase tracking-wide self-center"
-                style={{ color: 'var(--text-3)' }}
-              >
-                {label}
-              </div>
-            )).reduce<JSX.Element[]>((acc, labelNode, idx) => {
-              acc.push(labelNode);
-              acc.push(<div key={`row-fill-${idx}`} />);
-              return acc;
-            }, [])}
+            {/* Row 0: month labels (one per new month, others blank). */}
+            <span />
+            {weeks.map((_w, idx) => {
+              const ml = monthLabels.find((m) => m.col === idx);
+              return (
+                <span
+                  key={`month-${idx}`}
+                  className="text-[10px] uppercase tracking-wide"
+                  style={{ height: 14, lineHeight: '14px' }}
+                >
+                  {ml?.label ?? ''}
+                </span>
+              );
+            })}
 
-            {weeks.map((w) => (
-              <div
-                key={w.startDate}
-                className="contents"
-                data-testid={`heatmap-week-${w.startDate}`}
-              >
-                {w.days.map((day, dayIdx) =>
-                  day === null ? (
-                    <div
-                      key={`empty-${w.startDate}-${dayIdx}`}
-                      style={{ width: CELL, height: CELL }}
-                    />
-                  ) : (
-                    <div
-                      key={day.date}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`${day.date}: ${formatTokens(day.tokens)} tokens`}
-                      onMouseEnter={(e) => {
-                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                        setHover({
-                          day,
-                          x: rect.left + window.scrollX + rect.width / 2,
-                          y: rect.top + window.scrollY,
-                        });
-                      }}
-                      onMouseLeave={() => setHover(null)}
-                      onFocus={(e) => {
-                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                        setHover({
-                          day,
-                          x: rect.left + window.scrollX + rect.width / 2,
-                          y: rect.top + window.scrollY,
-                        });
-                      }}
-                      onBlur={() => setHover(null)}
-                      style={{
-                        width: CELL,
-                        height: CELL,
-                        borderRadius: 3,
-                        backgroundColor: colorFor(day.tokens, max),
-                      }}
-                      data-testid={`heatmap-day-${day.date}`}
-                    />
-                  )
-                )}
-              </div>
-            ))}
+            {/* Rows 1..7: Mon..Sun. The first column is the row label, the rest
+                are the actual cells (one per week, ISO Sun=0 .. Sat=6). */}
+            {ROW_LABELS.map((rowLabel, displayRow) => {
+              // displayRow 0..6 = Mon..Sun. We need to look up the matching
+              // index inside each week's `days` (which is Sun=0 .. Sat=6).
+              const isoDow = (displayRow + 1) % 7; // 0..6, Mon=1
+              return (
+                <Fragment key={`row-${rowLabel}`}>
+                  <span
+                    className="text-[10px] uppercase tracking-wide"
+                    style={{
+                      color: 'var(--text-3)',
+                      alignSelf: 'center',
+                      height: CELL,
+                      lineHeight: `${CELL}px`,
+                    }}
+                  >
+                    {rowLabel}
+                  </span>
+                  {weeks.map((w) => {
+                    const day = w.days[isoDow] ?? null;
+                    if (day === null) {
+                      return (
+                        <div
+                          key={`empty-${w.startDate}-${isoDow}`}
+                          style={{ width: CELL, height: CELL }}
+                        />
+                      );
+                    }
+                    return (
+                      <div
+                        key={day.date}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${day.date}: ${formatTokens(day.tokens)} tokens`}
+                        onMouseEnter={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setHover({
+                            day,
+                            x: rect.left + window.scrollX + rect.width / 2,
+                            y: rect.top + window.scrollY,
+                          });
+                        }}
+                        onMouseLeave={() => setHover(null)}
+                        onFocus={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setHover({
+                            day,
+                            x: rect.left + window.scrollX + rect.width / 2,
+                            y: rect.top + window.scrollY,
+                          });
+                        }}
+                        onBlur={() => setHover(null)}
+                        style={{
+                          width: CELL,
+                          height: CELL,
+                          borderRadius: 3,
+                          backgroundColor: colorFor(day.tokens, max),
+                        }}
+                        data-testid={`heatmap-day-${day.date}`}
+                      />
+                    );
+                  })}
+                </Fragment>
+              );
+            })}
           </div>
 
           <div
@@ -202,46 +219,17 @@ export function UsageHeatmap({ data, loading, error }: Props) {
             style={{ color: 'var(--text-3)' }}
           >
             <span>{t('usage.heatmap.less')}</span>
-            <span
-              style={{
-                width: CELL,
-                height: CELL,
-                backgroundColor: colorFor(1, 100),
-                borderRadius: 3,
-              }}
-            />
-            <span
-              style={{
-                width: CELL,
-                height: CELL,
-                backgroundColor: colorFor(40, 100),
-                borderRadius: 3,
-              }}
-            />
-            <span
-              style={{
-                width: CELL,
-                height: CELL,
-                backgroundColor: colorFor(60, 100),
-                borderRadius: 3,
-              }}
-            />
-            <span
-              style={{
-                width: CELL,
-                height: CELL,
-                backgroundColor: colorFor(80, 100),
-                borderRadius: 3,
-              }}
-            />
-            <span
-              style={{
-                width: CELL,
-                height: CELL,
-                backgroundColor: colorFor(100, 100),
-                borderRadius: 3,
-              }}
-            />
+            {[1, 40, 60, 80, 100].map((p, i) => (
+              <span
+                key={i}
+                style={{
+                  width: CELL,
+                  height: CELL,
+                  backgroundColor: colorFor(p, 100),
+                  borderRadius: 3,
+                }}
+              />
+            ))}
             <span>{t('usage.heatmap.more')}</span>
           </div>
         </div>
