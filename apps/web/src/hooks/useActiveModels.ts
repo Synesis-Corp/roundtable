@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiGet, apiPut } from '../lib/api-client';
+import { emitProvidersChanged } from '../lib/provider-events';
 import type { ModelInfo } from '@chat/sdk';
 
 interface UseActiveModelsReturn {
@@ -65,6 +66,10 @@ export function useActiveModels(providerId: string | null): UseActiveModelsRetur
         { modelIds }
       );
       setActiveIds(data.activeIds ?? []);
+      // The visible model list (useModels -> /providers/connected) is filtered by
+      // this same allow-list on the backend, so any consumer of /connected is
+      // holding a stale cache. Tell the bus to refetch.
+      emitProvidersChanged();
     },
     [providerId]
   );
