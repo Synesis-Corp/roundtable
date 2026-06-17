@@ -136,7 +136,7 @@
       "effortEmpty": "Variante: {{variant}}",
       "sendTitle": "Enviar mensaje",
       "sendBlocked": {
-        "noProviders": "Conectá un proveedor para empezar",
+        "noProviders": "Conecta un proveedor para empezar",
         "councilNeeds2": "El Consejo necesita al menos 2 providers",
         "loading": "Cargando modelos…",
         "noModels": "No hay modelos disponibles"
@@ -290,9 +290,13 @@
     "connectedCount_other": "{{count}} conectados",
     "ofTotalCouncil": "de {{total}} · participan en el Consejo",
     "searchProviders": "Buscar proveedores...",
-    "noProvidersConnected": "No hay proveedores conectados. Conectá en Configuración.",
+    "noProvidersConnected": "No hay proveedores conectados. Conecta en Configuración.",
     "noModelsMatchSearch": "Ningún modelo coincide con tu búsqueda.",
-    "filter": { "all": "Todos", "connected": "Conectados", "popular": "Populares" },
+    "filter": {
+      "all": "Todos",
+      "connected": "Conectados",
+      "popular": "Populares"
+    },
     "empty": {
       "title": "Sin proveedores conectados",
       "body": "Conecta al menos un proveedor para empezar a chatear. Los proveedores conectados participan en el modo Consejo."
@@ -395,7 +399,7 @@
     "activeModels": {
       "title": "Modelos activos · {{provider}}",
       "aria": "Modelos activos de {{provider}}",
-      "body": "Elegí qué modelos mostrar en todo el sistema. Con todos seleccionados se muestran todos.",
+      "body": "Elige qué modelos mostrar en todo el sistema. Con todos seleccionados se muestran todos.",
       "loading": "Cargando…",
       "empty": "No hay modelos disponibles para este proveedor.",
       "all": "Todos",
@@ -438,7 +442,7 @@
     "delete": {
       "title": "Eliminar conversación",
       "aria": "Eliminar conversación",
-      "body": "¿Seguro que querés eliminar «{{title}}»? Dejará de aparecer en tu historial.",
+      "body": "¿Seguro que quieres eliminar «{{title}}»? Dejará de aparecer en tu historial.",
       "cancel": "Cancelar",
       "confirm": "Eliminar",
       "deleting": "Eliminando…"
@@ -459,19 +463,19 @@
       "aria": "Asistente de configuración",
       "stepAria": "Paso {{current}} de 4",
       "stepLabel": "Paso {{current}} de 4",
-      "step1Title": "Elegí tu primer proveedor",
-      "step2Title": "Conectá tu cuenta",
-      "step3Title": "Verificá la conexión",
-      "step4Title": "Elegí tu modelo por defecto",
-      "step1Body": "Elegí un proveedor para empezar. Después podés agregar más en Configuración.",
+      "step1Title": "Elige tu primer proveedor",
+      "step2Title": "Conecta tu cuenta",
+      "step3Title": "Verifica la conexión",
+      "step4Title": "Elige tu modelo por defecto",
+      "step1Body": "Elige un proveedor para empezar. Después puedes agregar más en Configuración.",
       "step1Loading": "Cargando…",
       "step1Badge": "OAuth",
       "step1ModelCount": "{{count}} modelos · {{kind}}",
       "step1Popular": "Popular",
       "step1Support": "Soporte",
-      "step2PasteKey": "Pegá tu API key de <accent>{{name}}</accent>. Se cifra antes de guardarse.",
+      "step2PasteKey": "Pega tu API key de <accent>{{name}}</accent>. Se cifra antes de guardarse.",
       "step2CodexTitle": "<accent>Codex usa autenticación con ChatGPT Plus.</accent>",
-      "step2CodexBody": "Te llevamos a Configuración para conectar tu cuenta de OpenAI. Cuando vuelvas, ya vas a tener un modelo listo para chatear.",
+      "step2CodexBody": "Te llevamos a Configuración para conectar tu cuenta de OpenAI. Cuando vuelvas, ya tendrás un modelo listo para chatear.",
       "step2CodexButton": "Conectar con ChatGPT Plus",
       "step2CodexButtonLoading": "Conectando…",
       "step2ShowKey": "Mostrar API key",
@@ -487,7 +491,7 @@
       "step3Success": "Conexión exitosa",
       "step3ErrorFallback": "No se pudo verificar la conexión",
       "step3Retry": "Reintentar",
-      "step4Body": "Elegí el modelo con el que querés empezar. Después podés cambiarlo desde el selector del chat.",
+      "step4Body": "Elige el modelo con el que quieres empezar. Después puedes cambiarlo desde el selector del chat.",
       "step4Loading": "Cargando modelos…",
       "step4NoModels": "No hay modelos activos para {{name}}. <link>Ir a Configuración</link> para activarlos.",
       "back": "Atrás",
@@ -501,7 +505,7 @@
     "connect": {
       "title": "Conectar proveedor",
       "aria": "Conectar proveedor",
-      "body": "Pegá tu API key para empezar. Para opciones avanzadas (Codex OAuth, baseURL custom), andá a Configuración.",
+      "body": "Pega tu API key para empezar. Para opciones avanzadas (Codex OAuth, baseURL custom), ve a Configuración.",
       "providerLabel": "Provider",
       "loading": "Cargando…",
       "errorSuffix": "Ir a <link>Configuración</link>",
@@ -513,7 +517,7 @@
       "cancel": "Cancelar",
       "submit": "Conectar",
       "submitLoading": "Conectando…",
-      "errorEmpty": "Pegá una API key para continuar.",
+      "errorEmpty": "Pega una API key para continuar.",
       "errorFallback": "No se pudo conectar"
     },
     "copy": {
@@ -545,7 +549,7 @@
     "retry": "Reintentar",
     "empty": {
       "title": "Sin datos de uso",
-      "body": "Empezá a chatear para ver tus métricas"
+      "body": "Empieza a chatear para ver tus métricas"
     },
     "kpi": {
       "estimatedCost": "Costo estimado",
@@ -651,15 +655,15 @@
   },
   "profile": {
     "title": "Perfil",
-    "subtitle": "Personalizá tu experiencia",
+    "subtitle": "Personaliza tu experiencia",
     "displayName": "Nombre Visible",
-    "displayNamePlaceholder": "¿Cómo querés que te llamemos?",
+    "displayNamePlaceholder": "¿Cómo quieres que te llamemos?",
     "displayNameHelp": "Este nombre aparecerá en tu perfil y en el chat.",
     "country": "País",
     "timezone": "Zona Horaria",
     "notDetected": "No detectado",
     "language": "Idioma",
-    "languageHelp": "Elegí tu idioma preferido.",
+    "languageHelp": "Elige tu idioma preferido.",
     "langEN": "English",
     "langES": "Español",
     "sessions": "Sesiones Activas",

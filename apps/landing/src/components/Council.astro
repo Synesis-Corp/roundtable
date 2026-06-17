@@ -1,0 +1,52 @@
+---
+const steps = [
+  { num: '1', keyH3: 'step1.h3', keyP: 'step1.p' },
+  { num: '2', keyH3: 'step2.h3', keyP: 'step2.p' },
+  { num: '3', keyH3: 'step3.h3', keyP: 'step3.p' },
+  { num: '4', keyH3: 'step4.h3', keyP: 'step4.p' },
+];
+---
+
+<section id="council" class="relative z-10 py-20 md:py-24">
+  <div class="max-w-wrap mx-auto px-6">
+    <div class="max-w-[620px] mx-auto text-center mb-14">
+      <p class="text-[13px] font-semibold tracking-[0.06em] uppercase text-rt-accent-text mb-3.5" data-i18n="council.kicker">The difference</p>
+      <h2 class="text-[clamp(1.8rem,3.4vw,2.6rem)] leading-[1.1] tracking-[-0.025em] font-bold mb-4" data-i18n="council.h2">
+        The Council: deliberation, not a single opinion
+      </h2>
+      <p class="text-[1.05rem] text-rt-text-2" data-i18n="council.p">
+        For hard questions, several models work through three rounds. Each contributes its strengths; the system synthesizes the strongest answer.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {steps.map((step, index) => (
+        <div class="relative bg-gradient-to-b from-rt-panel to-rt-soft border border-rt-border rounded-2xl p-6 hover:border-rt-accent-line hover:-translate-y-[3px] transition-all duration-300 ease-rt group">
+          <div class="w-8 h-8 rounded-[9px] grid place-items-center bg-rt-accent-quiet text-rt-accent-text text-[13px] font-bold mb-4 border border-rt-accent-line">
+            {step.num}
+          </div>
+          <h3 class="text-base font-semibold mb-2" data-i18n={step.keyH3}>
+            {step.num === '1' && 'Proposals'}
+            {step.num === '2' && 'Debate'}
+            {step.num === '3' && 'Vote'}
+            {step.num === '4' && 'Synthesis'}
+          </h3>
+          <p class="text-sm text-rt-text-2 leading-relaxed" data-i18n={step.keyP}>
+            {step.num === '1' && 'Each model answers separately, with its own perspective and verified sources.'}
+            {step.num === '2' && "They weigh each other's ideas, flag contradictions and rescue the strongest arguments."}
+            {step.num === '3' && 'Each votes with a confidence level and points out the main risk of the decision.'}
+            {step.num === '4' && 'A final answer that incorporates the best of the table — clear and actionable.'}
+          </p>
+
+          {index < steps.length - 1 && (
+            <span class="hidden lg:block absolute top-9 -right-3 text-rt-text-3" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

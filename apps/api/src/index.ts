@@ -64,8 +64,7 @@ const authLimiter = rateLimit({
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   skip: (req) =>
-    skipInTest() ||
-    !['/auth/login', '/auth/register', '/auth/google'].includes(req.path),
+    skipInTest() || !['/auth/login', '/auth/register', '/auth/google'].includes(req.path),
   message: { error: 'Too many authentication attempts, try again later' },
 });
 

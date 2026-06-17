@@ -1,0 +1,48 @@
+---
+import Logo from './Logo.astro';
+---
+
+<header class="sticky top-0 z-50 border-b border-white/[0.075] backdrop-blur-[14px] bg-rt-bg/[0.72]">
+  <div class="max-w-wrap mx-auto px-6">
+    <nav class="flex items-center justify-between h-16">
+      <a href="/" class="flex items-center gap-2.5 font-bold text-base tracking-tight text-rt-text-1" aria-label="Roundtable home">
+        <Logo width={22} height={22} />
+        Roundtable
+      </a>
+
+      <div class="flex items-center gap-5 md:gap-6">
+        <div class="hidden md:flex items-center gap-6">
+          <a href="#council" class="text-sm font-medium text-rt-text-2 hover:text-rt-text-1 transition-colors duration-200 ease-rt" data-i18n="nav.council">The Council</a>
+          <a href="#features" class="text-sm font-medium text-rt-text-2 hover:text-rt-text-1 transition-colors duration-200 ease-rt" data-i18n="nav.features">Capabilities</a>
+        </div>
+
+        <div class="inline-flex items-center gap-0.5 border border-rt-border-strong rounded-full p-1 bg-rt-soft" role="group" aria-label="Language">
+          <button
+            type="button"
+            data-lang-btn="es"
+            class="text-xs font-semibold tracking-wide text-rt-text-3 bg-transparent border-none cursor-pointer px-2.5 py-1 rounded-full transition-colors duration-200 ease-rt hover:text-rt-text-1"
+            aria-pressed="false"
+          >
+            ES
+          </button>
+          <button
+            type="button"
+            data-lang-btn="en"
+            class="text-xs font-semibold tracking-wide text-rt-text-3 bg-transparent border-none cursor-pointer px-2.5 py-1 rounded-full transition-colors duration-200 ease-rt hover:text-rt-text-1"
+            aria-pressed="false"
+          >
+            EN
+          </button>
+        </div>
+
+        <a
+          href="https://cloud.r8e.org"
+          class="inline-flex items-center gap-2 font-semibold text-sm rounded-[10px] px-4 py-2.5 bg-rt-accent text-white hover:bg-rt-accent-hover transition-all duration-200 ease-rt hover:-translate-y-0.5 shadow-[0_0_0_rgba(111,123,242,0)] hover:shadow-[0_8px_30px_rgba(111,123,242,0.32)]"
+          data-i18n="nav.openApp"
+        >
+          Open the app
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>

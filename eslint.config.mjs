@@ -17,6 +17,9 @@ export default tseslint.config(
       '**/*.config.{js,cjs,mjs,ts}',
       '**/vite.config.*',
       '**/vitest.config.*',
+      '**/astro.config.*',
+      'apps/landing/src/env.d.ts',
+      '**/.astro/**',
       'packages/db/prisma/migrations/**',
       '.opencode/**', // opencode agent tooling, not part of the app
       '.cursor/**', // cursor agent skills, not part of the app
