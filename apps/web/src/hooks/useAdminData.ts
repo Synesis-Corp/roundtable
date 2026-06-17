@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiGet } from '../lib/api-client';
 
 export interface AdminOverview {
@@ -169,6 +170,7 @@ interface AdminData {
  * Fetches all admin metrics in parallel. Re-fetches when the period changes.
  */
 export function useAdminData(): AdminData {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState('30d');
   const [overview, setOverview] = useState<AdminOverview | null>(null);
   const [registrations, setRegistrations] = useState<AdminRegistrations | null>(null);
@@ -221,7 +223,7 @@ export function useAdminData(): AdminData {
         setDemographics(results[11]);
       } catch {
         if (cancelled) return;
-        setError('Failed to load admin metrics');
+        setError(t('chat.errors.loadAdminMetricsFailed'));
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -233,7 +235,7 @@ export function useAdminData(): AdminData {
     return () => {
       cancelled = true;
     };
-  }, [period]);
+  }, [period, t]);
 
   return {
     overview,

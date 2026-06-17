@@ -1,5 +1,6 @@
 import { storage } from '../lib/storage';
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { UserProvider } from '@chat/sdk';
 import { apiGet, apiPost, apiDelete } from '../lib/api-client';
 import { clearIsNewFlag } from '../lib/onboarding-helpers';
@@ -37,6 +38,7 @@ export interface UseSettingsReturn {
 }
 
 export function useSettings(): UseSettingsReturn {
+  const { t } = useTranslation();
   const token = storage.get('token');
 
   const [userProviders, setUserProviders] = useState<UserProvider[]>([]);
@@ -85,17 +87,17 @@ export function useSettings(): UseSettingsReturn {
     const params = new URLSearchParams(window.location.search);
     const codex = params.get('codex');
     if (codex === 'connected') {
-      setCodexNotice({ text: 'OpenAI connected with ChatGPT Plus/Pro.', type: 'success' });
+      setCodexNotice({ text: t('chat.errors.openAiConnected'), type: 'success' });
       window.history.replaceState({}, '', '/settings');
       // Onboarding Fase 2.1 (2026-06-14): Codex callback created a server-side
       // provider, so the connected-model list has changed. Notify subscribers.
       emitProvidersChanged();
     }
     if (codex === 'error') {
-      setCodexNotice({ text: 'OpenAI Codex login failed. Try again.', type: 'error' });
+      setCodexNotice({ text: t('chat.errors.openAiLoginFailed'), type: 'error' });
       window.history.replaceState({}, '', '/settings');
     }
-  }, []);
+  }, [t]);
 
   const testConnection = useCallback(
     async (providerId: string, apiKey: string) => {
@@ -116,7 +118,9 @@ export function useSettings(): UseSettingsReturn {
         setSaveMessages((prev) => ({
           ...prev,
           [providerId]: {
-            text: data.success ? 'Connection successful!' : data.error || 'Connection failed',
+            text: data.success
+              ? t('chat.errors.connectionSuccessful')
+              : data.error || t('chat.errors.connectionFailed'),
             type: data.success ? 'success' : 'error',
           },
         }));
@@ -124,7 +128,7 @@ export function useSettings(): UseSettingsReturn {
         setSaveMessages((prev) => ({
           ...prev,
           [providerId]: {
-            text: err instanceof Error ? err.message : 'Network error during test',
+            text: err instanceof Error ? err.message : t('chat.errors.networkErrorDuringTest'),
             type: 'error',
           },
         }));
@@ -139,7 +143,7 @@ export function useSettings(): UseSettingsReturn {
         }, 4000);
       }
     },
-    [token]
+    [token, t]
   );
 
   const handleConnect = useCallback(
@@ -162,7 +166,7 @@ export function useSettings(): UseSettingsReturn {
         clearIsNewFlag();
         setSaveMessages((prev) => ({
           ...prev,
-          [providerId]: { text: 'Connected successfully!', type: 'success' },
+          [providerId]: { text: t('chat.errors.connectedSuccessfully'), type: 'success' },
         }));
         fetchUserProviders();
         // Onboarding Fase 2.1 (2026-06-14): notify useModels subscribers to refetch.
@@ -171,7 +175,7 @@ export function useSettings(): UseSettingsReturn {
         setSaveMessages((prev) => ({
           ...prev,
           [providerId]: {
-            text: err instanceof Error ? err.message : 'Failed to connect',
+            text: err instanceof Error ? err.message : t('chat.errors.failedToConnect'),
             type: 'error',
           },
         }));
@@ -186,7 +190,7 @@ export function useSettings(): UseSettingsReturn {
         }, 4000);
       }
     },
-    [token, fetchUserProviders]
+    [token, fetchUserProviders, t]
   );
 
   const requestDisconnect = useCallback(

@@ -1,5 +1,6 @@
 import { storage } from '../lib/storage';
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiGet, apiPut, apiDelete } from '../lib/api-client';
 
 export interface CouncilConfig {
@@ -20,6 +21,7 @@ interface UseCouncilConfigReturn {
 }
 
 export function useCouncilConfig(): UseCouncilConfigReturn {
+  const { t } = useTranslation();
   const [config, setConfig] = useState<CouncilConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,29 +46,32 @@ export function useCouncilConfig(): UseCouncilConfigReturn {
         }
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Failed to load council config');
+        setError(err instanceof Error ? err.message : t('chat.errors.loadCouncilConfigFailed'));
         setConfig(null);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchConfig();
   }, [fetchConfig]);
 
-  const updateConfig = useCallback(async (modelIds: string[], mode: 'auto' | 'manual') => {
-    setError(null);
-    try {
-      const data = await apiPut<CouncilConfig>('/council/config', { modelIds, mode });
-      setConfig(data);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to update council config';
-      setError(msg);
-      throw new Error(msg);
-    }
-  }, []);
+  const updateConfig = useCallback(
+    async (modelIds: string[], mode: 'auto' | 'manual') => {
+      setError(null);
+      try {
+        const data = await apiPut<CouncilConfig>('/council/config', { modelIds, mode });
+        setConfig(data);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : t('chat.errors.updateCouncilConfigFailed');
+        setError(msg);
+        throw new Error(msg);
+      }
+    },
+    [t]
+  );
 
   const deleteConfig = useCallback(async () => {
     setError(null);
@@ -74,11 +79,11 @@ export function useCouncilConfig(): UseCouncilConfigReturn {
       await apiDelete('/council/config');
       setConfig(null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete council config';
+      const msg = err instanceof Error ? err.message : t('chat.errors.deleteCouncilConfigFailed');
       setError(msg);
       throw new Error(msg);
     }
-  }, []);
+  }, [t]);
 
   return {
     config,

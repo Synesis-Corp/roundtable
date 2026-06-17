@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiGet, apiPut } from '../lib/api-client';
 import type { ModelInfo } from '@chat/sdk';
 
@@ -20,6 +21,7 @@ interface UseActiveModelsReturn {
  * already filters with the same config, so saving here narrows the whole UI.
  */
 export function useActiveModels(providerId: string | null): UseActiveModelsReturn {
+  const { t } = useTranslation();
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [activeIds, setActiveIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,7 +47,7 @@ export function useActiveModels(providerId: string | null): UseActiveModelsRetur
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'No se pudieron cargar los modelos');
+        setError(err instanceof Error ? err.message : t('chat.errors.loadActiveModelsFailed'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -53,7 +55,7 @@ export function useActiveModels(providerId: string | null): UseActiveModelsRetur
     return () => {
       cancelled = true;
     };
-  }, [providerId]);
+  }, [providerId, t]);
 
   const save = useCallback(
     async (modelIds: string[]) => {

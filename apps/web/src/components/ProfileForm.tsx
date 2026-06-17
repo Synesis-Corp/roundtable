@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { useProfile } from '../hooks/useProfile';
 
 function detectBrowserLocale(): { country: string; timezone: string } {
@@ -51,7 +52,7 @@ function getCountryFromRegion(city: string): string {
 }
 
 function simplifyUserAgent(ua: string | null): string {
-  if (!ua) return 'Unknown';
+  if (!ua) return i18n.t('profile.browserUnknown');
   if (ua.includes('Firefox')) return 'Firefox';
   if (ua.includes('Edg')) return 'Edge';
   if (ua.includes('Chrome')) return 'Chrome';
@@ -62,12 +63,12 @@ function simplifyUserAgent(ua: string | null): string {
 function timeAgo(date: string): string {
   const diff = Date.now() - new Date(date).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return i18n.t('profile.justNow');
+  if (mins < 60) return i18n.t('profile.minutesAgo', { count: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return i18n.t('profile.hoursAgo', { hours });
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return i18n.t('profile.daysAgo', { days });
 }
 
 export function ProfileForm() {

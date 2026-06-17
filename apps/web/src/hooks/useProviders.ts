@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { AvailableProvider } from '@chat/sdk';
 import { apiGet } from '../lib/api-client';
 
@@ -12,6 +13,7 @@ interface UseProvidersReturn {
 }
 
 export function useProviders(): UseProvidersReturn {
+  const { t } = useTranslation();
   const [providers, setProviders] = useState<AvailableProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +27,12 @@ export function useProviders(): UseProvidersReturn {
         setProviders(data.providers ?? []);
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Failed to load providers');
+        setError(err instanceof Error ? err.message : t('chat.errors.loadProvidersFailed'));
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchProviders();

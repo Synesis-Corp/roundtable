@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiDelete, apiGet, apiPatch, apiPost } from '../lib/api-client';
 import { storage } from '../lib/storage';
 
@@ -32,6 +33,7 @@ function errorMessage(error: unknown, fallback: string): string {
 }
 
 export function useMemory(): UseMemoryReturn {
+  const { t } = useTranslation();
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,10 +55,10 @@ export function useMemory(): UseMemoryReturn {
     apiGet<MemoryItem[]>('/memory')
       .then((data) => setMemories(Array.isArray(data) ? data : []))
       .catch((requestError) => {
-        setError(errorMessage(requestError, 'No se pudieron cargar las memorias'));
+        setError(errorMessage(requestError, t('chat.errors.loadMemoriesFailed')));
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     refetch();
@@ -67,52 +69,61 @@ export function useMemory(): UseMemoryReturn {
     setMemoryEnabledState(enabled);
   }, []);
 
-  const createMemory = useCallback(async (content: string, tags: string[]) => {
-    setSaving(true);
-    setError(null);
-    try {
-      const created = await apiPost<MemoryItem>('/memory', { content, tags });
-      setMemories((current) => [created, ...current]);
-      return created;
-    } catch (requestError) {
-      setError(errorMessage(requestError, 'No se pudo guardar la memoria'));
-      throw requestError;
-    } finally {
-      setSaving(false);
-    }
-  }, []);
+  const createMemory = useCallback(
+    async (content: string, tags: string[]) => {
+      setSaving(true);
+      setError(null);
+      try {
+        const created = await apiPost<MemoryItem>('/memory', { content, tags });
+        setMemories((current) => [created, ...current]);
+        return created;
+      } catch (requestError) {
+        setError(errorMessage(requestError, t('chat.errors.saveMemoryFailed')));
+        throw requestError;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [t]
+  );
 
-  const updateMemory = useCallback(async (id: string, content: string, tags: string[]) => {
-    setSaving(true);
-    setError(null);
-    try {
-      const updated = await apiPatch<MemoryItem>(`/memory/${encodeURIComponent(id)}`, {
-        content,
-        tags,
-      });
-      setMemories((current) => current.map((item) => (item.id === id ? updated : item)));
-      return updated;
-    } catch (requestError) {
-      setError(errorMessage(requestError, 'No se pudo actualizar la memoria'));
-      throw requestError;
-    } finally {
-      setSaving(false);
-    }
-  }, []);
+  const updateMemory = useCallback(
+    async (id: string, content: string, tags: string[]) => {
+      setSaving(true);
+      setError(null);
+      try {
+        const updated = await apiPatch<MemoryItem>(`/memory/${encodeURIComponent(id)}`, {
+          content,
+          tags,
+        });
+        setMemories((current) => current.map((item) => (item.id === id ? updated : item)));
+        return updated;
+      } catch (requestError) {
+        setError(errorMessage(requestError, t('chat.errors.updateMemoryFailed')));
+        throw requestError;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [t]
+  );
 
-  const deleteMemory = useCallback(async (id: string) => {
-    setDeletingId(id);
-    setError(null);
-    try {
-      await apiDelete(`/memory/${encodeURIComponent(id)}`);
-      setMemories((current) => current.filter((item) => item.id !== id));
-    } catch (requestError) {
-      setError(errorMessage(requestError, 'No se pudo borrar la memoria'));
-      throw requestError;
-    } finally {
-      setDeletingId(null);
-    }
-  }, []);
+  const deleteMemory = useCallback(
+    async (id: string) => {
+      setDeletingId(id);
+      setError(null);
+      try {
+        await apiDelete(`/memory/${encodeURIComponent(id)}`);
+        setMemories((current) => current.filter((item) => item.id !== id));
+      } catch (requestError) {
+        setError(errorMessage(requestError, t('chat.errors.deleteMemoryFailed')));
+        throw requestError;
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [t]
+  );
 
   return {
     memories,

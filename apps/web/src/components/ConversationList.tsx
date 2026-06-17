@@ -63,7 +63,7 @@ export function ConversationList({
       ) : (
         <div>
           {groupConversationsByDate(filteredConversations.slice(0, 30)).map((group, groupIndex) => (
-            <div key={group.label}>
+            <div key={group.key}>
               <div
                 className="px-2 mb-2 uppercase"
                 style={{
@@ -165,7 +165,7 @@ export function ConversationList({
                               color: 'var(--text-4)',
                             }}
                           >
-                            {formatConversationTime(conv.updatedAt, group.label)}
+                            {formatConversationTime(conv.updatedAt, group.key)}
                           </span>
                         )}
                         {/* Rename — appears on hover/focus */}

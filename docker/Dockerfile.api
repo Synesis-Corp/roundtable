@@ -46,8 +46,10 @@ COPY . .
 # Generate Prisma Client before building (required by @chat/db build)
 RUN cd packages/db && npx prisma generate
 
-# Build all workspace packages in dependency order (turbo handles the graph)
-RUN pnpm build
+# Build API and its workspace dependencies in dependency order (turbo handles the graph).
+# --filter @chat/api... includes the api app and every package it depends on,
+# but excludes apps like @chat/landing that the API runtime does not need.
+RUN pnpm turbo run build --filter @chat/api...
 
 # Fetch the CPython-WASI sandbox runtime (pinned URL + SHA-256 verified; aborts
 # on mismatch). Not committed — see apps/api/.gitignore + DECISIONS.md.

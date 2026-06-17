@@ -1,5 +1,6 @@
 import { storage } from '../lib/storage';
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ModelInfo } from '@chat/sdk';
 import { apiGet } from '../lib/api-client';
 import { PROVIDERS_CHANGED_EVENT } from '../lib/provider-events';
@@ -13,6 +14,7 @@ export interface UseModelsReturn {
 }
 
 export function useModels(): UseModelsReturn {
+  const { t } = useTranslation();
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,12 +35,12 @@ export function useModels(): UseModelsReturn {
         setModels(data.models ?? []);
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Failed to load models');
+        setError(err instanceof Error ? err.message : t('chat.errors.loadModelsFailed'));
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchModels();

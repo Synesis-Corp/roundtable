@@ -44,7 +44,13 @@
     },
     "errors": {
       "noGoogleCredential": "No Google credential received",
-      "googleSignInFailed": "Google sign-in failed"
+      "googleSignInFailed": "Google sign-in failed",
+      "pleaseLogin": "Please log in to send messages.",
+      "popupBlocked": "Popup was blocked. Please allow popups for this site.",
+      "oauthNoToken": "OAuth succeeded but no token was returned",
+      "oauthInvalidToken": "Received an invalid token",
+      "oauthFailed": "OAuth failed",
+      "oauthTimeout": "OAuth timed out. Please try again."
     },
     "continueWithGithub": "Continue with GitHub"
   },
@@ -77,7 +83,12 @@
       "justNow": "Just now",
       "minutes": "{{count}}m",
       "hours": "{{count}}h",
-      "days": "{{count}}d"
+      "days": "{{count}}d",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "older": "Older"
     }
   },
   "chat": {
@@ -275,7 +286,33 @@
         "debate": "This conversation did not save the debate details.",
         "generic": "No data yet for this step."
       }
-    }
+    },
+    "errors": {
+      "noProvidersConnected": "Connect a provider in Settings before sending.",
+      "councilNeedsProviders": "The Council needs at least 2 connected providers.",
+      "loadConversationFailed": "Failed to load conversation",
+      "loadCouncilConfigFailed": "Failed to load council config",
+      "loadModelsFailed": "Failed to load models",
+      "loadProvidersFailed": "Failed to load providers",
+      "loadActiveModelsFailed": "Failed to load active models",
+      "loadMemoriesFailed": "Failed to load memories",
+      "saveMemoryFailed": "Failed to save memory",
+      "updateMemoryFailed": "Failed to update memory",
+      "deleteMemoryFailed": "Failed to delete memory",
+      "updateCouncilConfigFailed": "Failed to update council config",
+      "deleteCouncilConfigFailed": "Failed to delete council config",
+      "loadAdminMetricsFailed": "Failed to load admin metrics",
+      "connectedSuccessfully": "Connected successfully!",
+      "failedToConnect": "Failed to connect",
+      "connectionSuccessful": "Connection successful!",
+      "connectionFailed": "Connection failed",
+      "networkErrorDuringTest": "Network error during test",
+      "openAiConnected": "OpenAI connected with ChatGPT Plus/Pro.",
+      "openAiLoginFailed": "OpenAI Codex login failed. Try again.",
+      "loadUsageDataFailed": "Failed to load usage data",
+      "councilVoiceError": "Could not complete this participation: {{message}}"
+    },
+    "confirmLeaveStreaming": "A response is in progress. If you leave now, the last message you sent will be lost. Leave anyway?"
   },
   "settings": {
     "title": "Settings",
@@ -665,9 +702,14 @@
     "langEN": "English",
     "langES": "Español",
     "sessions": "Active Sessions",
-    "sessionsHelp": "Devices that are currently signed in to your account.",
-    "noSessions": "No active sessions found.",
+    "sessionsHelp": "Devices where your account is active.",
+    "noSessions": "No active sessions.",
     "revokeSession": "Revoke",
+    "browserUnknown": "Unknown",
+    "justNow": "just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{hours}}h ago",
+    "daysAgo": "{{days}}d ago",
     "save": "Save",
     "saving": "Saving…",
     "saved": "Saved!"

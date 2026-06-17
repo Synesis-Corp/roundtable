@@ -44,6 +44,13 @@ describe('groupConversationsByDate', () => {
     ];
 
     const groups = groupConversationsByDate(convs);
+    expect(groups.map((g) => g.key)).toEqual([
+      'today',
+      'yesterday',
+      'thisWeek',
+      'thisMonth',
+      'older',
+    ]);
     expect(groups.map((g) => g.label)).toEqual([
       'Today',
       'Yesterday',
@@ -65,6 +72,7 @@ describe('groupConversationsByDate', () => {
       makeConv('older', 'Older conv', new Date(2026, 4, 15, 6, 0, 0)),
     ];
     const groups = groupConversationsByDate(convs);
+    expect(groups.map((g) => g.key)).toEqual(['today', 'older']);
     expect(groups.map((g) => g.label)).toEqual(['Today', 'Older']);
   });
 
@@ -73,43 +81,44 @@ describe('groupConversationsByDate', () => {
     const convs: Conversation[] = [{ id: 'bad', title: 'Bad date', updatedAt: 'not-a-date' }];
     const groups = groupConversationsByDate(convs);
     expect(groups).toHaveLength(1);
+    expect(groups[0].key).toBe('older');
     expect(groups[0].label).toBe('Older');
     expect(groups[0].conversations[0].id).toBe('bad');
   });
 });
 
 describe('formatConversationTime', () => {
-  it('formats Today as time', () => {
+  it('formats today as time', () => {
     const date = new Date(2026, 5, 6, 14, 30, 0);
-    const result = formatConversationTime(date.toISOString(), 'Today');
+    const result = formatConversationTime(date.toISOString(), 'today');
     expect(result).toMatch(/^\d{1,2}:\d{2}\s(AM|PM)$/);
   });
 
-  it('formats Yesterday with label and time', () => {
+  it('formats yesterday with label and time', () => {
     const date = new Date(2026, 5, 5, 9, 15, 0);
-    const result = formatConversationTime(date.toISOString(), 'Yesterday');
+    const result = formatConversationTime(date.toISOString(), 'yesterday');
     expect(result).toMatch(/^Yesterday, \d{1,2}:\d{2}\s(AM|PM)$/);
   });
 
-  it('formats This week as short weekday date', () => {
+  it('formats this week as short weekday date', () => {
     const date = new Date(2026, 5, 3, 8, 0, 0);
-    const result = formatConversationTime(date.toISOString(), 'This week');
+    const result = formatConversationTime(date.toISOString(), 'thisWeek');
     expect(result).toMatch(/^\w{3}, \w{3} \d{1,2}$/);
   });
 
-  it('formats This month as short weekday date', () => {
+  it('formats this month as short weekday date', () => {
     const date = new Date(2026, 5, 1, 7, 0, 0);
-    const result = formatConversationTime(date.toISOString(), 'This month');
+    const result = formatConversationTime(date.toISOString(), 'thisMonth');
     expect(result).toMatch(/^\w{3}, \w{3} \d{1,2}$/);
   });
 
-  it('formats Older as full short date with year', () => {
+  it('formats older as full short date with year', () => {
     const date = new Date(2026, 4, 15, 6, 0, 0);
-    const result = formatConversationTime(date.toISOString(), 'Older');
+    const result = formatConversationTime(date.toISOString(), 'older');
     expect(result).toMatch(/^\w{3} \d{1,2}, \d{4}$/);
   });
 
   it('returns empty string for invalid date', () => {
-    expect(formatConversationTime('invalid', 'Today')).toBe('');
+    expect(formatConversationTime('invalid', 'today')).toBe('');
   });
 });

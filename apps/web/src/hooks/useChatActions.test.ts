@@ -88,7 +88,9 @@ describe('useChatActions — send gate (no providers)', () => {
       result.current.handleSend('asd');
     });
 
-    expect(setError).toHaveBeenCalledWith(expect.stringMatching(/conectá un proveedor/i));
+    expect(setError).toHaveBeenCalledWith(
+      expect.stringMatching(/connect a provider in settings before sending/i)
+    );
     expect(mockStartStream).not.toHaveBeenCalled();
   });
 
@@ -133,7 +135,7 @@ describe('useChatActions — send gate (no providers)', () => {
     });
 
     expect(setError).toHaveBeenCalledWith(
-      expect.stringMatching(/el consejo necesita al menos 2 providers/i)
+      expect.stringMatching(/the council needs at least 2 connected providers/i)
     );
     expect(mockStartStream).not.toHaveBeenCalled();
   });

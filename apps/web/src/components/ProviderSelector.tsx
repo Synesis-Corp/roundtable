@@ -40,7 +40,7 @@ export default function ProviderSelector({ selected, onSelect }: Props) {
 
   const selectedModel = selected ? models.find((m) => `${m.provider}:${m.id}` === selected) : null;
 
-  const selectedLabel = selectedModel?.name || 'Select model';
+  const selectedLabel = selectedModel?.name || t('settings.providerSelector.selectModel');
 
   return (
     <div ref={containerRef} className="relative">
@@ -71,14 +71,18 @@ export default function ProviderSelector({ selected, onSelect }: Props) {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search models..."
+              placeholder={t('settings.providerSelector.search')}
               className="w-full bg-[#1a1a1a] border border-gray-700/50 rounded-lg px-3 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50"
               autoFocus
             />
           </div>
 
           <div className="max-h-64 overflow-y-auto py-1">
-            {loading && <div className="p-4 text-sm text-gray-500 text-center">Loading...</div>}
+            {loading && (
+              <div className="p-4 text-sm text-gray-500 text-center">
+                {t('settings.providerSelector.loading')}
+              </div>
+            )}
 
             {!loading && filteredModels.length === 0 && (
               <div className="p-4 text-sm text-gray-400 text-center">

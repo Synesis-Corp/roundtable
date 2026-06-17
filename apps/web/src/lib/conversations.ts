@@ -1,6 +1,8 @@
 import type { Conversation } from '@chat/sdk';
+import i18n from '../i18n';
 
 export interface ConversationGroup {
+  key: 'today' | 'yesterday' | 'thisWeek' | 'thisMonth' | 'older';
   label: string;
   conversations: Conversation[];
 }
@@ -21,11 +23,11 @@ export function groupConversationsByDate(conversations: Conversation[]): Convers
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const groups: ConversationGroup[] = [
-    { label: 'Today', conversations: [] },
-    { label: 'Yesterday', conversations: [] },
-    { label: 'This week', conversations: [] },
-    { label: 'This month', conversations: [] },
-    { label: 'Older', conversations: [] },
+    { key: 'today', label: i18n.t('shell.history.today'), conversations: [] },
+    { key: 'yesterday', label: i18n.t('shell.history.yesterday'), conversations: [] },
+    { key: 'thisWeek', label: i18n.t('shell.history.thisWeek'), conversations: [] },
+    { key: 'thisMonth', label: i18n.t('shell.history.thisMonth'), conversations: [] },
+    { key: 'older', label: i18n.t('shell.history.older'), conversations: [] },
   ];
 
   const sorted = [...conversations].sort((a, b) => {
@@ -56,14 +58,15 @@ export function groupConversationsByDate(conversations: Conversation[]): Convers
   return groups.filter((g) => g.conversations.length > 0);
 }
 
-export function formatConversationTime(dateStr: string, group: string): string {
+export function formatConversationTime(dateStr: string, groupKey: string): string {
   const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) return '';
 
+  const locale = i18n.language === 'es' ? 'es-ES' : 'en-US';
   const timeOptions: Intl.DateTimeFormatOptions = {
     hour: 'numeric',
     minute: '2-digit',
-    hour12: true,
+    hour12: i18n.language !== 'es',
   };
   const shortDateOptions: Intl.DateTimeFormatOptions = {
     weekday: 'short',
@@ -76,19 +79,19 @@ export function formatConversationTime(dateStr: string, group: string): string {
     year: 'numeric',
   };
 
-  switch (group) {
-    case 'Today':
-      return date.toLocaleTimeString('en-US', timeOptions);
-    case 'Yesterday': {
-      const time = date.toLocaleTimeString('en-US', timeOptions);
-      return `Yesterday, ${time}`;
+  switch (groupKey) {
+    case 'today':
+      return date.toLocaleTimeString(locale, timeOptions);
+    case 'yesterday': {
+      const time = date.toLocaleTimeString(locale, timeOptions);
+      return `${i18n.t('shell.history.yesterday')}, ${time}`;
     }
-    case 'This week':
-    case 'This month':
-      return date.toLocaleDateString('en-US', shortDateOptions);
-    case 'Older':
-      return date.toLocaleDateString('en-US', olderOptions);
+    case 'thisWeek':
+    case 'thisMonth':
+      return date.toLocaleDateString(locale, shortDateOptions);
+    case 'older':
+      return date.toLocaleDateString(locale, olderOptions);
     default:
-      return date.toLocaleDateString('en-US', olderOptions);
+      return date.toLocaleDateString(locale, olderOptions);
   }
 }

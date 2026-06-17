@@ -4,6 +4,7 @@
 /* ------------------------------------------------------------------ */
 
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { storage } from '../lib/storage';
 import { parseSelectedModel } from '../lib/chat-format';
 import type { ChatMessage, CouncilInfo, EffortSpec, MultiInfo } from '../types/chat';
@@ -93,6 +94,7 @@ export function useChatActions({
   startStream,
   stopStream,
 }: ActionArgs) {
+  const { t } = useTranslation();
   const handleSend = useCallback(
     (text: string) => {
       if (!text.trim() && files.length === 0) return;
@@ -105,11 +107,11 @@ export function useChatActions({
       // "No API key configured for any candidate provider" instead of a
       // helpful hint.
       if (userProviders.length === 0) {
-        setError('Conectá un proveedor en Configuración antes de enviar.');
+        setError(t('chat.errors.noProvidersConnected'));
         return;
       }
       if (multiMode && userProviders.length < 2) {
-        setError('El Consejo necesita al menos 2 providers conectados.');
+        setError(t('chat.errors.councilNeedsProviders'));
         return;
       }
 
@@ -130,7 +132,7 @@ export function useChatActions({
       const userMsg: ChatMessage = {
         id: `user-${Date.now()}`,
         role: 'user',
-        content: text || (files.length > 0 ? 'Analyze this:' : ''),
+        content: text || (files.length > 0 ? t('chat.message.placeholder') : ''),
         ...(optimisticAttachments.length ? { attachments: optimisticAttachments } : {}),
       };
       // Insert a pending assistant placeholder immediately so the UI shows the
@@ -151,7 +153,7 @@ export function useChatActions({
           {
             id: `err-${Date.now()}`,
             role: 'assistant',
-            content: 'Please log in to send messages.',
+            content: t('auth.errors.pleaseLogin'),
             isError: true,
           },
         ]);
@@ -188,6 +190,7 @@ export function useChatActions({
       setCouncilInfo,
       setFiles,
       setInputText,
+      t,
     ]
   );
 
@@ -207,7 +210,7 @@ export function useChatActions({
           {
             id: `err-${Date.now()}`,
             role: 'assistant',
-            content: 'Please log in to send messages.',
+            content: t('auth.errors.pleaseLogin'),
             isError: true,
           },
         ]);
@@ -246,6 +249,7 @@ export function useChatActions({
       setError,
       setMultiInfo,
       setCouncilInfo,
+      t,
     ]
   );
 

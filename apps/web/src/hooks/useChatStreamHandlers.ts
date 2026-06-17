@@ -7,6 +7,7 @@
 /* ------------------------------------------------------------------ */
 
 import type { NavigateFunction } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type {
   ChatMessage,
   CouncilInfo,
@@ -35,6 +36,7 @@ export function useChatStreamHandlers({
   navigate,
   routeConversationId,
 }: HandlerArgs): SSEOptions {
+  const { t } = useTranslation();
   return {
     onMessage: (token, metadata) => {
       setMessages((prev) => {
@@ -402,7 +404,9 @@ export function useChatStreamHandlers({
             modelId: member.modelId,
             provider: member.provider,
             displayName: member.displayName,
-            approachLabel: `No se pudo completar esta participación: ${String(event.message ?? 'error desconocido')}`,
+            approachLabel: t('chat.errors.councilVoiceError', {
+              message: String(event.message ?? 'error desconocido'),
+            }),
             proposalText: undefined,
             tier: member.tier,
             vote: 'against',

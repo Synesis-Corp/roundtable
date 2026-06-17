@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -17,6 +18,7 @@ interface CodeBlockProps {
 }
 
 function CodeBlock({ language, children }: CodeBlockProps) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -37,9 +39,9 @@ function CodeBlock({ language, children }: CodeBlockProps) {
           type="button"
           onClick={handleCopy}
           className="text-xs text-gray-400 hover:text-gray-200 opacity-0 group-hover:opacity-100 transition-all duration-200"
-          aria-label={copied ? 'Copied' : 'Copy code'}
+          aria-label={copied ? t('common.code.copied') : t('common.code.copy')}
         >
-          {copied ? 'Copied!' : 'Copy'}
+          {copied ? t('common.code.copied') : t('common.code.copy')}
         </button>
       </div>
       <SyntaxHighlighter

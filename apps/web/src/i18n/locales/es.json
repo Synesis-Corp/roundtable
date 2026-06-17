@@ -42,7 +42,13 @@
     },
     "errors": {
       "noGoogleCredential": "No se recibió una credencial de Google",
-      "googleSignInFailed": "Error al iniciar sesión con Google"
+      "googleSignInFailed": "Error al iniciar sesión con Google",
+      "pleaseLogin": "Inicia sesión para enviar mensajes.",
+      "popupBlocked": "El popup fue bloqueado. Permite popups para este sitio.",
+      "oauthNoToken": "OAuth tuvo éxito pero no se recibió token",
+      "oauthInvalidToken": "Se recibió un token inválido",
+      "oauthFailed": "OAuth falló",
+      "oauthTimeout": "OAuth expiró. Inténtalo de nuevo."
     },
     "continueWithGithub": "Continuar con GitHub"
   },
@@ -75,7 +81,12 @@
       "justNow": "Justo ahora",
       "minutes": "{{count}}m",
       "hours": "{{count}}h",
-      "days": "{{count}}d"
+      "days": "{{count}}d",
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "thisWeek": "Esta semana",
+      "thisMonth": "Este mes",
+      "older": "Anteriores"
     }
   },
   "chat": {
@@ -162,7 +173,7 @@
       "ideas": "Generemos ideas para "
     },
     "banner": {
-      "councilConvening": "Roundtable: convening the Council"
+      "councilConvening": "Roundtable: convocando al Consejo"
     },
     "message": {
       "copy": "Copiar",
@@ -199,7 +210,7 @@
       "fileFallback": "archivo",
       "pageCount_one": "página",
       "pageCount_other": "páginas",
-      "placeholder": "Analyze this:",
+      "placeholder": "Analiza esto:",
       "councilStarting": "Iniciando consejo real…",
       "councilWaitingProposals": "Esperando propuestas reales de los modelos conectados."
     },
@@ -273,14 +284,40 @@
         "debate": "Esta conversación no guardó el detalle del debate.",
         "generic": "Todavía no hay datos para este paso."
       }
-    }
+    },
+    "errors": {
+      "noProvidersConnected": "Conecta un proveedor en Configuración antes de enviar.",
+      "councilNeedsProviders": "El Consejo necesita al menos 2 proveedores conectados.",
+      "loadConversationFailed": "No se pudo cargar la conversación",
+      "loadCouncilConfigFailed": "No se pudo cargar la configuración del Consejo",
+      "loadModelsFailed": "No se pudieron cargar los modelos",
+      "loadProvidersFailed": "No se pudieron cargar los proveedores",
+      "loadActiveModelsFailed": "No se pudieron cargar los modelos activos",
+      "loadMemoriesFailed": "No se pudieron cargar las memorias",
+      "saveMemoryFailed": "No se pudo guardar la memoria",
+      "updateMemoryFailed": "No se pudo actualizar la memoria",
+      "deleteMemoryFailed": "No se pudo borrar la memoria",
+      "updateCouncilConfigFailed": "No se pudo actualizar la configuración del Consejo",
+      "deleteCouncilConfigFailed": "No se pudo borrar la configuración del Consejo",
+      "loadAdminMetricsFailed": "No se pudieron cargar las métricas de administración",
+      "connectedSuccessfully": "¡Conectado correctamente!",
+      "failedToConnect": "No se pudo conectar",
+      "connectionSuccessful": "¡Conexión exitosa!",
+      "connectionFailed": "La conexión falló",
+      "networkErrorDuringTest": "Error de red durante la prueba",
+      "openAiConnected": "OpenAI conectado con ChatGPT Plus/Pro.",
+      "openAiLoginFailed": "El inicio de sesión de OpenAI Codex falló. Inténtalo de nuevo.",
+      "loadUsageDataFailed": "No se pudieron cargar los datos de uso",
+      "councilVoiceError": "No se pudo completar esta participación: {{message}}"
+    },
+    "confirmLeaveStreaming": "Hay una respuesta en curso. Si sales ahora se perderá lo último que enviaste. ¿Salir igual?"
   },
   "settings": {
     "title": "Ajustes",
     "sectionsAria": "Secciones de ajustes",
     "tabs": {
       "profile": "Perfil",
-      "providers": "Providers",
+      "providers": "Proveedores",
       "usage": "Uso",
       "council": "Consejo",
       "memory": "Memoria"
@@ -315,7 +352,7 @@
       "manualBadge_other": "Manual · {{count}} modelos",
       "auto": "Automático",
       "participatingNow": "Participan ahora",
-      "autoSelection": "<accent>Selección automática</accent> — el Consejo elige un modelo fuerte y uno liviano por cada proveedor conectado.",
+      "autoSelection": "<accent>Selección automática</accent> — el Consejo elige un modelo fuerte y uno ligero por cada proveedor conectado.",
       "membersButton": "Miembros del Consejo",
       "needTwo": "Conecta al menos 2 proveedores para configurar el Consejo.",
       "resetAuto": "Restablecer a automático"
@@ -355,9 +392,9 @@
       "package": "Paquete",
       "defaultEndpoint": "Endpoint por defecto",
       "standardEndpoint": "Endpoint estándar del proveedor",
-      "customBaseUrl": "Custom base URL",
-      "customEndpointPath": "Custom endpoint path",
-      "customHeadersJson": "Custom headers JSON",
+      "customBaseUrl": "URL base personalizada",
+      "customEndpointPath": "Ruta del endpoint personalizado",
+      "customHeadersJson": "Headers JSON personalizados",
       "health": {
         "checking": "Comprobando estado del proveedor",
         "checkingTitle": "Comprobando estado…",
@@ -486,7 +523,7 @@
       "step2AdvancedHeaders": "Headers JSON (opcional, ej. {\"X-Custom\": \"value\"})",
       "step3Body": "Verificamos tu clave con una llamada mínima al proveedor. Esto evita que descubras un problema en el primer chat.",
       "step3Validate": "Verificar conexión",
-      "step3Skip": "Saltar (degraded)",
+      "step3Skip": "Saltar verificación",
       "step3Validating": "Verificando…",
       "step3Success": "Conexión exitosa",
       "step3ErrorFallback": "No se pudo verificar la conexión",
@@ -506,7 +543,7 @@
       "title": "Conectar proveedor",
       "aria": "Conectar proveedor",
       "body": "Pega tu API key para empezar. Para opciones avanzadas (Codex OAuth, baseURL custom), ve a Configuración.",
-      "providerLabel": "Provider",
+      "providerLabel": "Proveedor",
       "loading": "Cargando…",
       "errorSuffix": "Ir a <link>Configuración</link>",
       "empty": "No hay providers populares disponibles. <link>Ver todos</link>",
@@ -555,9 +592,9 @@
       "estimatedCost": "Costo estimado",
       "estimatedCostDetail": "Incluye estimaciones",
       "totalTokens": "Total de tokens",
-      "tokensInOut": "{{in}} in / {{out}} out",
-      "requests": "Requests",
-      "tokensPerReq": "~{{count}} tokens/req",
+      "tokensInOut": "{{in}} entrada / {{out}} salida",
+      "requests": "Peticiones",
+      "tokensPerReq": "~{{count}} tokens/petición",
       "avgLatency": "Latencia promedio",
       "latencySlow": "Lento",
       "latencyFast": "Rápido"
@@ -565,31 +602,31 @@
     "charts": {
       "tokensByProvider": "Tokens por proveedor",
       "costDistribution": "Distribución de costo",
-      "latencyVsTokens": "Latencia vs Tokens (tamaño del punto = requests)",
+      "latencyVsTokens": "Latencia vs Tokens (tamaño del punto = peticiones)",
       "scatterLatency": "Latencia",
       "scatterTokens": "Tokens",
-      "input": "Input",
-      "output": "Output",
+      "input": "Entrada",
+      "output": "Salida",
       "scatterTooltip": {
         "latency": "Latencia:",
         "tokens": "Tokens:",
-        "requests": "Requests:"
+        "requests": "Peticiones:"
       }
     },
     "table": {
       "title": "Detalle por modelo",
       "estimatedBadge": "Estimado",
-      "estimatedTooltip": "Algunos costos son estimados porque no hay breakdown de input/output",
-      "estimatedCellTooltip": "Costo estimado (sin breakdown de input/output)",
+      "estimatedTooltip": "Algunos costos son estimados porque no hay desglose de entrada/salida",
+      "estimatedCellTooltip": "Costo estimado (sin desglose de entrada/salida)",
       "modelCount_one": "{{count}} modelo",
       "modelCount_other": "{{count}} modelos",
       "headers": {
-        "provider": "Provider",
+        "provider": "Proveedor",
         "model": "Modelo",
-        "input": "Input",
-        "output": "Output",
+        "input": "Entrada",
+        "output": "Salida",
         "total": "Total",
-        "reqs": "Reqs",
+        "reqs": "Petic.",
         "cost": "Costo",
         "latency": "Latencia"
       }
@@ -602,13 +639,13 @@
     "title": "Panel de Administración",
     "subtitle": "Métricas agregadas de la plataforma",
     "kpi": {
-      "totalUsers": "Usuarios Totales",
-      "activeToday": "Activos Hoy",
-      "totalTokens": "Tokens Totales",
-      "totalRequests": "Requests Totales",
-      "registeredToday": "Nuevos Hoy",
+      "totalUsers": "Usuarios totales",
+      "activeToday": "Activos hoy",
+      "totalTokens": "Tokens totales",
+      "totalRequests": "Peticiones totales",
+      "registeredToday": "Nuevos hoy",
       "activationRate": "Activación %",
-      "providerConnectionRate": "Providers %",
+      "providerConnectionRate": "Proveedores %",
       "councilAdoption": "Consejo %",
       "averageTime": "Tiempo Prom.",
       "medianTime": "Tiempo Med.",
@@ -627,8 +664,8 @@
       "avgLatency": "Latencia Prom.",
       "costs": "Costos Estimados por Modelo",
       "estimatedCost": "Costo Estimado",
-      "tokenRatio": "Ratio Input/Output de Tokens",
-      "inputOutputRatio": "Ratio I/O",
+      "tokenRatio": "Ratio entrada/salida de tokens",
+      "inputOutputRatio": "Ratio E/S",
       "timeToFirstChat": "Tiempo Hasta Primer Chat",
       "retention": "Retención a 7 Días",
       "demographics": "Demográficos",
@@ -639,7 +676,7 @@
       "provider": "Proveedor",
       "model": "Modelo",
       "tokens": "Tokens",
-      "requests": "Requests",
+      "requests": "Peticiones",
       "cost": "Costo Est.",
       "empty": "Sin datos de uso aún"
     },
@@ -670,6 +707,11 @@
     "sessionsHelp": "Dispositivos donde tu cuenta está activa.",
     "noSessions": "No hay sesiones activas.",
     "revokeSession": "Cerrar",
+    "browserUnknown": "Desconocido",
+    "justNow": "justo ahora",
+    "minutesAgo": "hace {{count}}m",
+    "hoursAgo": "hace {{hours}}h",
+    "daysAgo": "hace {{days}}d",
     "save": "Guardar",
     "saving": "Guardando…",
     "saved": "¡Guardado!"

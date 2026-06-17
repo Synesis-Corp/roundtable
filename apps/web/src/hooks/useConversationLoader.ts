@@ -5,6 +5,7 @@
 /* ------------------------------------------------------------------ */
 
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { storage } from '../lib/storage';
 import { apiGet } from '../lib/api-client';
 import { mapPersistedCouncilInfo } from '../lib/chat-page-helpers';
@@ -54,6 +55,7 @@ export function useConversationLoader({
   resumeStream,
   stopStream,
 }: LoaderArgs): void {
+  const { t } = useTranslation();
   useEffect(() => {
     const id = routeConversationId ?? null;
     if (id === null) {
@@ -119,7 +121,7 @@ export function useConversationLoader({
       })
       .catch((err) => {
         if (aborted) return;
-        setError(err instanceof Error ? err.message : 'Failed to load conversation');
+        setError(err instanceof Error ? err.message : t('chat.errors.loadConversationFailed'));
         setMessages([]);
       })
       .finally(() => {

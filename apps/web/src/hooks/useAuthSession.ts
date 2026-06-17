@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { storage } from '../lib/storage';
 import { apiPost } from '../lib/api-client';
 
@@ -9,24 +10,25 @@ import { apiPost } from '../lib/api-client';
  * so a fresh login reflects immediately.
  */
 export function useAuthSession() {
+  const { t } = useTranslation();
   const location = useLocation();
   const [token, setToken] = useState<string | null>(storage.get('token'));
   const [userName, setUserName] = useState<string>('');
 
   useEffect(() => {
-    const t = storage.get('token');
-    setToken(t);
-    if (!t) {
+    const tokenValue = storage.get('token');
+    setToken(tokenValue);
+    if (!tokenValue) {
       setUserName('');
       return;
     }
     try {
-      const payload = JSON.parse(atob(t.split('.')[1]));
-      setUserName(payload.email ? payload.email.split('@')[0] : 'User');
+      const payload = JSON.parse(atob(tokenValue.split('.')[1]));
+      setUserName(payload.email ? payload.email.split('@')[0] : t('shell.userFallback'));
     } catch {
       // ignore — malformed token, leave username empty
     }
-  }, [location]);
+  }, [location, t]);
 
   const handleLogout = useCallback(async () => {
     // Revoke the refresh token server-side (clears the httpOnly cookie too).

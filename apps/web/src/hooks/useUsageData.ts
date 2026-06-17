@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { apiGet } from '../lib/api-client';
 import {
   type UsageResponse,
@@ -14,6 +15,7 @@ import {
  * memoized datasets the presentational components render.
  */
 export function useUsageData() {
+  const { t } = useTranslation();
   const [period, setPeriod] = useState('all');
   const [data, setData] = useState<UsageResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,22 +24,25 @@ export function useUsageData() {
   // (we show everything until we know, to avoid flashing an empty dashboard).
   const [configured, setConfigured] = useState<Set<string> | null>(null);
 
-  async function fetchUsage(selectedPeriod: string) {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await apiGet<UsageResponse>(`/usage?period=${selectedPeriod}`);
-      setData(response);
-    } catch {
-      setError('No se pudieron cargar los datos de uso');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const fetchUsage = useCallback(
+    async (selectedPeriod: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await apiGet<UsageResponse>(`/usage?period=${selectedPeriod}`);
+        setData(response);
+      } catch {
+        setError(t('chat.errors.loadUsageDataFailed'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t]
+  );
 
   useEffect(() => {
     fetchUsage(period);
-  }, [period]);
+  }, [period, fetchUsage]);
 
   // Load the user's connected providers once, to hide historical usage from
   // providers they've since disconnected (6.3). A failure here is non-fatal:
