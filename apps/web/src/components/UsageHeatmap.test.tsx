@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../i18n';
 import { UsageHeatmap } from './UsageHeatmap';
@@ -48,13 +48,8 @@ describe('UsageHeatmap', () => {
   it('grid stays compact: 7 rows × CELL_HEIGHT + header (regression: vertical overflow)', () => {
     render(withI18n(<UsageHeatmap data={sample} />));
     const grid = screen.getByTestId('usage-heatmap-grid');
-    // inline style is on the element (style attribute wins over CSS).
-    // gridTemplateRows should be `auto repeat(7, ${CELL}px)` where CELL=14
-    // → roughly 14 * 7 + gap * 6 = 98 + 18 = 116px of body plus the auto header.
     const style = (grid as HTMLElement).getAttribute('style') ?? '';
-    expect(style).toContain('grid-template-rows: auto repeat(7, 14px)');
-    // No implicit row expansion (the old grid bug made the body grow to
-    // thousands of pixels because all weeks + labels collided in 2 columns).
+    expect(style).toContain('grid-template-rows: auto repeat(7, 16px)');
     expect(style).not.toMatch(/min-height/i);
   });
 
@@ -63,9 +58,54 @@ describe('UsageHeatmap', () => {
     const grid = screen.getByTestId('usage-heatmap-grid');
     const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     for (const l of labels) {
-      // Each label appears exactly once in the grid (leftmost column).
       const matches = Array.from(grid.querySelectorAll('span')).filter((s) => s.textContent === l);
       expect(matches.length, `label ${l}`).toBe(1);
     }
+  });
+
+  it('uses minmax(12px, 1fr) for week columns so the grid fills the available width', () => {
+    render(withI18n(<UsageHeatmap data={sample} />));
+    const grid = screen.getByTestId('usage-heatmap-grid');
+    const style = (grid as HTMLElement).getAttribute('style') ?? '';
+    // Cells expand to fill width but never shrink below 12px (avoids a
+    // wall of zero-width squares on narrow viewports). Rows stay at a
+    // fixed 16px (cells stay square-ish when the column is wider than tall).
+    expect(style).toContain('minmax(12px, 1fr)');
+    expect(style).toContain('repeat(7, 16px)');
+  });
+
+  it('cell width is 100% (defers to the column track size, not a fixed pixel)', () => {
+    render(withI18n(<UsageHeatmap data={sample} />));
+    const cell = screen.getByTestId('heatmap-day-2026-06-17');
+    const style = (cell as HTMLElement).getAttribute('style') ?? '';
+    expect(style).toContain('width: 100%');
+    expect(style).not.toMatch(/width:\s*16px/);
+  });
+
+  it('tooltip is position: fixed and uses viewport coordinates (regression: flew outside the card)', () => {
+    render(withI18n(<UsageHeatmap data={sample} />));
+    const cell = screen.getByTestId('heatmap-day-2026-06-17');
+    // Mock getBoundingClientRect so the cell reports a known viewport position.
+    cell.getBoundingClientRect = vi.fn(() => ({
+      left: 200,
+      top: 100,
+      width: 16,
+      height: 16,
+      right: 216,
+      bottom: 116,
+      x: 200,
+      y: 100,
+      toJSON: () => ({}),
+    }));
+    fireEvent.mouseEnter(cell);
+
+    const tooltip = screen.getByTestId('usage-heatmap-tooltip');
+    const style = (tooltip as HTMLElement).getAttribute('style') ?? '';
+    // 'fixed' (not 'absolute') keeps the tooltip anchored to the cell
+    // regardless of any ancestor's positioning context.
+    expect((tooltip as HTMLElement).className).toContain('fixed');
+    // Coords are viewport-relative (no window.scrollX/Y added).
+    expect(style).toMatch(/left:\s*208/); // 200 + width/2 = 208
+    expect(style).toMatch(/top:\s*92/); // 100 (rect.top) - 8 (gap)
   });
 });

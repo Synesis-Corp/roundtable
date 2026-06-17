@@ -2,8 +2,9 @@ import { Fragment, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HeatmapDay, HeatmapResponse } from '../hooks/useUsageHeatmap';
 
-const CELL = 14;
+const CELL = 16;
 const GAP = 3;
+const CELL_MIN = 12;
 // Display order in the leftmost label column. We pad the first week so that
 // `getUTCDay()` (0 = Sun) maps cleanly: row 0 = Mon, row 6 = Sun.
 const ROW_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -124,11 +125,12 @@ export function UsageHeatmap({ data, loading, error }: Props) {
             data-testid="usage-heatmap-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: `32px repeat(${weeks.length}, ${CELL}px)`,
+              gridTemplateColumns: `32px repeat(${weeks.length}, minmax(${CELL_MIN}px, 1fr))`,
               gridTemplateRows: `auto repeat(7, ${CELL}px)`,
               columnGap: GAP,
               rowGap: GAP,
               color: 'var(--text-3)',
+              width: '100%',
             }}
           >
             {/* Row 0: month labels (one per new month, others blank). */}
@@ -183,10 +185,12 @@ export function UsageHeatmap({ data, loading, error }: Props) {
                         aria-label={`${day.date}: ${formatTokens(day.tokens)} tokens`}
                         onMouseEnter={(e) => {
                           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          // Viewport-relative coords — the tooltip uses
+                          // position: fixed so it sticks to the cell on scroll.
                           setHover({
                             day,
-                            x: rect.left + window.scrollX + rect.width / 2,
-                            y: rect.top + window.scrollY,
+                            x: rect.left + rect.width / 2,
+                            y: rect.top,
                           });
                         }}
                         onMouseLeave={() => setHover(null)}
@@ -194,13 +198,13 @@ export function UsageHeatmap({ data, loading, error }: Props) {
                           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                           setHover({
                             day,
-                            x: rect.left + window.scrollX + rect.width / 2,
-                            y: rect.top + window.scrollY,
+                            x: rect.left + rect.width / 2,
+                            y: rect.top,
                           });
                         }}
                         onBlur={() => setHover(null)}
                         style={{
-                          width: CELL,
+                          width: '100%',
                           height: CELL,
                           borderRadius: 3,
                           backgroundColor: colorFor(day.tokens, max),
@@ -256,7 +260,8 @@ export function UsageHeatmap({ data, loading, error }: Props) {
       {hover && (
         <div
           role="tooltip"
-          className="absolute z-50 px-3 py-2 text-xs rounded-md pointer-events-none"
+          data-testid="usage-heatmap-tooltip"
+          className="fixed z-50 px-3 py-2 text-xs rounded-md pointer-events-none"
           style={{
             left: hover.x,
             top: hover.y - 8,
@@ -265,6 +270,7 @@ export function UsageHeatmap({ data, loading, error }: Props) {
             color: 'var(--text-1, #fff)',
             border: '1px solid var(--border)',
             boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            whiteSpace: 'nowrap',
           }}
         >
           <div className="font-semibold">{hover.day.date}</div>
