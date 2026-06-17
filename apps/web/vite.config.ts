@@ -1,8 +1,27 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import preload from 'vite-plugin-preload';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Preload critical JS chunks so the browser fetches and parses them in
+    // parallel with the entry module. Exclude lazy route chunks (auth pages,
+    // settings/admin, charts) — those are needed only on navigation.
+    preload({
+      includeJs: true,
+      includeCss: false,
+      shouldPreload: (chunk) => {
+        if (chunk.type !== 'chunk') return false;
+        const name = chunk.fileName;
+        // Exclude lazy route chunks and lazy-rendered chat message/markdown
+        // chunks so the welcome screen doesn't pay for code it won't use.
+        return !/LoginPage|RegisterPage|AdminPage|SettingsPage|PieChart|ChatMessageItem|markdown/.test(
+          name
+        );
+      },
+    }),
+  ],
   // Read .env from the monorepo root so there's a single env file. Only VITE_*
   // vars are exposed to the client bundle; everything else stays server-side.
   envDir: '../../',

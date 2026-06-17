@@ -19,8 +19,8 @@ export function toUsageEventData(userId: string, mode: UsageMode, source: UsageS
     userId,
     providerId: source.provider,
     modelId: source.model,
-    inputTokens: source.inputTokens ?? 0,
-    outputTokens: source.outputTokens ?? 0,
+    inputTokens: Number.isFinite(source.inputTokens) ? (source.inputTokens as number) : 0,
+    outputTokens: Number.isFinite(source.outputTokens) ? (source.outputTokens as number) : 0,
     ...(source.latencyMs === undefined ? {} : { latencyMs: source.latencyMs }),
     mode,
   };

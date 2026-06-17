@@ -1,5 +1,5 @@
 import { storage } from '../lib/storage';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, lazy, Suspense } from 'react';
 import { OnboardingWizard } from '../components/OnboardingWizard';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
@@ -13,15 +13,17 @@ import { useCouncilConfig } from '../hooks/useCouncilConfig';
 import { useStreaming } from '../lib/streaming-context';
 import { getGreeting, getCouncilPreviewCount } from '../lib/chat-page-helpers';
 import {
-  useUsernameFromToken,
   useNewChatListener,
   useRouteNewChatTrigger,
   usePasteToAttach,
 } from '../hooks/chat-page-hooks';
+import { useProfile } from '../hooks/useProfile';
 import { useConversationLoader } from '../hooks/useConversationLoader';
 import { useEffortVariants } from '../hooks/useEffortVariants';
 import { ChatInputBar } from '../components/ChatInputBar';
-import { ChatMessageItem } from '../components/ChatMessageItem';
+const ChatMessageItem = lazy(() =>
+  import('../components/ChatMessageItem').then((m) => ({ default: m.ChatMessageItem }))
+);
 import { RoundtableBanner } from '../components/RoundtableBanner';
 import { QuickActions, DeliberationSteps } from '../components/QuickActions';
 import type { OnboardingNew, OnboardingReturning } from '../lib/onboarding-helpers';
@@ -47,7 +49,9 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-  const userName = useUsernameFromToken();
+  const { profile, loading: profileLoading } = useProfile();
+  const displayName = profile?.displayName || profile?.name || '';
+  const userName = displayName;
   const [error, setError] = useState<string | null>(null);
   const [modelSearch, setModelSearch] = useState('');
   const [loadingConversation, setLoadingConversation] = useState(false);
@@ -558,19 +562,32 @@ export default function ChatPage() {
               {/* Roundtable orchestration banner */}
               {multiInfo && <RoundtableBanner multiInfo={multiInfo} />}
 
-              {messages.map((msg, i) => (
-                <ChatMessageItem
-                  key={msg.id || i}
-                  msg={msg}
-                  userName={userName}
-                  streaming={streaming}
-                  isLast={i === messages.length - 1}
-                  isNew={newMessageIds.has(msg.id)}
-                  onRegenerate={
-                    msg.role === 'assistant' && !msg.isError ? () => handleRegenerate(i) : undefined
-                  }
-                />
-              ))}
+              <Suspense
+                fallback={
+                  <div
+                    className="py-8 text-center"
+                    style={{ color: 'var(--text-4)', fontSize: 13 }}
+                  >
+                    {t('shell.loading')}
+                  </div>
+                }
+              >
+                {messages.map((msg, i) => (
+                  <ChatMessageItem
+                    key={msg.id || i}
+                    msg={msg}
+                    userName={userName}
+                    streaming={streaming}
+                    isLast={i === messages.length - 1}
+                    isNew={newMessageIds.has(msg.id)}
+                    onRegenerate={
+                      msg.role === 'assistant' && !msg.isError
+                        ? () => handleRegenerate(i)
+                        : undefined
+                    }
+                  />
+                ))}
+              </Suspense>
               <div ref={messagesEndRef} />
             </div>
           </div>
@@ -605,8 +622,9 @@ export default function ChatPage() {
                     className="font-serif text-[clamp(30px,4.5vw,44px)] leading-[1.1] tracking-tight mb-3"
                     style={{ color: 'var(--text-1)' }}
                   >
-                    {t(`chat.greeting.${getGreeting()}`)}
-                    {userName ? `, ${userName}` : ''}
+                    {profileLoading
+                      ? t(`chat.greeting.${getGreeting()}`)
+                      : `${t(`chat.greeting.${getGreeting()}`)}${displayName ? `, ${displayName}` : ''}`}
                   </p>
                   <h1
                     className="text-[18px] font-medium tracking-tight"

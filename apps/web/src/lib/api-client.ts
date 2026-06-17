@@ -1,6 +1,14 @@
 import { storage } from './storage';
 const API_BASE = '/api';
 
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
+
+const getCache = new Map<string, CacheEntry<unknown>>();
+const DEFAULT_GET_TTL_MS = 3000;
+
 class ApiError extends Error {
   constructor(
     message: string,
@@ -68,29 +76,75 @@ function redirectToLogin(): void {
   }
 }
 
+const isTest = typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test';
+
+function cacheKey(url: string): string {
+  return url;
+}
+
+function readCache<T>(url: string): T | undefined {
+  if (isTest) return undefined;
+  const entry = getCache.get(cacheKey(url));
+  if (!entry) return undefined;
+  if (Date.now() > entry.expiresAt) {
+    getCache.delete(cacheKey(url));
+    return undefined;
+  }
+  return entry.data as T;
+}
+
+function writeCache<T>(url: string, data: T, ttlMs = DEFAULT_GET_TTL_MS): void {
+  if (isTest) return;
+  getCache.set(cacheKey(url), { data, expiresAt: Date.now() + ttlMs });
+}
+
+function invalidateCacheForPath(path: string): void {
+  if (isTest) return;
+  const prefix = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  for (const key of getCache.keys()) {
+    if (key.startsWith(prefix)) {
+      getCache.delete(key);
+    }
+  }
+}
+
 /**
  * Typed wrapper around `fetch` for JSON APIs.
  * Automatically injects the auth token and parses JSON.
  * Rejects with ApiError on non-2xx.
+ *
+ * GET responses are cached in memory for a short TTL to avoid redundant
+ * fetches when multiple hooks mount simultaneously or on rapid navigation.
+ * Mutations (POST/PUT/PATCH/DELETE) invalidate the cache for the same path.
  */
 export async function api<T = unknown>(
   path: string,
-  options: RequestInit = {},
+  options: RequestInit & { skipCache?: boolean } = {},
   retry = true
 ): Promise<T> {
   const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  const isGet = (options.method || 'GET').toUpperCase() === 'GET';
+  const { skipCache, ...fetchOptions } = options;
+
+  if (isGet && !skipCache) {
+    const cached = readCache<T>(url);
+    if (cached !== undefined) {
+      return cached;
+    }
+  }
+
   const isJsonBody = Boolean(
-    options.body &&
-    typeof options.body === 'string' &&
-    !(options.headers as Record<string, string> | undefined)?.['Content-Type']
+    fetchOptions.body &&
+    typeof fetchOptions.body === 'string' &&
+    !(fetchOptions.headers as Record<string, string> | undefined)?.['Content-Type']
   );
 
   const headers: Record<string, string> = {
     ...buildHeaders(isJsonBody),
-    ...((options.headers as Record<string, string>) || {}),
+    ...((fetchOptions.headers as Record<string, string>) || {}),
   };
 
-  const res = await fetch(url, { ...options, headers, credentials: 'include' });
+  const res = await fetch(url, { ...fetchOptions, headers, credentials: 'include' });
 
   // Access token expired → try a one-time refresh, then replay the request.
   // Skip for /auth/* so a failing refresh/login doesn't loop.
@@ -108,9 +162,20 @@ export async function api<T = unknown>(
   }
 
   // DELETE 204 or empty body
-  if (res.status === 204) return undefined as T;
+  if (res.status === 204) {
+    if (!isGet) invalidateCacheForPath(path);
+    return undefined as T;
+  }
 
-  return res.json() as Promise<T>;
+  const data = (await res.json()) as T;
+
+  if (isGet) {
+    writeCache(url, data);
+  } else {
+    invalidateCacheForPath(path);
+  }
+
+  return data;
 }
 
 /**

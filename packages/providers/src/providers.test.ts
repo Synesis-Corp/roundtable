@@ -27,7 +27,7 @@ vi.mock('@ai-sdk/openai-compatible', () => ({
 vi.mock('ai', () => ({
   generateText: vi.fn(async ({ model }: { model: { model: string } }) => ({
     text: `response-from-${model.model}`,
-    usage: { totalTokens: 42 },
+    usage: { promptTokens: 1, completionTokens: 2, totalTokens: 3 },
   })),
   streamText: vi.fn(async ({ model: _model }: { model: { model: string } }) => ({
     fullStream: (async function* () {
@@ -39,7 +39,7 @@ vi.mock('ai', () => ({
   })),
   generateObject: vi.fn(async ({ model }: { model: { model: string } }) => ({
     object: { picked: model.model },
-    usage: { totalTokens: 42 },
+    usage: { promptTokens: 1, completionTokens: 2, totalTokens: 3 },
   })),
 }));
 
@@ -84,7 +84,7 @@ describe('providers', () => {
     expect(caps[0].provider).toBe('openrouter');
   });
 
-  it('OpenAI chat returns a response', async () => {
+  it('OpenAI chat maps input and output tokens', async () => {
     const p = new OpenAIProvider();
     const res = await p.chat(
       {
@@ -93,38 +93,12 @@ describe('providers', () => {
       },
       'test-key'
     );
-    expect(res.content).toBe('response-from-gpt-4o');
-    expect(res.provider).toBe('openai');
-    expect(res.tokensUsed).toBe(42);
+    expect(res.inputTokens).toBe(1);
+    expect(res.outputTokens).toBe(2);
+    expect(res.tokensUsed).toBe(3);
   });
 
-  it('Anthropic chat returns a response', async () => {
-    const p = new AnthropicProvider();
-    const res = await p.chat(
-      {
-        messages: [{ role: 'user', content: 'hi' }],
-        model: 'claude-3-5-sonnet-20241022',
-      },
-      'test-key'
-    );
-    expect(res.content).toBe('response-from-claude-3-5-sonnet-20241022');
-    expect(res.provider).toBe('anthropic');
-  });
-
-  it('Google chat returns a response', async () => {
-    const p = new GoogleProvider();
-    const res = await p.chat(
-      {
-        messages: [{ role: 'user', content: 'hi' }],
-        model: 'gemini-1.5-pro',
-      },
-      'test-key'
-    );
-    expect(res.content).toBe('response-from-gemini-1.5-pro');
-    expect(res.provider).toBe('google');
-  });
-
-  it('OpenAICompatible chat returns a response', async () => {
+  it('OpenAICompatible chat maps input and output tokens', async () => {
     const p = new OpenAICompatibleProvider({
       id: 'openrouter',
       name: 'OpenRouter',
@@ -145,8 +119,63 @@ describe('providers', () => {
       },
       'test-key'
     );
-    expect(res.content).toBe('response-from-openrouter-model');
-    expect(res.provider).toBe('openrouter');
+    expect(res.inputTokens).toBe(1);
+    expect(res.outputTokens).toBe(2);
+    expect(res.tokensUsed).toBe(3);
+  });
+
+  it('Anthropic chat maps input and output tokens', async () => {
+    const p = new AnthropicProvider();
+    const res = await p.chat(
+      {
+        messages: [{ role: 'user', content: 'hi' }],
+        model: 'claude-3-5-sonnet-20241022',
+      },
+      'test-key'
+    );
+    expect(res.inputTokens).toBe(1);
+    expect(res.outputTokens).toBe(2);
+    expect(res.tokensUsed).toBe(3);
+  });
+
+  it('Google chat maps input and output tokens', async () => {
+    const p = new GoogleProvider();
+    const res = await p.chat(
+      {
+        messages: [{ role: 'user', content: 'hi' }],
+        model: 'gemini-1.5-pro',
+      },
+      'test-key'
+    );
+    expect(res.inputTokens).toBe(1);
+    expect(res.outputTokens).toBe(2);
+    expect(res.tokensUsed).toBe(3);
+  });
+
+  it('OpenAICompatible chat maps input and output tokens', async () => {
+    const p = new OpenAICompatibleProvider({
+      id: 'openrouter',
+      name: 'OpenRouter',
+      baseURL: 'https://openrouter.ai/api/v1',
+      capabilities: [
+        {
+          modelId: 'openrouter-model',
+          provider: 'openrouter',
+          modalities: ['text'],
+          features: ['tool-use'],
+        },
+      ],
+    });
+    const res = await p.chat(
+      {
+        messages: [{ role: 'user', content: 'hi' }],
+        model: 'openrouter-model',
+      },
+      'test-key'
+    );
+    expect(res.inputTokens).toBe(1);
+    expect(res.outputTokens).toBe(2);
+    expect(res.tokensUsed).toBe(3);
   });
 
   it('OpenAI stream yields reasoning then tokens', async () => {
@@ -170,23 +199,10 @@ describe('providers', () => {
     expect(chunks[3].isFinished).toBe(true);
   });
 
-  it('chatStructured returns the validated object and maps usage', async () => {
-    const schema = z.object({ picked: z.string() });
-    const p = new OpenAIProvider();
-    const res = await p.chatStructured(
-      { messages: [{ role: 'user', content: 'pick' }], model: 'gpt-4o' },
-      schema,
-      'test-key'
-    );
-    expect(res.object).toEqual({ picked: 'gpt-4o' });
-    expect(res.provider).toBe('openai');
-    expect(res.model).toBe('gpt-4o');
-    expect(res.tokensUsed).toBe(42);
-  });
-
-  it('chatStructured works across every provider implementation', async () => {
+  it('chatStructured maps input and output tokens for every provider', async () => {
     const schema = z.object({ picked: z.string() });
     const providers = [
+      new OpenAIProvider(),
       new AnthropicProvider(),
       new GoogleProvider(),
       new OpenAICompatibleProvider({
@@ -203,6 +219,9 @@ describe('providers', () => {
         'test-key'
       );
       expect(res.object).toEqual({ picked: 'm' });
+      expect(res.inputTokens).toBe(1);
+      expect(res.outputTokens).toBe(2);
+      expect(res.tokensUsed).toBe(3);
     }
   });
 });

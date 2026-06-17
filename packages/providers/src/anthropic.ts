@@ -14,6 +14,7 @@ import { getModel } from '@chat/router';
 import { convertMessages, throwIfErrorPart } from './utils';
 import { buildProviderOptions } from './effort';
 import { MAX_TOOL_STEPS } from './constants';
+import { normalizeUsage } from './usage';
 
 export interface AnthropicConfig {
   id?: string;
@@ -90,13 +91,14 @@ export class AnthropicProvider implements ProviderPlugin {
       // recommended default for tool-enabled chats.
       maxSteps: MAX_TOOL_STEPS,
     });
+    const usage = normalizeUsage(result.usage);
     return {
       content: result.text,
       model: request.model,
       provider: this.id,
-      tokensUsed: result.usage?.totalTokens,
-      inputTokens: result.usage?.promptTokens,
-      outputTokens: result.usage?.completionTokens,
+      tokensUsed: usage.totalTokens,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
       latencyMs: Date.now() - start,
     };
   }
@@ -120,13 +122,14 @@ export class AnthropicProvider implements ProviderPlugin {
       ...(signal ? { abortSignal: signal } : {}),
       ...(providerOptions ? { providerOptions } : {}),
     });
+    const usage = normalizeUsage(result.usage);
     return {
       object: result.object,
       model: request.model,
       provider: this.id,
-      tokensUsed: result.usage?.totalTokens,
-      inputTokens: result.usage?.promptTokens,
-      outputTokens: result.usage?.completionTokens,
+      tokensUsed: usage.totalTokens,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
       latencyMs: Date.now() - start,
     };
   }
@@ -195,20 +198,23 @@ export class AnthropicProvider implements ProviderPlugin {
         }
       }
 
-      const usage = await result.usage;
+      const usage = normalizeUsage(await result.usage);
 
       yield {
         token: '',
         model: request.model,
         provider: this.id,
         isFinished: true,
-        usage: usage
-          ? {
-              inputTokens: usage.promptTokens,
-              outputTokens: usage.completionTokens,
-              totalTokens: usage.totalTokens,
-            }
-          : undefined,
+        usage:
+          usage.totalTokens !== undefined ||
+          usage.inputTokens !== undefined ||
+          usage.outputTokens !== undefined
+            ? {
+                inputTokens: usage.inputTokens,
+                outputTokens: usage.outputTokens,
+                totalTokens: usage.totalTokens,
+              }
+            : undefined,
       };
     } catch (err) {
       // Propagate so the caller can decide how to surface the failure (e.g. SSE error event).

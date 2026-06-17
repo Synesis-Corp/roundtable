@@ -6,6 +6,7 @@ import { useProvidersHealth } from '../hooks/useProvidersHealth';
 import { useSettings } from '../hooks/useSettings';
 import { useModels } from '../hooks/useModels';
 import { useCouncilConfig } from '../hooks/useCouncilConfig';
+import { useProfile } from '../hooks/useProfile';
 import { ProviderRow } from '../components/ProviderRow';
 import { CouncilMembersModal } from '../components/CouncilMembersModal';
 import { ActiveModelsModal } from '../components/ActiveModelsModal';
@@ -88,7 +89,9 @@ export default function SettingsPage() {
     }
   }, [token]);
 
-  const userName = userEmail ? userEmail.split('@')[0] : t('shell.userFallback');
+  const { profile } = useProfile();
+  const userName =
+    profile?.displayName || profile?.name || userEmail.split('@')[0] || t('shell.userFallback');
 
   const connectedCount = userProviders.length;
   const totalProviders = providers.length;

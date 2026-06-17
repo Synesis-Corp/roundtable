@@ -14,6 +14,7 @@ import { getModel } from '@chat/router';
 import { convertMessages, throwIfErrorPart } from './utils';
 import { buildProviderOptions } from './effort';
 import { MAX_TOOL_STEPS } from './constants';
+import { normalizeUsage } from './usage';
 
 export interface OpenAIConfig {
   id?: string;
@@ -56,6 +57,13 @@ export class OpenAIProvider implements ProviderPlugin {
   getCapabilities(): ModelCapability[] {
     return [
       {
+        modelId: 'gpt-5.4',
+        provider: this.id,
+        modalities: ['text', 'image', 'audio', 'file'],
+        features: ['tool-use', 'vision', 'structured-output', 'pdf-input'],
+        contextWindow: 128000,
+      },
+      {
         modelId: 'gpt-4o',
         provider: this.id,
         modalities: ['text', 'image'],
@@ -82,6 +90,11 @@ export class OpenAIProvider implements ProviderPlugin {
   private getClient(apiKey: string) {
     return createOpenAI({
       apiKey,
+      // Force strict OpenAI compatibility so the SDK sends
+      // stream_options: { include_usage: true } on streaming requests.
+      // Without this, /chat/completions streaming responses omit the final
+      // usage block and token accounting becomes impossible.
+      compatibility: 'strict',
       ...(this.baseURL ? { baseURL: this.baseURL } : {}),
       ...(this.headers ? { headers: this.headers } : {}),
       ...(this.fetchFn ? { fetch: this.fetchFn } : {}),
@@ -121,13 +134,14 @@ export class OpenAIProvider implements ProviderPlugin {
       // recommended default for tool-enabled chats.
       maxSteps: MAX_TOOL_STEPS,
     });
+    const usage = normalizeUsage(result.usage);
     return {
       content: result.text,
       model: request.model,
       provider: this.id,
-      tokensUsed: result.usage?.totalTokens,
-      inputTokens: result.usage?.promptTokens,
-      outputTokens: result.usage?.completionTokens,
+      tokensUsed: usage.totalTokens,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
       latencyMs: Date.now() - start,
     };
   }
@@ -152,13 +166,14 @@ export class OpenAIProvider implements ProviderPlugin {
       ...(signal ? { abortSignal: signal } : {}),
       ...(providerOptions ? { providerOptions } : {}),
     });
+    const usage = normalizeUsage(result.usage);
     return {
       object: result.object,
       model: request.model,
       provider: this.id,
-      tokensUsed: result.usage?.totalTokens,
-      inputTokens: result.usage?.promptTokens,
-      outputTokens: result.usage?.completionTokens,
+      tokensUsed: usage.totalTokens,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
       latencyMs: Date.now() - start,
     };
   }
@@ -187,9 +202,9 @@ export class OpenAIProvider implements ProviderPlugin {
       ...(tools ? { tools } : {}),
       // Multi-step tool loop: when the model invokes a tool, the AI SDK
       // needs to loop back to the model with the tool's result and continue
-      // generating. Default is maxSteps=1 which closes the loop after the
-      // tool result and the user sees "no answer" after a search. 5 is the
-      // AI SDK's recommended default for tool-enabled chats.
+      // generating. Default is maxSteps=1 which closes the loop after the tool
+      // result and the user sees "no answer" after a search. 5 is the AI SDK's
+      // recommended default for tool-enabled chats.
       maxSteps: MAX_TOOL_STEPS,
     });
 
@@ -239,20 +254,23 @@ export class OpenAIProvider implements ProviderPlugin {
       }
     }
 
-    const usage = await result.usage;
+    const usage = normalizeUsage(await result.usage);
 
     yield {
       token: '',
       model: request.model,
       provider: this.id,
       isFinished: true,
-      usage: usage
-        ? {
-            inputTokens: usage.promptTokens,
-            outputTokens: usage.completionTokens,
-            totalTokens: usage.totalTokens,
-          }
-        : undefined,
+      usage:
+        usage.totalTokens !== undefined ||
+        usage.inputTokens !== undefined ||
+        usage.outputTokens !== undefined
+          ? {
+              inputTokens: usage.inputTokens,
+              outputTokens: usage.outputTokens,
+              totalTokens: usage.totalTokens,
+            }
+          : undefined,
     };
   }
 }
