@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { apiGet, apiStream } from './api-client';
+import { apiGet, apiStream, searchConversations } from './api-client';
 import { storage } from './storage';
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -97,5 +97,52 @@ describe('api-client — 401 refresh interceptor', () => {
       await expect(apiStream('/auth/refresh')).rejects.toBeTruthy();
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe('api-client — conversation search', () => {
+  beforeEach(() => {
+    storage.set('token', 'search-token');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    storage.remove('token');
+  });
+
+  it('builds the conversations search URL, passes AbortSignal, and returns parsed results', async () => {
+    const controller = new AbortController();
+    const payload = {
+      results: [
+        {
+          id: 'conv-1',
+          title: 'Roadmap',
+          updatedAt: '2026-06-18T10:00:00.000Z',
+          matchedIn: 'title',
+          snippet: null,
+        },
+      ],
+    };
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse(payload));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await searchConversations('road map', 10, controller.signal);
+
+    expect(result).toEqual(payload);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/conversations/search?q=road+map&limit=10');
+    const init = fetchMock.mock.calls[0][1] as RequestInit;
+    expect(init.method).toBe('GET');
+    expect(init.signal).toBe(controller.signal);
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer search-token');
+  });
+
+  it('omits the limit query param when no limit is passed', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ results: [] }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await searchConversations('mitochondria');
+
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/conversations/search?q=mitochondria');
   });
 });

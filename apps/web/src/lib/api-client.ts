@@ -222,6 +222,32 @@ export function apiDelete(path: string): Promise<void> {
   return api<void>(path, { method: 'DELETE' });
 }
 
+export interface ConversationSearchResult {
+  id: string;
+  title: string;
+  updatedAt: string;
+  matchedIn: 'title' | 'content';
+  snippet: string | null;
+}
+
+export interface ConversationSearchResponse {
+  results: ConversationSearchResult[];
+}
+
+export function searchConversations(
+  q: string,
+  limit?: number,
+  signal?: AbortSignal
+): Promise<ConversationSearchResponse> {
+  const params = new URLSearchParams({ q });
+  if (limit !== undefined) params.set('limit', String(limit));
+  return api<ConversationSearchResponse>(`/conversations/search?${params.toString()}`, {
+    method: 'GET',
+    signal,
+    skipCache: true,
+  });
+}
+
 /**
  * Initiates an SSE stream. Returns a Response that the caller must read
  * with `res.body.getReader()` or similar. Rejects on non-2xx before streaming.

@@ -99,6 +99,16 @@
       "older": "Anteriores"
     }
   },
+  "search": {
+    "aria": "Buscar conversaciones",
+    "placeholder": "Buscar en títulos y mensajes…",
+    "typeToSearch": "Escribe para buscar en tus conversaciones.",
+    "loading": "Buscando…",
+    "noResults": "Sin resultados para «{{query}}».",
+    "kbdHint": "Presiona {{shortcut}} para buscar",
+    "resultCount_one": "{{count}} resultado",
+    "resultCount_other": "{{count}} resultados"
+  },
   "chat": {
     "auto": "Auto",
     "incognitoChip": "Incógnito · no se guarda",

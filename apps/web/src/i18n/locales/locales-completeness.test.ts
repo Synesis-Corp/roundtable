@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import en from './en.json';
 import es from './es.json';
 
@@ -43,4 +45,78 @@ describe('i18n locales — completeness', () => {
     expect(value).toBeTypeOf('string');
     expect((value as string).length).toBeGreaterThan(0);
   });
+
+  it('search namespace has the same keys in English and Spanish', () => {
+    const enKeys = Object.keys(en.search).sort();
+    const esKeys = Object.keys(es.search).sort();
+    expect(esKeys).toEqual(enKeys);
+  });
+
+  it('locale JSON files do not contain duplicate keys at the same object level', () => {
+    const localeDir = path.resolve(__dirname);
+    for (const fileName of ['en.json', 'es.json']) {
+      const raw = fs.readFileSync(path.join(localeDir, fileName), 'utf8');
+      const duplicates = findDuplicateJsonKeys(raw);
+      expect(duplicates, `${fileName} duplicate keys`).toEqual([]);
+    }
+  });
 });
+
+function findDuplicateJsonKeys(raw: string): string[] {
+  const duplicates: string[] = [];
+  const stack: Array<{ path: string; keys: Set<string> }> = [];
+  let i = 0;
+
+  while (i < raw.length) {
+    const char = raw[i];
+    if (char === '{') {
+      stack.push({ path: stack.at(-1)?.path ?? '$', keys: new Set() });
+      i++;
+      continue;
+    }
+    if (char === '}') {
+      stack.pop();
+      i++;
+      continue;
+    }
+    if (char !== '"') {
+      i++;
+      continue;
+    }
+
+    const start = i;
+    i++;
+    let value = '';
+    while (i < raw.length) {
+      if (raw[i] === '\\') {
+        value += raw.slice(i, i + 2);
+        i += 2;
+        continue;
+      }
+      if (raw[i] === '"') break;
+      value += raw[i];
+      i++;
+    }
+    i++;
+
+    let cursor = i;
+    while (/\s/.test(raw[cursor] ?? '')) cursor++;
+    if (raw[cursor] !== ':') continue;
+
+    const current = stack.at(-1);
+    if (!current) continue;
+    if (current.keys.has(value)) duplicates.push(`${current.path}.${value}`);
+    current.keys.add(value);
+
+    cursor++;
+    while (/\s/.test(raw[cursor] ?? '')) cursor++;
+    if (raw[cursor] === '{') {
+      stack.push({ path: `${current.path}.${value}`, keys: new Set() });
+      i = cursor + 1;
+    } else {
+      i = Math.max(i, start + 1);
+    }
+  }
+
+  return duplicates;
+}

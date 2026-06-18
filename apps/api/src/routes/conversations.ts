@@ -8,8 +8,26 @@ import { validateBody } from '../middleware/validate';
 import { selectConfiguredProvider } from '../lib/select-provider';
 import { generateConversationTitle } from '../lib/title';
 import { streamHub } from '../lib/stream-hub';
+import { searchConversations } from '../lib/conversation-search';
 
 const router = Router();
+
+// Full-text search endpoint — MUST be registered BEFORE /:id so Express does
+// not match the literal string "search" as a conversation ID param.
+
+router.get('/search', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  try {
+    const rawQ = typeof req.query.q === 'string' ? req.query.q : '';
+    const rawLimit = Number(req.query.limit);
+    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 50) : 20;
+
+    const results = await searchConversations(req.userId!, rawQ, limit);
+    res.json({ results });
+  } catch (err) {
+    req.log?.error({ err }, 'failed to search conversations');
+    res.status(500).json({ error: 'Failed to search conversations' });
+  }
+});
 
 // Local to the route — a rename only ever touches the title. Kept here (not in
 // @chat/sdk) so it doesn't require rebuilding the package's dist to be picked up.

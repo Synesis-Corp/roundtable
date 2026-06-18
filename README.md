@@ -55,6 +55,7 @@ Docker keeps the legacy default database name `chatia` unless `POSTGRES_DB` is s
 | JWT auth (email/password) + **refresh token (httpOnly cookie)** | ✅ |
 | **Sign in with Google** | ✅ |
 | Conversation management (**rename** + **AI re-title** + **soft delete**) | ✅ |
+| Conversation search (Postgres FTS over titles + message content; ⌘K overlay) | ✅ |
 | Encrypted API key storage (AES-256-GCM) | ✅ |
 | OpenAI Codex / ChatGPT Plus OAuth | ✅ |
 | Capability-based routing with fallbacks | ✅ |

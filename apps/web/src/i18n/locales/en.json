@@ -101,6 +101,16 @@
       "older": "Older"
     }
   },
+  "search": {
+    "aria": "Search conversations",
+    "placeholder": "Search titles and messages…",
+    "typeToSearch": "Type to search your conversations.",
+    "loading": "Searching…",
+    "noResults": "No results for «{{query}}».",
+    "kbdHint": "Press {{shortcut}} to search",
+    "resultCount_one": "{{count}} result",
+    "resultCount_other": "{{count}} results"
+  },
   "chat": {
     "auto": "Auto",
     "incognitoChip": "Incognito · not saved",

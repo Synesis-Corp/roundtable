@@ -15,6 +15,7 @@ import { SidebarTopbarToggles } from './SidebarTopbarToggles';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { RenameModal } from './RenameModal';
 import { KeyboardShortcutsController } from './KeyboardShortcutsController';
+import { SearchOverlay } from './SearchOverlay';
 import { ComposerFocusProvider } from '../lib/composer-focus';
 
 export default function Layout() {
@@ -26,17 +27,7 @@ export default function Layout() {
   const { token, userName, handleLogout } = useAuthSession();
   const { profile } = useProfile();
   const { streaming, setStreaming, confirmLeaveIfStreaming } = useStreamingGuard();
-  const {
-    mobileOpen,
-    setMobileOpen,
-    desktopCollapsed,
-    toggleDesktopCollapsed,
-    searchOpen,
-    searchQuery,
-    setSearchQuery,
-    searchInputRef,
-    toggleSearch,
-  } = useSidebarUi();
+  const { mobileOpen, setMobileOpen, desktopCollapsed, toggleDesktopCollapsed } = useSidebarUi();
   const {
     conversations,
     loadingConversations,
@@ -63,18 +54,13 @@ export default function Layout() {
     navigate('/', { state: { newChatAt } });
   };
 
-  // Filter the conversation history by title when a search is active.
-  const query = searchQuery.trim().toLowerCase();
-  const filteredConversations = query
-    ? conversations.filter((c) => c.title.toLowerCase().includes(query))
-    : conversations;
-
   // Sidebar visible on desktop unless explicitly collapsed.
   const showFullSidebar = !desktopCollapsed;
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--bg-app)' }}>
       <KeyboardShortcutsController />
+      <SearchOverlay />
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -142,21 +128,15 @@ export default function Layout() {
           </button>
         </div>
 
-        <SidebarSearch
-          searchOpen={searchOpen}
-          searchQuery={searchQuery}
-          searchInputRef={searchInputRef}
-          onQueryChange={setSearchQuery}
-          onToggle={toggleSearch}
-        />
+        <SidebarSearch />
 
         {/* Conversation history */}
         {token && (
           <ConversationList
             loadingConversations={loadingConversations}
             conversations={conversations}
-            filteredConversations={filteredConversations}
-            searchQuery={searchQuery}
+            filteredConversations={conversations}
+            searchQuery=""
             activeConversationId={activeConversationId}
             chatActive={activeConversationId !== null}
             confirmLeaveIfStreaming={confirmLeaveIfStreaming}
