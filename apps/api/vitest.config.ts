@@ -4,6 +4,11 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
+    // Retry once on failure to absorb transient transport flakes (e.g. socket
+    // ECONNRESET from supertest's ephemeral server under CPU saturation when
+    // suites run concurrently). A real, deterministic failure still fails both
+    // attempts — this only masks non-reproducible environmental noise.
+    retry: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

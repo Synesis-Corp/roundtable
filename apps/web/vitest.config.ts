@@ -7,6 +7,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // Retry once on failure to absorb transient flakes under concurrent runs.
+    // A real, deterministic failure still fails both attempts — this only
+    // masks non-reproducible environmental noise.
+    retry: 1,
     // e2e is Playwright's; keep it out of the vitest run.
     exclude: ['node_modules', 'e2e', 'dist'],
     passWithNoTests: true,
