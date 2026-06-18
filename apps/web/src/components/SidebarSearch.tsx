@@ -84,7 +84,7 @@ export function SidebarSearch({
             onClick={onToggle}
             aria-expanded={false}
             aria-label={t('shell.searchAria')}
-            className="w-full text-left transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
+            className="w-full text-left transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)] select-none"
             style={{
               fontSize: 13,
               fontWeight: 500,

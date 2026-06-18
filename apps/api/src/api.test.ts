@@ -510,6 +510,124 @@ describe('API Integration', () => {
       expect(errorEvent?.error).toBe('Provider API failure');
     });
 
+    it('auto-retries with the next candidate when the upstream rejects the primary on iteration (Post-deploy #1 v2)', async () => {
+      // The router ranks a phantom primary (gpt-5.2-pro — known to Models.dev
+      // but not actually released) ahead of a real fallback. The upstream 404 /
+      // "not a chat model" surfaces while CONSUMING the async-generator stream,
+      // NOT when streamChat() is invoked — so the retry must fire from inside
+      // the for-await. (The previous fix only wrapped the synchronous call,
+      // which never throws for async generators: it was dead code.)
+      vi.mocked(route).mockReturnValueOnce({
+        primary: { provider: 'openai', modelId: 'gpt-5.2-pro' },
+        fallbacks: [{ provider: 'openai', modelId: 'gpt-4o' }],
+      } as never);
+
+      // First resolution (primary) → a stream that rejects on first .next()
+      // before emitting any token. Second (fallback) → streams a real answer.
+      vi.mocked(getProvider)
+        .mockReturnValueOnce({
+          id: 'openai',
+          streamChat: vi.fn(async function* () {
+            await Promise.reject(
+              new Error(
+                'This is not a chat model and thus not supported in the v1/chat/completions endpoint. Did you mean to use v1/completions?'
+              )
+            );
+            yield { token: '', model: 'gpt-5.2-pro', provider: 'openai', isFinished: true };
+          }),
+        } as never)
+        .mockReturnValueOnce({
+          id: 'openai',
+          streamChat: vi.fn(async function* () {
+            yield { token: 'Real', model: 'gpt-4o', provider: 'openai', isFinished: false };
+            yield {
+              token: ' answer',
+              model: 'gpt-4o',
+              provider: 'openai',
+              isFinished: true,
+              usage: { inputTokens: 4, outputTokens: 6, totalTokens: 10 },
+            };
+          }),
+        } as never);
+
+      const res = await request(app)
+        .post('/chat/stream')
+        .set({ ...authHeader, 'Content-Type': 'application/json' })
+        .send({
+          messages: [{ role: 'user', content: 'Hola' }],
+          preferences: { incognito: true },
+        })
+        .buffer(true)
+        .parse((response, cb) => {
+          let data = '';
+          response.on('data', (chunk: Buffer) => {
+            data += chunk.toString();
+          });
+          response.on('end', () => cb(null, data));
+        });
+
+      expect(res.status).toBe(200);
+      const events = parseSSE(res.body as string);
+      // No error event surfaced to the user: the retry swapped models cleanly.
+      expect(events.find((event) => event.error)).toBeUndefined();
+      // The fallback model's real answer reached the client.
+      const text = events.map((event) => event.token ?? '').join('');
+      expect(text).toContain('Real answer');
+    });
+
+    it('does NOT retry once tokens have already streamed (avoids duplicated output)', async () => {
+      // If the model emits content and THEN errors, retrying would duplicate
+      // what the user already saw. The guard must surface the error instead.
+      vi.mocked(route).mockReturnValueOnce({
+        primary: { provider: 'openai', modelId: 'gpt-4o' },
+        fallbacks: [{ provider: 'openai', modelId: 'deepseek-chat' }],
+      } as never);
+
+      vi.mocked(getProvider)
+        .mockReturnValueOnce({
+          id: 'openai',
+          streamChat: vi.fn(async function* () {
+            yield { token: 'Half', model: 'gpt-4o', provider: 'openai', isFinished: false };
+            throw new Error('model gpt-4o does not exist');
+          }),
+        } as never)
+        .mockReturnValueOnce({
+          id: 'deepseek',
+          streamChat: vi.fn(async function* () {
+            yield {
+              token: 'SHOULD-NOT-APPEAR',
+              model: 'deepseek-chat',
+              provider: 'deepseek',
+              isFinished: true,
+            };
+          }),
+        } as never);
+
+      const res = await request(app)
+        .post('/chat/stream')
+        .set({ ...authHeader, 'Content-Type': 'application/json' })
+        .send({
+          messages: [{ role: 'user', content: 'Hola' }],
+          preferences: { incognito: true },
+        })
+        .buffer(true)
+        .parse((response, cb) => {
+          let data = '';
+          response.on('data', (chunk: Buffer) => {
+            data += chunk.toString();
+          });
+          response.on('end', () => cb(null, data));
+        });
+
+      expect(res.status).toBe(200);
+      const events = parseSSE(res.body as string);
+      // The partial token is kept; the error is surfaced; no swap to the fallback.
+      const text = events.map((event) => event.token ?? '').join('');
+      expect(text).toContain('Half');
+      expect(text).not.toContain('SHOULD-NOT-APPEAR');
+      expect(events.find((event) => event.error)).toBeDefined();
+    });
+
     it('persists the partial answer when the stream breaks mid-way (P.2)', async () => {
       vi.mocked(getProvider).mockReturnValueOnce({
         chat: vi.fn(() =>
@@ -1329,6 +1447,43 @@ describe('API Integration', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('openai, anthropic');
+    });
+
+    it('returns 422 with a clear error when Auto can only pick completion-only models (Post-deploy #1)', async () => {
+      // The router's defense-in-depth message — the API endpoint must map it
+      // to a 422 with a user-facing explanation, not a 500 with the raw
+      // string from the upstream provider.
+      vi.mocked(route).mockImplementationOnce(() => {
+        throw new Error('No capable chat models available for this request');
+      });
+
+      const res = await request(app)
+        .post('/chat')
+        .set(authHeader)
+        .send({ messages: [{ role: 'user', content: 'hola' }] });
+
+      expect(res.status).toBe(422);
+      expect(res.body.error).toMatch(/chat/i);
+      expect(res.body.error).not.toContain('v1/completions');
+    });
+
+    it('returns 422 in the same way on POST /chat/stream (Post-deploy #1)', async () => {
+      // The router rejects Auto before SSE headers are even set on the
+      // stream endpoint (the throw happens in the route setup, before
+      // res.setHeader). The client gets a 422 with the same friendly
+      // message the non-stream endpoint returns — it can show it before
+      // it tries to read an event stream.
+      vi.mocked(route).mockImplementationOnce(() => {
+        throw new Error('No capable chat models available for this request');
+      });
+
+      const res = await request(app)
+        .post('/chat/stream')
+        .set({ ...authHeader, 'Content-Type': 'application/json' })
+        .send({ messages: [{ role: 'user', content: 'hola' }] });
+
+      expect(res.status).toBe(422);
+      expect(res.body.error).toMatch(/chat/i);
     });
   });
 

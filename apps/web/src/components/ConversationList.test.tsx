@@ -25,6 +25,7 @@ function renderList(activeId: string | null, convs: Conversation[]) {
         filteredConversations={convs}
         searchQuery=""
         activeConversationId={activeId}
+        chatActive={activeId !== null}
         confirmLeaveIfStreaming={() => true}
         onCloseMobile={vi.fn()}
         onOpenRename={vi.fn()}
@@ -99,6 +100,7 @@ describe('ConversationList — Recent header (Capability 6)', () => {
           filteredConversations={[]}
           searchQuery="zzz"
           activeConversationId={null}
+          chatActive={false}
           confirmLeaveIfStreaming={() => true}
           onCloseMobile={vi.fn()}
           onOpenRename={vi.fn()}
@@ -227,5 +229,97 @@ describe('ConversationList — incognito dim (Capability 3)', () => {
     // After exit, the buttons must NOT carry pointer-events: none.
     // (The inline style may be empty string if we conditionally set it.)
     expect(renameBtn.style.pointerEvents).not.toBe('none');
+  });
+});
+
+// ─── Post-deploy #2 — Conditional incognito notice (welcome vs chat) ───────
+
+describe('ConversationList — post-deploy #2 conditional incognito notice', () => {
+  it('shows the "welcome" variant when incognito is on AND chatActive is false', () => {
+    renderList(null, [makeConv({ id: 'c-1', title: 'Hello' })]);
+    enterIncognito();
+    expect(
+      screen.getByText(/incognito active — these chats are not affected/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/incognito — this chat won't be saved/i)).not.toBeInTheDocument();
+  });
+
+  it('shows the "chat" variant when incognito is on AND a chat is active', () => {
+    renderList('c-1', [makeConv({ id: 'c-1', title: 'Hello' })]);
+    enterIncognito();
+    expect(screen.getByText(/incognito — this chat won't be saved/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/incognito active — these chats are not affected/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it('hides the notice entirely when incognito is off, regardless of chatActive', () => {
+    renderList('c-1', [makeConv({ id: 'c-1', title: 'Hello' })]);
+    expect(
+      screen.queryByText(/incognito active — these chats are not affected/i)
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/incognito — this chat won't be saved/i)).not.toBeInTheDocument();
+  });
+});
+
+// ─── Post-deploy #4 — user-select: none on UI chrome ──────────────────────
+
+describe('ConversationList — post-deploy #4 user-select chrome', () => {
+  it('Recent header has class "select-none"', () => {
+    renderList(null, [makeConv({ id: 'c-1', title: 'Hello' })]);
+    // The "Recent" text is inside a <div className="...select-none"> — find
+    // that wrapper directly via testid-style class match.
+    const recentWrapper = screen.getByText('Recent').closest('.select-none');
+    expect(recentWrapper).not.toBeNull();
+  });
+
+  it('date group label (HOY/AYER/etc) has class "select-none"', () => {
+    // A conversation from years ago falls in the "Older" group, which gets
+    // its own label rendered (the global "Recent" header only suppresses
+    // the first group's label).
+    const old = makeConv({
+      id: 'c-old',
+      title: 'Old',
+      updatedAt: '2020-01-15T00:00:00Z',
+    });
+    const recent = makeConv({
+      id: 'c-recent',
+      title: 'Recent',
+      updatedAt: new Date().toISOString(),
+    });
+    render(
+      <MemoryRouter>
+        <ConversationList
+          loadingConversations={false}
+          conversations={[recent, old]}
+          filteredConversations={[recent, old]}
+          searchQuery=""
+          activeConversationId={null}
+          chatActive={false}
+          confirmLeaveIfStreaming={() => true}
+          onCloseMobile={vi.fn()}
+          onOpenRename={vi.fn()}
+          onRequestDelete={vi.fn()}
+        />
+      </MemoryRouter>
+    );
+    // Find any uppercase label (the older group has a date-style label).
+    const groupLabels = document.querySelectorAll('div.uppercase');
+    expect(groupLabels.length).toBeGreaterThan(0);
+    const label = groupLabels[0] as HTMLElement;
+    expect(label.className).toContain('select-none');
+  });
+
+  it('incognito notice has class "select-none"', () => {
+    renderList(null, [makeConv({ id: 'c-1', title: 'Hello' })]);
+    enterIncognito();
+    const notice = screen.getByTestId('incognito-dim-notice');
+    expect(notice.className).toContain('select-none');
+  });
+
+  it('conversation title is selectable (no select-none on the link)', () => {
+    renderList('c-1', [makeConv({ id: 'c-1', title: 'Hello' })]);
+    const link = screen.getByText('Hello').closest('a')!;
+    expect(link.className).not.toContain('select-none');
   });
 });

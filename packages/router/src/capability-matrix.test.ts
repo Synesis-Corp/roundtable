@@ -110,6 +110,97 @@ describe('ProviderCapabilityMatrix — openrouter (custom models)', () => {
     expect(isCouncilEligible('openrouter', 'anthropic/claude-3-sonnet')).toBe(true);
     expect(isCouncilEligible('openrouter', 'deepseek/deepseek-chat')).toBe(true);
   });
+
+  it('excludes known completion-only models from every chat use case (Post-deploy #1)', () => {
+    // The user hit this in prod: Auto picked `openai/gpt-3.5-turbo-instruct`
+    // (completion-only, hits /v1/completions not /v1/chat/completions) routed
+    // through OpenRouter. The upstream returned an opaque "not a chat model"
+    // error. Curated list — only well-known completion models go here; chat
+    // models on OpenRouter (even "-instruct" suffix) stay eligible.
+    const completionOnly = [
+      'openai/gpt-3.5-turbo-instruct',
+      'openai/davinci-002',
+      'openai/babbage-002',
+      'openai/text-davinci-002',
+      'openai/text-davinci-003',
+      'openai/ada',
+      'openai/curie',
+      'openai/text-ada-001',
+      'openai/text-curie-001',
+    ];
+    for (const modelId of completionOnly) {
+      for (const uc of ['council', 'single', 'multi', 'title', 'memory-extraction'] as const) {
+        expect(isUseCaseEligible('openrouter', modelId, uc), `${modelId}:${uc}`).toBe(false);
+      }
+    }
+  });
+
+  it('excludes phantom / not-yet-released OpenAI models (Post-deploy #1 v2, 2026-06-18)', () => {
+    // The user hit this NEXT: Auto picked `openai/gpt-5.2-pro` (a phantom
+    // "próximamente" model listed in Models.dev but not yet released by
+    // OpenAI) and got a 404 with a misleading "This is not a chat model"
+    // message. We now block the well-known phantoms at the router. The
+    // runtime retry loop in `runChatGeneration` (apps/api/src/routes/chat.ts)
+    // handles any future phantom that slips past this list.
+    const phantoms = [
+      'openai/gpt-5.2-pro',
+      'openai/gpt-5.2',
+      'openai/gpt-5.1-pro',
+      'openai/gpt-5.1',
+      'openai/gpt-5-pro',
+      'openai/gpt-4.7',
+      'openai/gpt-4.6',
+      'openai/gpt-4.5-preview',
+      'openai/gpt-4.5',
+      'openai/o3-pro',
+      'openai/o3-mini-high',
+      'openai/o4-mini',
+      'openai/o4',
+    ];
+    for (const modelId of phantoms) {
+      for (const uc of ['council', 'single', 'multi', 'title', 'memory-extraction'] as const) {
+        expect(isUseCaseEligible('openrouter', modelId, uc), `${modelId}:${uc}`).toBe(false);
+      }
+    }
+  });
+
+  it('excludes embedding models from openrouter (cannot produce chat completions)', () => {
+    const embeddings = [
+      'openai/text-embedding-3-small',
+      'openai/text-embedding-3-large',
+      'openai/text-embedding-ada-002',
+    ];
+    for (const modelId of embeddings) {
+      for (const uc of ['council', 'single', 'multi', 'title', 'memory-extraction'] as const) {
+        expect(isUseCaseEligible('openrouter', modelId, uc), `${modelId}:${uc}`).toBe(false);
+      }
+    }
+  });
+
+  it('keeps chat models on OpenRouter eligible even when name ends in -instruct', () => {
+    // Regression guard: a blanket "ends with -instruct" rule would kill
+    // legitimate chat models. Only the curated completion-only list is excluded.
+    expect(isUseCaseEligible('openrouter', 'mistralai/mistral-7b-instruct', 'single')).toBe(true);
+    expect(isUseCaseEligible('openrouter', 'meta-llama/llama-3-8b-instruct', 'single')).toBe(true);
+  });
+
+  it('keeps REAL OpenAI chat models eligible (regression guard for the phantom exclusion)', () => {
+    // The phantom exclusion list targets gpt-5.2+ and gpt-4.5+ that don't
+    // exist. Make sure we DIDN'T accidentally exclude real models.
+    const realModels = [
+      'gpt-4o',
+      'gpt-4-turbo',
+      'gpt-3.5-turbo', // the chat one, not the instruct one
+      'o1',
+      'o1-mini',
+      'o3-mini',
+    ];
+    for (const modelId of realModels) {
+      for (const uc of ['council', 'single', 'multi', 'title', 'memory-extraction'] as const) {
+        expect(isUseCaseEligible('openai', modelId, uc), `openai:${modelId}:${uc}`).toBe(true);
+      }
+    }
+  });
 });
 
 describe('ProviderCapabilityMatrix — deepseek', () => {

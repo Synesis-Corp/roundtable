@@ -71,7 +71,12 @@ export function route(request: ChatRequest, preferences?: UserPreference): Routi
   if (candidates.length === 0) {
     const textFallbacks = findCapableModels(['text'], []).filter(eligible);
     if (textFallbacks.length === 0) {
-      throw new Error('No capable models available');
+      // Use a recognizable message so API endpoints can map this to a 422
+      // with a clear user-facing error (Post-deploy #1: surfacing a clear
+      // "no chat-capable model" message instead of an opaque upstream error
+      // when Auto's only options are completion-only models like
+      // openai/gpt-3.5-turbo-instruct routed through openrouter).
+      throw new Error('No capable chat models available for this request');
     }
     return { primary: textFallbacks[0], fallbacks: textFallbacks.slice(1) };
   }

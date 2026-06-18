@@ -105,6 +105,71 @@ describe('router', () => {
     expect(multi).toHaveLength(2);
   });
 
+  it('Auto skips a completion-only openrouter model when chat models are available (Post-deploy #1)', () => {
+    // User reported: Auto picked `openai/gpt-3.5-turbo-instruct` (completion
+    // model) routed through openrouter, surfacing a raw upstream error.
+    // The capability matrix must exclude it from single/multi chat routing.
+    registerModel({
+      modelId: 'openai/gpt-3.5-turbo-instruct',
+      provider: 'openrouter',
+      modalities: ['text'],
+      features: [],
+    });
+    registerModel({
+      modelId: 'anthropic/claude-3-sonnet',
+      provider: 'openrouter',
+      modalities: ['text'],
+      features: ['tool-use'],
+    });
+
+    const decision = route({ messages: [{ role: 'user', content: 'hola' }], model: 'gpt-4o' });
+
+    const allPicked = [decision.primary, ...(decision.fallbacks ?? [])].map((m) => m.modelId);
+    expect(allPicked).toContain('anthropic/claude-3-sonnet');
+    expect(allPicked).not.toContain('openai/gpt-3.5-turbo-instruct');
+  });
+
+  it('Auto picks a chat-capable openrouter model even when the completion-only one is alphabetically first (Post-deploy #1)', () => {
+    // Alphabetical order is irrelevant — eligibility comes from the matrix.
+    registerModel({
+      modelId: 'anthropic/claude-3-sonnet',
+      provider: 'openrouter',
+      modalities: ['text'],
+      features: ['tool-use'],
+    });
+    registerModel({
+      modelId: 'openai/davinci-002',
+      provider: 'openrouter',
+      modalities: ['text'],
+      features: [],
+    });
+
+    const decision = route({ messages: [{ role: 'user', content: 'hi' }], model: 'gpt-4o' });
+
+    expect(decision.primary.modelId).toBe('anthropic/claude-3-sonnet');
+  });
+
+  it('throws "No capable models available" when only completion-only models are registered (Post-deploy #1)', () => {
+    registerModel({
+      modelId: 'openai/gpt-3.5-turbo-instruct',
+      provider: 'openrouter',
+      modalities: ['text'],
+      features: [],
+    });
+    registerModel({
+      modelId: 'openai/davinci-002',
+      provider: 'openrouter',
+      modalities: ['text'],
+      features: [],
+    });
+
+    // The route() contract: throw a recognizable error so the API endpoint
+    // can surface a clear 422 to the user instead of an opaque 500.
+    expect(() => route({ messages: [{ role: 'user', content: 'hi' }], model: 'gpt-4o' })).toThrow(
+      /No capable chat models available/
+    );
+  });
+
   it('returns model-specific effort variants for OpenAI reasoning models', () => {
     const spec = getEffortSpec('openai', 'gpt-5.5', {
       apiId: 'gpt-5.5',

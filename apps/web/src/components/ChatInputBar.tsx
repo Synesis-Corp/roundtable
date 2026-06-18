@@ -492,7 +492,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
         </div>
 
         {/* Bottom toolbar: attach, segmented, spacer, model, send */}
-        <div className="flex items-center pt-3 gap-2">
+        <div className="flex items-center pt-3 gap-2 select-none">
           {/* Attach */}
           <button
             type="button"

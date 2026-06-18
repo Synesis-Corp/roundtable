@@ -4,7 +4,7 @@ import { prisma } from '../lib/db';
 import { route } from '@chat/router';
 import type { ChatRequest, Message, ProviderPlugin } from '@chat/sdk';
 import { ensureValidMessages } from '../lib/validate-messages';
-import { selectConfiguredProvider } from '../lib/select-provider';
+import { selectConfiguredProvider, selectAllConfiguredProviders } from '../lib/select-provider';
 import { authMiddleware, type AuthenticatedRequest } from '../middleware/auth';
 import { getModelEffortSpec } from '../services/model-registry';
 import { uploadFiles, parseMultipartBody } from '../lib/multipart';
@@ -19,6 +19,51 @@ import { recordUsageEvent } from '../lib/usage-events';
 import { extractMemoriesFromExchange, persistExtractedMemories } from '../lib/memory-extractor';
 
 const router = Router();
+
+/**
+ * Defense-in-depth for Post-deploy #1: the router refuses to route to a model
+ * that isn't chat-capable and throws a recognizable error. We convert that
+ * into a 422 with a clear user-facing message instead of letting it bubble as
+ * a generic 500 or the opaque upstream "v1/completions" error the user would
+ * otherwise see. Caller picks the language (English for now; i18n pending).
+ */
+export function isNoChatModelsError(err: unknown): boolean {
+  return err instanceof Error && /No capable chat models available/i.test(err.message);
+}
+
+/**
+ * Post-deploy #1 v2: the upstream provider returns 404 with the message
+ * "This is not a chat model and thus not supported in the v1/chat/completions
+ * endpoint. Did you mean to use v1/completions?" when the router picks a model
+ * the provider doesn't actually have (a phantom / "próximamente" model from
+ * Models.dev that the registry knows about but OpenAI hasn't released yet,
+ * e.g. `gpt-5.2-pro`).
+ *
+ * The router's curated `modelExclusions` covers the known phantoms, but new
+ * ones can appear at any time. We detect the upstream 404 + that message
+ * pattern and trigger an automatic retry with the next ranked candidate.
+ * This makes Auto robust without needing the exclusion list to be exhaustive.
+ *
+ * Other patterns covered (defense-in-depth): the upstream may return the same
+ * shape for actual completion-only models that slipped past the registry
+ * (e.g. a brand-new instruct variant). The same retry path handles them.
+ */
+export function isUpstreamModelNotFoundError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message;
+  return (
+    /not a chat model/i.test(msg) ||
+    /model .* does not exist/i.test(msg) ||
+    /model not found/i.test(msg) ||
+    /unknown model/i.test(msg) ||
+    /invalid model/i.test(msg)
+  );
+}
+
+/** Cap of automatic model-fallback retries per request. Hard-coded to keep
+ *  the failure-mode obvious in logs; if you need more, think about why the
+ *  exclusion list isn't catching the bad models. */
+export const MAX_MODEL_RETRIES = 3;
 
 function normalizeIncognitoPreference(
   preferences: unknown
@@ -63,6 +108,22 @@ interface ChatGenerationContext {
   userMessageContent: string;
   startTime: number;
   log: AuthenticatedRequest['log'];
+  /**
+   * Additional ranked candidates to try if the primary model fails with an
+   * upstream 404 / "not a chat model" / "model not found" error (Post-deploy
+   * #1 v2, 2026-06-18). Each entry is the full provider + credential + model
+   * already resolved up front, so the retry is a no-op for the database /
+   * provider lookup.
+   *
+   * Empty array (the common case) = no fallback available. The retry loop in
+   * `runChatGeneration` walks these in order (capped at `MAX_MODEL_RETRIES`)
+   * and only swaps while no chunk has been streamed to the user yet.
+   */
+  fallbackCandidates?: Array<{
+    provider: ProviderPlugin;
+    credential: RuntimeProviderCredential;
+    modelId: string;
+  }>;
 }
 
 /**
@@ -134,72 +195,144 @@ async function runChatGeneration(ctx: ChatGenerationContext): Promise<void> {
       : { type: 'conversation.created', conversationId }
   );
 
-  let stream;
-  try {
-    // Build the tools once per request and pass them to the provider. When
-    // the provider yields tool-call/tool-result chunks, we publish them as
-    // dedicated SSE events so the UI can render the "searched the web" chip.
-    // The cast widens `Record<string, unknown>` to the SDK's ToolSet
-    // (Record<string, Tool>); the runtime shape is identical.
-    const tools = buildChatTools({
-      sandboxRunner: getDefaultSandboxRunner(),
-    }) as Parameters<ProviderPlugin['streamChat']>[3];
-    stream = provider.streamChat(request, credential.apiKey, signal, tools);
-  } catch (streamErr) {
-    log.error({ err: streamErr }, 'chat stream: failed to start');
-    streamHub.publish(session, {
-      error: streamErr instanceof Error ? streamErr.message : 'Failed to start stream',
-    });
-    streamHub.finish(session, 'error');
-    return;
-  }
+  // Build the tools once per request and pass them to the provider. When the
+  // provider yields tool-call/tool-result chunks, we publish them as dedicated
+  // SSE events so the UI can render the "searched the web" chip. The cast
+  // widens `Record<string, unknown>` to the SDK's ToolSet (Record<string,
+  // Tool>); the runtime shape is identical.
+  const tools = buildChatTools({
+    sandboxRunner: getDefaultSandboxRunner(),
+  }) as Parameters<ProviderPlugin['streamChat']>[3];
 
-  try {
-    for await (const chunk of stream) {
-      usageProviderId = chunk.provider;
-      usageModelId = chunk.model;
-      fullContent += chunk.token ?? '';
-      fullReasoning += chunk.reasoning ?? '';
-      if (chunk.token) tokenCount++;
-      if (chunk.isFinished && chunk.usage) streamUsage = chunk.usage;
-      if (chunk.toolCall) {
-        toolCalls.push({ name: chunk.toolCall.name, args: chunk.toolCall.args });
-        streamHub.publish(session, {
-          type: 'tool.call',
-          name: chunk.toolCall.name,
-          args: chunk.toolCall.args,
-        });
-      } else if (chunk.toolResult) {
-        const idx = toolCalls.map((c) => c.name).lastIndexOf(chunk.toolResult.name);
-        if (idx === -1) {
-          toolCalls.push({ name: chunk.toolResult.name, result: chunk.toolResult.result });
-        } else {
-          toolCalls[idx] = { ...toolCalls[idx]!, result: chunk.toolResult.result };
-        }
-        streamHub.publish(session, {
-          type: 'tool.result',
-          name: chunk.toolResult.name,
-          result: chunk.toolResult.result,
-        });
-      } else {
-        streamHub.publish(session, chunk);
+  // Post-deploy #1 v2 (2026-06-18): the upstream "not a chat model" / 404 from
+  // a phantom model (e.g. gpt-5.2-pro — listed in Models.dev but not actually
+  // released by OpenAI) surfaces while CONSUMING the async-generator stream,
+  // NOT when streamChat() is called (invoking an async generator runs none of
+  // its body). So the retry MUST wrap the `for await`, not just the call. We
+  // attempt the primary first, then each pre-resolved fallback candidate, and
+  // swap silently as long as nothing has been streamed to the user yet — a
+  // clean swap with zero duplicated tokens. Once any chunk has been emitted we
+  // never retry (we'd duplicate output); the error is surfaced as-is.
+  const attempts = [{ provider, credential, modelId }, ...(ctx.fallbackCandidates ?? [])];
+  const maxAttempts = Math.min(attempts.length, MAX_MODEL_RETRIES + 1);
+
+  let streamed = false; // flips true the moment we receive any chunk
+  let finishedOk = false;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const candidate = attempts[attempt]!;
+    const isLastAttempt = attempt === maxAttempts - 1;
+    // Record usage against whatever model actually ran (overwritten per chunk).
+    usageProviderId = candidate.provider.id;
+    usageModelId = candidate.modelId;
+
+    let stream;
+    try {
+      // Re-point the request at the candidate model: providers route off
+      // request.model (e.g. `client(request.model)`), so a fallback MUST
+      // override it or it would just re-hit the same phantom model.
+      stream = candidate.provider.streamChat(
+        { ...request, model: candidate.modelId },
+        candidate.credential.apiKey,
+        signal,
+        tools
+      );
+    } catch (streamErr) {
+      // Constructing the generator threw synchronously (rare, but defensive):
+      // same retry rules as an iteration error.
+      if (!streamed && !isLastAttempt && isUpstreamModelNotFoundError(streamErr)) {
+        log.warn(
+          {
+            originalModel: candidate.modelId,
+            fallbackModel: attempts[attempt + 1]!.modelId,
+            attempt: attempt + 1,
+            maxRetries: MAX_MODEL_RETRIES,
+          },
+          'chat stream: model rejected by upstream on open; retrying with fallback'
+        );
+        continue;
       }
-      if (chunk.isFinished) break;
-      if (fullContent && Date.now() - lastFlushAt > 750) await flushPartial();
-    }
-  } catch (err) {
-    // Explicit stop (abort): keep whatever was generated, end cleanly.
-    if (signal.aborted) {
-      log.info('chat stream: generation aborted');
-      if (fullContent) await flushPartial();
-      streamHub.finish(session, 'done');
+      log.error({ err: streamErr }, 'chat stream: failed to start');
+      streamHub.publish(session, {
+        error: streamErr instanceof Error ? streamErr.message : 'Failed to start stream',
+      });
+      streamHub.finish(session, 'error');
       return;
     }
-    log.error({ err }, 'chat stream error');
-    if (fullContent) await flushPartial();
-    streamHub.publish(session, {
-      error: err instanceof Error ? err.message : 'Stream interrupted',
-    });
+
+    try {
+      for await (const chunk of stream) {
+        streamed = true;
+        usageProviderId = chunk.provider;
+        usageModelId = chunk.model;
+        fullContent += chunk.token ?? '';
+        fullReasoning += chunk.reasoning ?? '';
+        if (chunk.token) tokenCount++;
+        if (chunk.isFinished && chunk.usage) streamUsage = chunk.usage;
+        if (chunk.toolCall) {
+          toolCalls.push({ name: chunk.toolCall.name, args: chunk.toolCall.args });
+          streamHub.publish(session, {
+            type: 'tool.call',
+            name: chunk.toolCall.name,
+            args: chunk.toolCall.args,
+          });
+        } else if (chunk.toolResult) {
+          const idx = toolCalls.map((c) => c.name).lastIndexOf(chunk.toolResult.name);
+          if (idx === -1) {
+            toolCalls.push({ name: chunk.toolResult.name, result: chunk.toolResult.result });
+          } else {
+            toolCalls[idx] = { ...toolCalls[idx]!, result: chunk.toolResult.result };
+          }
+          streamHub.publish(session, {
+            type: 'tool.result',
+            name: chunk.toolResult.name,
+            result: chunk.toolResult.result,
+          });
+        } else {
+          streamHub.publish(session, chunk);
+        }
+        if (chunk.isFinished) break;
+        if (fullContent && Date.now() - lastFlushAt > 750) await flushPartial();
+      }
+      finishedOk = true;
+      break;
+    } catch (err) {
+      // Explicit stop (abort): keep whatever was generated, end cleanly.
+      if (signal.aborted) {
+        log.info('chat stream: generation aborted');
+        if (fullContent) await flushPartial();
+        streamHub.finish(session, 'done');
+        return;
+      }
+      // Post-deploy #1 v2: this is where the upstream 404 / "not a chat model"
+      // actually surfaces. If nothing has streamed yet AND a fallback remains,
+      // swap models silently and retry the loop.
+      if (!streamed && !isLastAttempt && isUpstreamModelNotFoundError(err)) {
+        log.warn(
+          {
+            originalModel: candidate.modelId,
+            fallbackModel: attempts[attempt + 1]!.modelId,
+            attempt: attempt + 1,
+            maxRetries: MAX_MODEL_RETRIES,
+          },
+          'chat stream: model rejected by upstream (404/not-a-chat-model); retrying with fallback'
+        );
+        continue;
+      }
+      log.error({ err }, 'chat stream error');
+      if (fullContent) await flushPartial();
+      streamHub.publish(session, {
+        error: err instanceof Error ? err.message : 'Stream interrupted',
+      });
+      streamHub.finish(session, 'error');
+      return;
+    }
+  }
+
+  // Unreachable in practice (the last attempt always returns via success or
+  // the error path), but guard against a silent hang if every attempt was
+  // skipped by the retry guard.
+  if (!finishedOk) {
     streamHub.finish(session, 'error');
     return;
   }
@@ -554,6 +687,17 @@ router.post('/', authMiddleware, uploadFiles, async (req: AuthenticatedRequest, 
       log: req.log,
     });
   } catch (err) {
+    if (isNoChatModelsError(err)) {
+      req.log.warn(
+        { userId: req.userId, model: req.body?.preferences?.forceModel },
+        'chat: no chat-capable model for user — surface 422'
+      );
+      res.status(422).json({
+        error:
+          'No hay modelos de chat disponibles para esta solicitud. Conectá otro proveedor o cambiá el modelo.',
+      });
+      return;
+    }
     req.log.error({ err }, 'chat request failed');
     res.status(500).json({ error: 'Chat request failed' });
   }
@@ -613,7 +757,13 @@ router.post('/stream', authMiddleware, uploadFiles, async (req: AuthenticatedReq
       },
       parsedPreferences
     );
-    const selected = await selectConfiguredProvider(decision, userId);
+    // Post-deploy #1 v2 (2026-06-18): resolve ALL configured candidates up
+    // front in a single pass. The first is the primary; the rest feed the
+    // runtime retry loop in runChatGeneration so the stream can swap to the
+    // next one when the upstream rejects a phantom / "próximamente" model
+    // (e.g. gpt-5.2-pro) with 404 instead of surfacing an opaque error.
+    const allCandidates = await selectAllConfiguredProviders(decision, userId);
+    const selected = allCandidates[0];
     if (!selected) {
       const tried = [decision.primary, ...decision.fallbacks].map((m) => m.provider).join(', ');
       res
@@ -621,6 +771,12 @@ router.post('/stream', authMiddleware, uploadFiles, async (req: AuthenticatedReq
         .json({ error: `No API key configured for any candidate provider (${tried})` });
       return;
     }
+
+    const fallbackCandidates = allCandidates.slice(1).map((c) => ({
+      provider: c.provider,
+      credential: c.credential,
+      modelId: c.model.modelId,
+    }));
 
     const effort = resolveEffort(
       selected.model.provider,
@@ -716,7 +872,10 @@ router.post('/stream', authMiddleware, uploadFiles, async (req: AuthenticatedReq
     req.on('close', () => streamHub.unsubscribe(session, res));
 
     // Fire-and-forget: runChatGeneration never throws (it routes all failures
-    // through the hub) and ends subscribers via streamHub.finish.
+    // through the hub) and ends subscribers via streamHub.finish. Post-deploy
+    // #1 v2: passes the pre-resolved fallbackCandidates so the retry loop
+    // can swap to the next model when the upstream rejects the primary with
+    // 404 / "not a chat model".
     void runChatGeneration({
       session,
       provider,
@@ -734,8 +893,32 @@ router.post('/stream', authMiddleware, uploadFiles, async (req: AuthenticatedReq
       userMessageContent: lastUserMessage?.content ?? '',
       startTime,
       log: req.log,
+      fallbackCandidates,
     });
   } catch (err) {
+    if (isNoChatModelsError(err)) {
+      req.log.warn(
+        { userId: req.userId, model: req.body?.preferences?.forceModel },
+        'chat stream: no chat-capable model for user — surface 422'
+      );
+      if (!res.headersSent) {
+        res.status(422).json({
+          error:
+            'No hay modelos de chat disponibles para esta solicitud. Conectá otro proveedor o cambiá el modelo.',
+        });
+        return;
+      }
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'turn.error',
+          code: 'NO_CHAT_MODELS',
+          message:
+            'No hay modelos de chat disponibles para esta solicitud. Conectá otro proveedor o cambiá el modelo.',
+        })}\n\n`
+      );
+      res.end();
+      return;
+    }
     req.log.error({ err }, 'chat stream: fatal error');
     if (!res.headersSent) {
       res.status(500).json({ error: err instanceof Error ? err.message : 'Stream failed' });

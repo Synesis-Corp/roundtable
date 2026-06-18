@@ -67,6 +67,48 @@ export const ProviderCapabilityMatrix: Record<string, ProviderCapabilities> = {
     supportedFeatures: ['tool-use', 'structured-output', 'vision', 'pdf-input'],
     councilEligible: true,
     defaultTier: 'strong',
+    // Post-deploy #1 (2026-06-18) v2: the original exclusion only covered
+    // completion-only models (gpt-3.5-turbo-instruct, davinci, etc.). The
+    // user hit a NEW failure mode in prod: the registry knows about
+    // `gpt-5.2-pro` (a phantom / "próximamente" model listed in Models.dev
+    // but not yet released by OpenAI) and the router picked it. OpenAI
+    // returned 404 with the misleading "This is not a chat model" error.
+    // We now exclude: (a) all known completion-only IDs, (b) all known
+    // "phantom" OpenAI models the registry knows about that don't actually
+    // exist yet, and (c) all embedding models. Combined with the runtime
+    // retry loop in `runChatGeneration` (apps/api/src/routes/chat.ts), this
+    // makes Auto robust to any future phantom-model additions.
+    modelExclusions: {
+      // Completion-only (legacy GPT-3 + OpenRouter duplicates)
+      'openai/gpt-3.5-turbo-instruct': ALL_USE_CASES,
+      'openai/davinci-002': ALL_USE_CASES,
+      'openai/babbage-002': ALL_USE_CASES,
+      'openai/text-davinci-002': ALL_USE_CASES,
+      'openai/text-davinci-003': ALL_USE_CASES,
+      'openai/ada': ALL_USE_CASES,
+      'openai/curie': ALL_USE_CASES,
+      'openai/text-ada-001': ALL_USE_CASES,
+      'openai/text-curie-001': ALL_USE_CASES,
+      // Phantom / not-yet-released OpenAI models (registry knows them; the
+      // upstream API returns 404 with a misleading "not a chat model" error).
+      'openai/gpt-5.2-pro': ALL_USE_CASES,
+      'openai/gpt-5.2': ALL_USE_CASES,
+      'openai/gpt-5.1-pro': ALL_USE_CASES,
+      'openai/gpt-5.1': ALL_USE_CASES,
+      'openai/gpt-5-pro': ALL_USE_CASES,
+      'openai/gpt-4.7': ALL_USE_CASES,
+      'openai/gpt-4.6': ALL_USE_CASES,
+      'openai/gpt-4.5-preview': ALL_USE_CASES,
+      'openai/gpt-4.5': ALL_USE_CASES,
+      'openai/o3-pro': ALL_USE_CASES,
+      'openai/o3-mini-high': ALL_USE_CASES,
+      'openai/o4-mini': ALL_USE_CASES,
+      'openai/o4': ALL_USE_CASES,
+      // Embeddings (also can't produce chat completions)
+      'openai/text-embedding-3-small': ALL_USE_CASES,
+      'openai/text-embedding-3-large': ALL_USE_CASES,
+      'openai/text-embedding-ada-002': ALL_USE_CASES,
+    },
   },
   deepseek: {
     supportedModalities: ['text'],

@@ -13,6 +13,8 @@ interface ConversationListProps {
   filteredConversations: Conversation[];
   searchQuery: string;
   activeConversationId: string | null;
+  /** True when a chat is open in the right column; false on the welcome screen. */
+  chatActive: boolean;
   /** Returns false to cancel navigation when a stream is in progress. */
   confirmLeaveIfStreaming: () => boolean;
   onCloseMobile: () => void;
@@ -27,6 +29,7 @@ export function ConversationList({
   filteredConversations,
   searchQuery,
   activeConversationId,
+  chatActive,
   confirmLeaveIfStreaming,
   onCloseMobile,
   onOpenRename,
@@ -41,7 +44,7 @@ export function ConversationList({
       {incognitoActive && (
         <div
           data-testid="incognito-dim-notice"
-          className="px-2 mb-3"
+          className="px-2 mb-3 select-none"
           style={{
             fontSize: 11.5,
             color: 'var(--m-amber)',
@@ -53,7 +56,7 @@ export function ConversationList({
             opacity: 1,
           }}
         >
-          {t('shell.incognitoDim.notice')}
+          {t(chatActive ? 'shell.incognitoDim.noticeInChat' : 'shell.incognitoDim.notice')}
         </div>
       )}
       {loadingConversations && conversations.length === 0 ? (
@@ -92,7 +95,7 @@ export function ConversationList({
               group's original label is suppressed to avoid double-headings. */}
           {searchQuery.trim() === '' && (
             <div
-              className="px-2 mb-2"
+              className="px-2 mb-2 select-none"
               style={{
                 fontSize: 13,
                 fontWeight: 500,
@@ -107,7 +110,7 @@ export function ConversationList({
             <div key={group.key}>
               {!(searchQuery.trim() === '' && groupIndex === 0) && (
                 <div
-                  className="px-2 mb-2 uppercase"
+                  className="px-2 mb-2 uppercase select-none"
                   style={{
                     fontSize: 11,
                     fontWeight: 500,

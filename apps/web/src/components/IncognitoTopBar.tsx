@@ -26,7 +26,7 @@ export function IncognitoTopBar({ onExit, className }: IncognitoTopBarProps) {
       data-testid="incognito-top-bar"
       role="status"
       aria-live="polite"
-      className={className}
+      className={`${className ?? ''} select-none`.trim()}
       onKeyDown={(e) => {
         if (e.key === 'Escape') onExit();
       }}

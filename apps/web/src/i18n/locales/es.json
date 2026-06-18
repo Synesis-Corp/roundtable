@@ -64,7 +64,8 @@
     "searchAria": "Buscar conversaciones",
     "closeSearch": "Cerrar búsqueda",
     "incognitoDim": {
-      "notice": "Modo incógnito activo · estos chats no se ven afectados"
+      "notice": "Modo incógnito activo · estos chats no se ven afectados",
+      "noticeInChat": "Modo incógnito — este chat no se guarda"
     },
     "userMenu": {
       "open": "Abrir menú de usuario",

@@ -40,7 +40,7 @@ export function SidebarUserCard({
         aria-expanded={menuOpen}
         aria-label={t('shell.userMenu.open')}
         onClick={() => setMenuOpen((v) => !v)}
-        className="w-full flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
+        className="w-full flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)] select-none"
         style={{
           padding: 6,
           borderRadius: 'var(--r-sm)',

@@ -17,12 +17,12 @@ export function SidebarHeader({
   const { t } = useTranslation();
   return (
     <div
-      className="p-3 flex items-center justify-between"
+      className="p-3 flex items-center justify-between select-none"
       style={{ borderBottom: '1px solid var(--border)' }}
     >
       <Link
         to="/"
-        className="flex items-center gap-3 px-1 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
+        className="flex items-center gap-3 px-1 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)] select-none"
         style={{ color: 'var(--text-1)', borderRadius: 'var(--r-xs)' }}
         onClick={(e) => {
           if (!confirmLeaveIfStreaming()) {

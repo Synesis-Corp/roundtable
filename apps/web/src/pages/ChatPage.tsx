@@ -484,7 +484,7 @@ export default function ChatPage() {
           {incognito && <IncognitoTopBar onExit={() => handleIncognitoChange(false)} />}
           {/* Topbar */}
           <div
-            className="shrink-0 flex items-center justify-between px-4 sm:px-6"
+            className="shrink-0 flex items-center justify-between px-4 sm:px-6 select-none"
             style={{
               height: 52,
               backgroundColor: 'var(--bg-app)',
@@ -596,7 +596,10 @@ export default function ChatPage() {
           >
             <div className="max-w-3xl mx-auto px-4 py-4">
               <ChatInputBar {...inputBarProps} stopStream={handleStopStream} />
-              <p className="text-center mt-2" style={{ fontSize: 11, color: 'var(--text-4)' }}>
+              <p
+                className="text-center mt-2 select-none"
+                style={{ fontSize: 11, color: 'var(--text-4)' }}
+              >
                 {t('chat.disclaimer')}
               </p>
             </div>
@@ -619,7 +622,7 @@ export default function ChatPage() {
                 ) : (
                   <>
                     <p
-                      className="font-serif text-[clamp(30px,4.5vw,44px)] leading-[1.1] tracking-tight mb-3"
+                      className="font-serif text-[clamp(30px,4.5vw,44px)] leading-[1.1] tracking-tight mb-3 select-none"
                       style={{ color: 'var(--text-1)' }}
                     >
                       {buildGreeting(
@@ -630,7 +633,7 @@ export default function ChatPage() {
                       )}
                     </p>
                     <h1
-                      className="text-[18px] font-medium tracking-tight"
+                      className="text-[18px] font-medium tracking-tight select-none"
                       style={{ color: 'var(--text-2)' }}
                     >
                       {incognito
@@ -649,7 +652,7 @@ export default function ChatPage() {
                   />
                 ) : multiMode ? (
                   <p
-                    className="mt-4 max-w-sm mx-auto leading-relaxed"
+                    className="mt-4 max-w-sm mx-auto leading-relaxed select-none"
                     style={{ fontSize: 14, color: 'var(--text-3)' }}
                   >
                     <Trans
@@ -721,7 +724,10 @@ export default function ChatPage() {
               {multiMode ? <DeliberationSteps /> : <QuickActions onSelect={setInputText} />}
 
               {/* Disclaimer */}
-              <p className="text-center mt-8" style={{ fontSize: 11, color: 'var(--text-4)' }}>
+              <p
+                className="text-center mt-8 select-none"
+                style={{ fontSize: 11, color: 'var(--text-4)' }}
+              >
                 {t('chat.disclaimer')}
               </p>
             </div>

@@ -109,7 +109,7 @@ export default function Layout() {
         <div className="p-3">
           <button
             onClick={handleNewChat}
-            className="w-full flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]]"
+            className="w-full flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)] select-none"
             style={{
               padding: '10px 14px',
               borderRadius: 'var(--r-sm)',
@@ -158,6 +158,7 @@ export default function Layout() {
             filteredConversations={filteredConversations}
             searchQuery={searchQuery}
             activeConversationId={activeConversationId}
+            chatActive={activeConversationId !== null}
             confirmLeaveIfStreaming={confirmLeaveIfStreaming}
             onCloseMobile={() => setMobileOpen(false)}
             onOpenRename={openRename}

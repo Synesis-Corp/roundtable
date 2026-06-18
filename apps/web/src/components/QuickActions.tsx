@@ -18,12 +18,12 @@ function tintedBg(token: QuickAction['iconColorToken']): string {
 export function QuickActions({ onSelect }: QuickActionsProps) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+    <div className="flex flex-wrap items-center justify-center gap-2 mt-6 select-none">
       {QUICK_ACTIONS.map((a) => (
         <button
           key={a.labelKey}
           onClick={() => onSelect(t(a.prefixKey))}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)] active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)] active:scale-95 select-none"
           style={{
             backgroundColor: 'transparent',
             border: '1px solid var(--border)',

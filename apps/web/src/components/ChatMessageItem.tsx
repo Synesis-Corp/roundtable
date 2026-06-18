@@ -835,7 +835,7 @@ export function ChatMessageItem({
 
       {/* ── Action toolbar (ChatGPT-style: subtle icons below the answer) ── */}
       {showActions && (
-        <div className="mt-2 flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="mt-2 flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity duration-200 select-none">
           {/* Copy */}
           <button
             type="button"
