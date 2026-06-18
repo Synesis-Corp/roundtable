@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import RegisterPage from './RegisterPage';
 import { IS_NEW_KEY } from '../lib/onboarding-helpers';
@@ -84,6 +84,105 @@ function fillAndSubmit(email = 'new@example.com', password = 'password123') {
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
+
+// ─── Mock LanguageSwitcher ────────────────────────────────────────────────────
+
+vi.mock('../components/LanguageSwitcher', () => ({
+  default: () => null,
+}));
+
+// ─── Auth-ui visual polish tests ──────────────────────────────────────────────
+
+function renderRegisterPage2() {
+  return render(
+    <MemoryRouter>
+      <RegisterPage />
+    </MemoryRouter>
+  );
+}
+
+describe('RegisterPage — auth-ui visual polish', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  // ── T2: Capability 2 — Focus ring ──────────────────────────────────────────
+
+  describe('Cap 2 — Focus ring (input-dark on all inputs)', () => {
+    it('2.3 all 3 inputs have input-dark class', () => {
+      renderRegisterPage2();
+      const inputs = document.querySelectorAll('input');
+      expect(inputs).toHaveLength(3);
+      inputs.forEach((input) => {
+        expect(input.className).toContain('input-dark');
+      });
+    });
+  });
+
+  // ── T4: Capability 4 — Serif title ─────────────────────────────────────────
+
+  describe('Cap 4 — Serif title', () => {
+    it('4.4 h1 has font-serif class', () => {
+      renderRegisterPage2();
+      const h1 = screen.getByRole('heading', { level: 1 });
+      expect(h1.className).toContain('font-serif');
+    });
+
+    it('4.5 h1 displays the register title text', () => {
+      renderRegisterPage2();
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Create account');
+    });
+  });
+
+  // ── T5: Capability 5 — Background dot pattern ──────────────────────────────
+
+  describe('Cap 5 — Background dot pattern (auth-bg)', () => {
+    it('5.4 renders a wrapper with data-testid="auth-bg" and auth-bg class', () => {
+      renderRegisterPage2();
+      const bg = screen.getByTestId('auth-bg');
+      expect(bg).toBeInTheDocument();
+      expect(bg.className).toContain('auth-bg');
+    });
+  });
+
+  // ── T7: Capability 6 — Form spacing (RegisterPage) ─────────────────────────
+
+  describe('Cap 6 — Form spacing (RegisterPage)', () => {
+    it('7.1 form has space-y-5 class', () => {
+      renderRegisterPage2();
+      const formEl = document.querySelector('form')!;
+      expect(formEl.className).toContain('space-y-5');
+    });
+
+    it('7.2 auth-header has mb-10 class', () => {
+      renderRegisterPage2();
+      const header = screen.getByTestId('auth-header');
+      expect(header.className).toContain('mb-10');
+    });
+  });
+
+  // ── T8: Capability 1 — Glass card on RegisterPage ──────────────────────────
+
+  describe('Cap 1 — Glass card (auth-card on RegisterPage)', () => {
+    it('8.1 renders a wrapper with data-testid="auth-card"', () => {
+      renderRegisterPage2();
+      expect(screen.getByTestId('auth-card')).toBeInTheDocument();
+    });
+
+    it('8.2 auth-card has the auth-card CSS class', () => {
+      renderRegisterPage2();
+      const card = screen.getByTestId('auth-card');
+      expect(card.className).toContain('auth-card');
+    });
+
+    it('8.3 form is inside the auth-card', () => {
+      renderRegisterPage2();
+      const card = screen.getByTestId('auth-card');
+      const formEl = within(card).getByRole('button', { name: /create account/i });
+      expect(formEl).toBeInTheDocument();
+    });
+  });
+});
 
 describe('RegisterPage — onboarding flag on created', () => {
   beforeEach(() => {

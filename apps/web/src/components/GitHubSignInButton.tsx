@@ -40,7 +40,7 @@ export default function GitHubSignInButton({ onError }: { onError?: (message: st
       <button
         type="button"
         onClick={handleClick}
-        className="w-full max-w-[320px] flex items-center justify-center gap-2 rounded-full border border-gray-700/60 bg-[var(--bg-elevated)] hover:bg-[var(--hover)] text-gray-200 hover:text-white text-sm font-medium py-2.5 transition-colors"
+        className="w-full max-w-[320px] flex items-center justify-center gap-2 rounded-full border border-gray-700/60 bg-[var(--bg-elevated)] hover:bg-[var(--hover)] text-gray-200 hover:text-white text-sm font-medium py-2.5 transition-all hover:scale-[1.02] active:scale-[0.98]"
         data-testid="github-signin-button"
       >
         <svg

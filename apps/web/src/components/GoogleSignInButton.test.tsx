@@ -80,6 +80,42 @@ async function triggerCredential(credential = 'google-id-token') {
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
+// ─── T3: Wrapper div hover scale ─────────────────────────────────────────────
+
+describe('GoogleSignInButton — T3 OAuth hover scale', () => {
+  beforeEach(() => {
+    capturedOnSuccess = null;
+    (import.meta.env as Record<string, string>).VITE_GOOGLE_CLIENT_ID = 'test-client-id';
+  });
+
+  afterEach(() => {
+    delete (import.meta.env as Record<string, string | undefined>).VITE_GOOGLE_CLIENT_ID;
+    vi.restoreAllMocks();
+  });
+
+  it('3.4 wrapper div has hover:scale-[1.02] class', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <GoogleSignInButton />
+      </MemoryRouter>
+    );
+    // The wrapper div is the outermost element wrapping the GoogleLogin widget
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper.className).toContain('hover:scale-[1.02]');
+  });
+
+  it('3.5 wrapper div has active:scale-[0.98] class', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <GoogleSignInButton />
+      </MemoryRouter>
+    );
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper.className).toContain('active:scale-[0.98]');
+  });
+});
+
 describe('GoogleSignInButton — onboarding flag', () => {
   beforeEach(() => {
     storeRef.reset();

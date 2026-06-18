@@ -55,18 +55,23 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center px-4 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.14),transparent_30rem)]">
-      <div className="w-full max-w-md">
+    <div data-testid="auth-bg" className="auth-bg flex-1 flex items-center justify-center px-4">
+      <div data-testid="auth-card" className="auth-card w-full max-w-md">
         <div className="mb-4 flex justify-end">
           <LanguageSwitcher />
         </div>
-        <div className="text-center mb-8">
+        <div data-testid="auth-header" className="text-center mb-10">
           <img
             src="/logo/app-icon-gradient.svg"
             alt="Roundtable"
             className="mx-auto mb-4 h-14 w-14 rounded-3xl shadow-2xl"
           />
-          <h1 className="heading text-3xl">{t('auth.register.title')}</h1>
+          <h1
+            className="font-serif text-[clamp(28px,4vw,36px)] leading-[1.1] tracking-tight"
+            style={{ color: 'var(--text-1)' }}
+          >
+            {t('auth.register.title')}
+          </h1>
           <p className="text-sm text-gray-500 mt-2">{t('auth.register.subtitle')}</p>
         </div>
 
@@ -76,7 +81,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1.5">
               {t('common.email')}

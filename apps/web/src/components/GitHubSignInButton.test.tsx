@@ -145,6 +145,46 @@ describe('GitHubSignInButton', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
 
+  // ─── T3: OAuth hover scale ──────────────────────────────────────────────────
+
+  describe('T3 — OAuth hover scale classes', () => {
+    it('3.1 button has hover:scale-[1.02] class', () => {
+      setGitHubEnabled('true');
+      render(
+        <MemoryRouter>
+          <GitHubSignInButton />
+        </MemoryRouter>
+      );
+      const button = screen.getByTestId('github-signin-button');
+      expect(button.className).toContain('hover:scale-[1.02]');
+    });
+
+    it('3.2 button has active:scale-[0.98] class', () => {
+      setGitHubEnabled('true');
+      render(
+        <MemoryRouter>
+          <GitHubSignInButton />
+        </MemoryRouter>
+      );
+      const button = screen.getByTestId('github-signin-button');
+      expect(button.className).toContain('active:scale-[0.98]');
+    });
+
+    it('3.3 button has a transition class (transition-all or transition-transform)', () => {
+      setGitHubEnabled('true');
+      render(
+        <MemoryRouter>
+          <GitHubSignInButton />
+        </MemoryRouter>
+      );
+      const button = screen.getByTestId('github-signin-button');
+      expect(
+        button.className.includes('transition-all') ||
+          button.className.includes('transition-transform')
+      ).toBe(true);
+    });
+  });
+
   it('does NOT set IS_NEW_KEY when onSuccess fires with created=false', () => {
     setGitHubEnabled('true');
     render(

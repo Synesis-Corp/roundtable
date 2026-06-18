@@ -50,6 +50,7 @@
 
   /* Sombras */
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.52);
 }
 
 * {
@@ -139,6 +140,12 @@ body {
   .input-dark::placeholder {
     color: var(--text-3);
   }
+  .input-dark:focus-visible {
+    --tw-ring-color: var(--accent-line);
+    border-color: var(--accent-line);
+    outline: none;
+  }
+  /* Keep :focus fallback for browsers without :focus-visible support */
   .input-dark:focus {
     --tw-ring-color: var(--accent-line);
     border-color: var(--accent-line);
@@ -411,6 +418,25 @@ body {
       opacity: 1;
       transform: scale(1.1);
     }
+  }
+
+  /* Auth page glassmorphism card */
+  .auth-card {
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 2rem 2rem 1.75rem;
+  }
+
+  /* Auth page background — blue tint + dot grid */
+  .auth-bg {
+    background-image:
+      radial-gradient(circle at top, rgba(59, 130, 246, 0.1), transparent 28rem),
+      radial-gradient(circle, var(--border) 1px, transparent 1px);
+    background-size:
+      auto,
+      24px 24px;
   }
 }
 

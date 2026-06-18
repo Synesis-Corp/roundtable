@@ -39,7 +39,7 @@ export default function GoogleSignInButton({ onError }: { onError?: (message: st
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center hover:scale-[1.02] active:scale-[0.98] transition-transform">
       <GoogleLogin
         onSuccess={(cred) => handleCredential(cred.credential)}
         onError={() => onError?.(t('auth.login.errors.googleFailed'))}
