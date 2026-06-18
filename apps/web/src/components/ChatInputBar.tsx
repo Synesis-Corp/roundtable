@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback, type DragEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, type DragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { UserProvider } from '@chat/sdk';
 import type { EffortSpec, ModelOption } from '../types/chat';
 import { filterAllowedFiles } from '../lib/file-types';
+import { IncognitoExplainerModal } from './IncognitoExplainerModal';
+import { useComposerFocus } from '../lib/composer-focus';
 
 export interface ChatInputBarProps {
   inputText: string;
@@ -218,6 +220,20 @@ export function ChatInputBar(props: ChatInputBarProps) {
   // True while a file is being dragged over the composer. Used to render a
   // visual cue (dashed border + tinted background) and to gate the drop handler.
   const [isDragging, setIsDragging] = useState(false);
+  // Incognito explainer modal (Capability 2) — additive to the inline banner.
+  const [explainerOpen, setExplainerOpen] = useState(false);
+  const moreInfoRef = useRef<HTMLButtonElement>(null);
+
+  // Register the composer's textarea ref with the global focus context so
+  // the KeyboardShortcutsController can focus it on the "/" shortcut.
+  const composerFocusRef = useComposerFocus();
+  // Sync the prop ref into the context ref so both stay in sync.
+  useEffect(() => {
+    if (textareaRef.current && composerFocusRef) {
+      (composerFocusRef as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+        textareaRef.current;
+    }
+  });
 
   /**
    * Filters the given files through the type allowlist and routes them to
@@ -332,7 +348,11 @@ export function ChatInputBar(props: ChatInputBarProps) {
         className="transition-colors"
         style={{
           backgroundColor: 'var(--bg-input)',
-          border: isDragging ? '1px dashed var(--accent)' : '1px solid var(--border)',
+          border: isDragging
+            ? '1px dashed var(--accent)'
+            : incognito
+              ? '1px dashed rgba(245,158,11,0.45)'
+              : '1px solid var(--border)',
           borderRadius: 'var(--r-xl)',
           boxShadow: isDragging ? '0 0 0 3px var(--accent-quiet)' : 'none',
           padding: '14px 14px 10px',
@@ -346,6 +366,15 @@ export function ChatInputBar(props: ChatInputBarProps) {
             style={{ color: 'var(--m-amber)' }}
           >
             <span>{t('chat.input.incognitoNotice')}</span>
+            <button
+              ref={moreInfoRef}
+              type="button"
+              onClick={() => setExplainerOpen(true)}
+              className="underline underline-offset-2 transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--m-amber)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
+              style={{ color: 'var(--m-amber)' }}
+            >
+              {t('chat.incognito.moreInfoLink')}
+            </button>
           </div>
         )}
         {/* Drag-and-drop visual cue (subtle label inside the composer). */}
@@ -893,6 +922,16 @@ export function ChatInputBar(props: ChatInputBarProps) {
           // Reset the input so picking the same file twice still triggers `change`.
           e.target.value = '';
         }}
+      />
+
+      {/* Incognito explainer modal (Capability 2). Additive to the inline
+          banner — the banner is still rendered when incognito is on. The
+          modal is opened by the "More info" link and returns focus to
+          that link when closed. */}
+      <IncognitoExplainerModal
+        open={explainerOpen}
+        onClose={() => setExplainerOpen(false)}
+        triggerRef={moreInfoRef}
       />
     </form>
   );

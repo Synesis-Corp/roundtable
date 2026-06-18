@@ -65,6 +65,15 @@
     "searchPlaceholder": "Search conversations…",
     "searchAria": "Search conversations",
     "closeSearch": "Close search",
+    "incognitoDim": {
+      "notice": "Incognito active — these chats are not affected"
+    },
+    "userMenu": {
+      "open": "Open user menu",
+      "settings": "Settings",
+      "admin": "Admin panel",
+      "logout": "Log out"
+    },
     "userFallback": "User",
     "logout": "Log out",
     "adminLink": "Admin",
@@ -94,6 +103,22 @@
   "chat": {
     "auto": "Auto",
     "incognitoChip": "Incognito · not saved",
+    "incognitoBar": {
+      "label": "Incognito chat",
+      "exit": "Exit incognito mode",
+      "iconAlt": "Incognito mode active"
+    },
+    "incognito": {
+      "moreInfoLink": "More info",
+      "explainer": {
+        "title": "About incognito mode",
+        "p1": "Your chats in this session will not be saved to your history. Once you exit incognito, the conversation disappears.",
+        "p2": "We do not use anything you type here to improve our models, and we do not save transcripts, memories, or attachments.",
+        "p3": "We do not use this data for model training, personalization, or product analytics. Only anonymous usage metrics are recorded (token counts, request count) for billing and abuse prevention.",
+        "dismiss": "Dismiss",
+        "close": "Close"
+      }
+    },
     "councilChip_one": "Council · {{count}} model",
     "councilChip_other": "Council · {{count}} models",
     "disclaimer": "May make mistakes.",

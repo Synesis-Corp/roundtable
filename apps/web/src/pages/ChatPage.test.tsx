@@ -245,6 +245,103 @@ describe('ChatPage — incognito mode', () => {
   });
 });
 
+// ─── Capability 9 — Generic greeting in incognito (integration) ───────────
+
+describe('ChatPage — generic greeting in incognito (Capability 9)', () => {
+  beforeEach(() => {
+    localStorage.setItem('token', 'test-token');
+    Element.prototype.scrollIntoView = vi.fn();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('incognito=true: greeting omits the user displayName', () => {
+    renderChatPage();
+    fireEvent.click(screen.getByRole('switch', { name: /incognito/i }));
+    // The default useProfile returns no displayName; combined with incognito,
+    // the greeting should not include any name. We assert by checking the
+    // subhead (which is the second heading): the private title.
+    expect(screen.getByText(/what do you want to explore privately\?/i)).toBeInTheDocument();
+  });
+
+  it('incognito=true: subhead uses chat.welcome.titlePrivate', () => {
+    renderChatPage();
+    fireEvent.click(screen.getByRole('switch', { name: /incognito/i }));
+    // The private title is rendered as the h1 beneath the time-of-day greeting.
+    const h1s = screen.getAllByRole('heading', { level: 1 });
+    const texts = h1s.map((h) => h.textContent || '').join(' | ');
+    expect(texts).toMatch(/what do you want to explore privately\?/i);
+  });
+
+  it('incognito=false: subhead uses the default welcome title (not private)', () => {
+    renderChatPage();
+    // Default mode: title is "What are we working on today?"
+    expect(screen.getByText(/what are we working on today\?/i)).toBeInTheDocument();
+    expect(screen.queryByText(/what do you want to explore privately\?/i)).not.toBeInTheDocument();
+  });
+
+  it('incognito=true: time-of-day prefix is preserved in the greeting', () => {
+    renderChatPage();
+    fireEvent.click(screen.getByRole('switch', { name: /incognito/i }));
+    // The greeting is rendered in a <p> above the <h1> subhead. Look for
+    // the time-of-day prefix anywhere in the document text.
+    const body = document.body.textContent || '';
+    expect(
+      /good morning|good afternoon|good evening/i.test(body) ||
+        /buenos d[ií]as|buenas tardes|buenas noches/i.test(body)
+    ).toBe(true);
+  });
+});
+
+// ─── Integration smoke (T11) — incognito end-to-end ────────────────────────
+
+describe('ChatPage — integration: incognito end-to-end (T11)', () => {
+  beforeEach(() => {
+    localStorage.setItem('token', 'test-token');
+    Element.prototype.scrollIntoView = vi.fn();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('toggle incognito → top bar appears → click X → top bar gone', async () => {
+    renderChatPage();
+    // Initially no top bar
+    expect(screen.queryByTestId('incognito-top-bar')).not.toBeInTheDocument();
+    // Toggle incognito on
+    fireEvent.click(screen.getByRole('switch', { name: /incognito/i }));
+    // Top bar should appear
+    expect(await screen.findByTestId('incognito-top-bar')).toBeInTheDocument();
+    // Click the X (Exit) button
+    const exitBtn = screen.getByRole('button', { name: /exit incognito mode/i });
+    fireEvent.click(exitBtn);
+    // Top bar should disappear
+    await waitFor(() => {
+      expect(screen.queryByTestId('incognito-top-bar')).not.toBeInTheDocument();
+    });
+  });
+
+  it('toggle incognito → INCOGNITO_CHANGED_EVENT fires with active=true', async () => {
+    renderChatPage();
+    const onChange = vi.fn();
+    window.addEventListener('roundtable:incognito-changed', onChange);
+    fireEvent.click(screen.getByRole('switch', { name: /incognito/i }));
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalled();
+    });
+    const last = onChange.mock.calls.at(-1)?.[0] as CustomEvent<{ active: boolean }>;
+    expect(last.detail.active).toBe(true);
+    window.removeEventListener('roundtable:incognito-changed', onChange);
+  });
+});
+
 // ─── Onboarding CTA tests (Phase 4.1) ────────────────────────────────────────
 
 describe('ChatPage — Onboarding CTA (single mode)', () => {

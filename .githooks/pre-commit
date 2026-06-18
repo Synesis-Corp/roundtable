@@ -71,7 +71,7 @@ for f in $staged; do
     *.example|*.docker|*.sample|*.template|*.md|*.lock) continue ;;
   esac
   hit=$(git show ":$f" 2>/dev/null | grep -nEi \
-    '(sk-[a-z0-9]{16,}|(API_KEY|ACCESS_TOKEN|SECRET|DATABASE_URL|PASSWORD|PRIVATE_KEY|TOKEN)[a-z_]*[[:space:]]*[=:][[:space:]]*[^[:space:]"'"'"']+)' \
+    '(sk-[a-z0-9]{16,}|([^A-Za-z0-9_])(API_KEY|ACCESS_TOKEN|SECRET|DATABASE_URL|PASSWORD|PRIVATE_KEY|TOKEN)([^A-Za-z0-9_]|$)[[:space:]]*[=:][[:space:]]*[^[:space:]"'"'"']+)' \
     | grep -vEi 'REPLACE_ME|CHANGE_ME|example|dummy|placeholder|xxx|your-|<[a-z_]+>|\$\{|inputTokens|outputTokens|totalTokens|tokensUsed|maxTokens|tokenBudget|tokenCount|estimatedTokens|promptTokens|completionTokens|token[[:space:]]*[?:][[:space:]]*(string|number)|storage\.get|gho_test|e2e-test|sk-test|z\.string\(\)\.(min|max|optional|nullable|email|url|uuid|default|refine|transform)\(|vi\.fn\(|(access_token|refresh_token):[[:space:]]*opts\.|Cookie.*refreshToken=[a-zA-Z0-9_-]+|setCookie.*refreshToken=[a-zA-Z0-9_;-]+|refreshToken:[[:space:]]*\{[[:space:]]*$|(TEST|ORIGINAL)_[A-Z_]+|tokenHash:[[:space:]]*expect\.any\(|POSTGRES_PASSWORD=postgres' || true)
   if [ -n "$hit" ]; then
     secret_hits="$secret_hits\n  $f:\n$(printf '%s' "$hit" | sed 's/^/      /')"

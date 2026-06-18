@@ -1,8 +1,18 @@
 import { useTranslation } from 'react-i18next';
 import { QUICK_ACTIONS } from '../lib/chat-page-helpers';
+import type { QuickAction } from '../lib/chat-page-helpers';
 
 interface QuickActionsProps {
   onSelect: (prefix: string) => void;
+}
+
+/**
+ * Build the tinted icon container style. Idle = 12% alpha of the token,
+ * hover = 18% alpha. Using `color-mix` keeps the relationship between
+ * the tint and the token explicit (no hard-coded RGBA channels).
+ */
+function tintedBg(token: QuickAction['iconColorToken']): string {
+  return `color-mix(in oklch, var(${token}), transparent 88%)`;
 }
 
 export function QuickActions({ onSelect }: QuickActionsProps) {
@@ -23,13 +33,35 @@ export function QuickActions({ onSelect }: QuickActionsProps) {
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)';
             (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
+            // Also lift the icon container's tint from 12% to 18%.
+            const wrap = e.currentTarget.querySelector(
+              'span[data-icon-wrap]'
+            ) as HTMLElement | null;
+            if (wrap)
+              wrap.style.backgroundColor = `color-mix(in oklch, var(${a.iconColorToken}), transparent 82%)`;
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
             (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
+            const wrap = e.currentTarget.querySelector(
+              'span[data-icon-wrap]'
+            ) as HTMLElement | null;
+            if (wrap) wrap.style.backgroundColor = tintedBg(a.iconColorToken);
           }}
         >
-          <span style={{ color: 'var(--text-4)' }}>{a.icon}</span>
+          <span
+            data-icon-wrap
+            className="inline-flex items-center justify-center shrink-0"
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 6,
+              backgroundColor: tintedBg(a.iconColorToken),
+              color: `var(${a.iconColorToken})`,
+            }}
+          >
+            {a.icon}
+          </span>
           <span>{t(a.labelKey)}</span>
         </button>
       ))}

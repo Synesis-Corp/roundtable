@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAdmin } from '../hooks/useAdmin';
+import { UserMenuPopover } from './UserMenuPopover';
 
 interface SidebarUserCardProps {
   userName: string;
@@ -9,131 +10,108 @@ interface SidebarUserCardProps {
   onLogout: () => void;
 }
 
-/** Sidebar footer card: avatar displayed with displayName, fallback to userName. */
+/**
+ * Sidebar footer: single 36px avatar button. Click to open a non-modal
+ * popover (UserMenuPopover) with Settings, Admin (if admin), and Logout.
+ *
+ * Replaces the previous two-card layout (Admin card + Settings card +
+ * inline logout icon) with a cleaner single-anchor pattern.
+ */
 export function SidebarUserCard({
   userName,
   displayName,
-  onCloseMobile,
+  onCloseMobile: _onCloseMobile,
   onLogout,
 }: SidebarUserCardProps) {
   const { t } = useTranslation();
   const { isAdmin } = useAdmin();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const avatarRef = useRef<HTMLButtonElement>(null);
   const name = displayName || userName || t('shell.userFallback');
+  const truncatedName = name.length > 24 ? `${name.slice(0, 24)}…` : name;
+
   return (
-    <div className="space-y-2">
-      {isAdmin && (
-        <Link
-          to="/admin"
-          onClick={onCloseMobile}
-          className="flex items-center gap-3 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
-          style={{
-            padding: 12,
-            borderRadius: 'var(--r-md)',
-            backgroundColor: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border-strong)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)';
-          }}
-        >
-          <div
-            className="flex shrink-0 items-center justify-center text-sm font-semibold text-white"
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 'var(--r-sm)',
-              backgroundColor: 'var(--m-amber)',
-            }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div
-              className="truncate"
-              style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)' }}
-            >
-              {t('shell.adminLink')}
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{t('admin.title')}</div>
-          </div>
-        </Link>
-      )}
-      <Link
-        to="/settings"
-        onClick={onCloseMobile}
-        className="flex items-center gap-3 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
+    <div className="relative">
+      <button
+        ref={avatarRef}
+        type="button"
+        data-testid="user-menu-avatar"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        aria-label={t('shell.userMenu.open')}
+        onClick={() => setMenuOpen((v) => !v)}
+        className="w-full flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
         style={{
-          padding: 12,
-          borderRadius: 'var(--r-md)',
-          backgroundColor: 'var(--bg-surface)',
-          border: '1px solid var(--border)',
+          padding: 6,
+          borderRadius: 'var(--r-sm)',
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border-strong)';
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--hover)';
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)';
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
         }}
       >
-        <div
-          className="flex shrink-0 items-center justify-center text-sm font-semibold text-white"
+        <span
+          className="shrink-0 flex items-center justify-center font-semibold text-white"
           style={{
-            width: 32,
-            height: 32,
+            width: 36,
+            height: 36,
             borderRadius: 'var(--r-sm)',
             backgroundColor: 'var(--accent)',
+            fontSize: 14,
           }}
         >
           {name ? name[0].toUpperCase() : 'U'}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div
-            className="truncate"
-            style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-1)' }}
-          >
-            {name}
-          </div>
-        </div>
-        {/* Logout icon button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onLogout();
+        </span>
+        <span
+          className="min-w-0 flex-1 text-left"
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: 'var(--text-1)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
-          className="shrink-0 p-1.5 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)]"
-          style={{ color: 'var(--text-3)', borderRadius: 'var(--r-xs)' }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--hover)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)';
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
-          }}
-          title={t('shell.logout')}
-          aria-label={t('shell.logout')}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
-        </button>
-      </Link>
+          {truncatedName}
+        </span>
+        {isAdmin && (
+          <span
+            className="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded"
+            style={{
+              color: 'var(--m-amber)',
+              backgroundColor: 'rgba(245, 158, 11, 0.12)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+            }}
+          >
+            Admin
+          </span>
+        )}
+        <svg
+          aria-hidden="true"
+          className="shrink-0"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.6}
+          style={{ color: 'var(--text-3)' }}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {menuOpen && (
+        <UserMenuPopover
+          isAdmin={isAdmin}
+          displayName={displayName}
+          userName={userName}
+          onLogout={onLogout}
+          onClose={() => setMenuOpen(false)}
+        />
+      )}
     </div>
   );
 }

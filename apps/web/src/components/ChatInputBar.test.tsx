@@ -162,6 +162,53 @@ describe('ChatInputBar — incognito mode', () => {
     );
     expect(screen.getByText(/not saved\. only usage metrics are recorded/i)).toBeInTheDocument();
   });
+
+  it('exposes a "More info" link that opens the explainer modal', () => {
+    render(<ChatInputBar {...defaultProps({ incognito: true })} />);
+    const moreInfo = screen.getByRole('button', { name: /more info/i });
+    expect(moreInfo).toBeInTheDocument();
+    // Clicking opens the dialog
+    fireEvent.click(moreInfo);
+    expect(screen.getByText(/about incognito mode/i)).toBeInTheDocument();
+  });
+});
+
+// ─── Composer border — incognito/drag/normal 3-way ternary (Capability 8) ──
+
+describe('ChatInputBar — composer border (Capability 8)', () => {
+  it('incognito=true, not dragging: border is dashed amber 0.45', () => {
+    const { container } = render(<ChatInputBar {...defaultProps({ incognito: true })} />);
+    // The outer container is the first inner div of the form.
+    const form = container.querySelector('form')!;
+    const inner = form.querySelector('div')! as HTMLDivElement;
+    // Browser normalises rgba spacing: accept the spaced form.
+    expect(inner.style.border).toBe('1px dashed rgba(245, 158, 11, 0.45)');
+  });
+
+  it('incognito=false, not dragging: border is solid var(--border)', () => {
+    const { container } = render(<ChatInputBar {...defaultProps({ incognito: false })} />);
+    const form = container.querySelector('form')!;
+    const inner = form.querySelector('div')! as HTMLDivElement;
+    expect(inner.style.border).toBe('1px solid var(--border)');
+  });
+
+  it('drag overrides incognito (incognito=true + dragging): border is dashed accent', () => {
+    const { container } = render(<ChatInputBar {...defaultProps({ incognito: true })} />);
+    const form = container.querySelector('form')!;
+    fireEvent.dragEnter(form, { dataTransfer: makeDataTransfer([]) });
+    const inner = form.querySelector('div')! as HTMLDivElement;
+    expect(inner.style.border).toBe('1px dashed var(--accent)');
+  });
+
+  it('background, padding, border-radius are identical in incognito vs normal', () => {
+    const { container: cNormal } = render(<ChatInputBar {...defaultProps({ incognito: false })} />);
+    const { container: cIncog } = render(<ChatInputBar {...defaultProps({ incognito: true })} />);
+    const normal = cNormal.querySelector('form > div')! as HTMLDivElement;
+    const incog = cIncog.querySelector('form > div')! as HTMLDivElement;
+    expect(normal.style.backgroundColor).toBe(incog.style.backgroundColor);
+    expect(normal.style.padding).toBe(incog.style.padding);
+    expect(normal.style.borderRadius).toBe(incog.style.borderRadius);
+  });
 });
 
 // ─── Onboarding UX gate (2026-06-14): send button disabled without providers ──

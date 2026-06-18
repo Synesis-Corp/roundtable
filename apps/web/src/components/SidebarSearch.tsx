@@ -1,5 +1,7 @@
-import type { RefObject } from 'react';
+import { useEffect, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getShortcutLabel } from '../lib/keyboard-helpers';
+import { SHORTCUT_SEARCH_EVENT } from './KeyboardShortcutsController';
 
 interface SidebarSearchProps {
   searchOpen: boolean;
@@ -11,7 +13,8 @@ interface SidebarSearchProps {
 
 /**
  * Search control that morphs in place between a button and an input so there is
- * never a second, duplicated field below it.
+ * never a second, duplicated field below it. Listens for the global Cmd/Ctrl+K
+ * shortcut via the SHORTCUT_SEARCH_EVENT bus (Capability 5).
  */
 export function SidebarSearch({
   searchOpen,
@@ -21,6 +24,23 @@ export function SidebarSearch({
   onToggle,
 }: SidebarSearchProps) {
   const { t } = useTranslation();
+
+  // Global Cmd/Ctrl+K → open the search and focus the input.
+  useEffect(() => {
+    const onShortcut = () => {
+      if (searchOpen) {
+        // Already open: just focus the input (no toggle).
+        searchInputRef.current?.focus();
+      } else {
+        onToggle();
+        // Focus the input on the next tick (after the morph).
+        requestAnimationFrame(() => searchInputRef.current?.focus());
+      }
+    };
+    window.addEventListener(SHORTCUT_SEARCH_EVENT, onShortcut);
+    return () => window.removeEventListener(SHORTCUT_SEARCH_EVENT, onShortcut);
+  }, [searchOpen, searchInputRef, onToggle]);
+
   return (
     <nav className="px-3">
       <div className="relative">
@@ -83,6 +103,33 @@ export function SidebarSearch({
             }}
           >
             {t('shell.search')}
+            <kbd
+              data-testid="search-kbd-hint"
+              aria-hidden="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggle();
+                requestAnimationFrame(() => searchInputRef.current?.focus());
+              }}
+              style={{
+                position: 'absolute',
+                right: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 10.5,
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--text-4)',
+                padding: '1px 5px',
+                borderRadius: 4,
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--bg-surface)',
+                cursor: 'pointer',
+                lineHeight: 1.4,
+                userSelect: 'none',
+              }}
+            >
+              {getShortcutLabel('search')}
+            </kbd>
           </button>
         )}
 

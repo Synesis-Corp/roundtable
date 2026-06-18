@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Conversation } from '@chat/sdk';
 import { groupConversationsByDate, formatConversationTime } from '../lib/conversations';
 import { getProviderColor, getProviderLabel } from '../lib/layout-helpers';
+import { useIncognitoFromBus } from '../lib/incognito-events';
 
 interface ConversationListProps {
   loadingConversations: boolean;
@@ -32,8 +33,29 @@ export function ConversationList({
   onRequestDelete,
 }: ConversationListProps) {
   const { t } = useTranslation();
+  // Capability 3: dim the conversation list when incognito is active.
+  // The notice and dim are removed when incognito exits.
+  const incognitoActive = useIncognitoFromBus();
   return (
     <div className="flex-1 overflow-y-auto px-3 py-2 mt-2">
+      {incognitoActive && (
+        <div
+          data-testid="incognito-dim-notice"
+          className="px-2 mb-3"
+          style={{
+            fontSize: 11.5,
+            color: 'var(--m-amber)',
+            backgroundColor: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.22)',
+            borderRadius: 'var(--r-sm)',
+            padding: '6px 10px',
+            lineHeight: 1.4,
+            opacity: 1,
+          }}
+        >
+          {t('shell.incognitoDim.notice')}
+        </div>
+      )}
       {loadingConversations && conversations.length === 0 ? (
         <div className="space-y-2 px-2">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -61,21 +83,42 @@ export function ConversationList({
           {t('shell.noResults', { query: searchQuery.trim() })}
         </div>
       ) : (
-        <div>
+        <div
+          data-dimmed={incognitoActive ? 'true' : 'false'}
+          style={{ opacity: incognitoActive ? 0.4 : 1 }}
+        >
+          {/* Single global "Recent" header (Capability 6). Shown above the
+              first date group when the user is not searching. The first
+              group's original label is suppressed to avoid double-headings. */}
+          {searchQuery.trim() === '' && (
+            <div
+              className="px-2 mb-2"
+              style={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: 'var(--text-2)',
+                marginTop: 0,
+              }}
+            >
+              {t('shell.history.recent')}
+            </div>
+          )}
           {groupConversationsByDate(filteredConversations.slice(0, 30)).map((group, groupIndex) => (
             <div key={group.key}>
-              <div
-                className="px-2 mb-2 uppercase"
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: '0.08em',
-                  color: 'var(--text-3)',
-                  marginTop: groupIndex === 0 ? 0 : 16,
-                }}
-              >
-                {group.label}
-              </div>
+              {!(searchQuery.trim() === '' && groupIndex === 0) && (
+                <div
+                  className="px-2 mb-2 uppercase"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    letterSpacing: '0.08em',
+                    color: 'var(--text-3)',
+                    marginTop: groupIndex === 0 ? 0 : 16,
+                  }}
+                >
+                  {group.label}
+                </div>
+              )}
               <div className="space-y-0.5">
                 {group.conversations.map((conv) => {
                   const isActive = activeConversationId === conv.id;
@@ -96,11 +139,16 @@ export function ConversationList({
                       }}
                       className="group block w-full text-left transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-sidebar)] relative"
                       style={{
-                        padding: '8px 10px',
+                        padding: isActive ? '8px 10px 8px 13px' : '8px 10px',
                         borderRadius: 'var(--r-sm)',
-                        backgroundColor: isActive ? 'var(--hover-strong)' : 'transparent',
+                        backgroundColor: isActive ? 'var(--accent-quiet)' : 'transparent',
                         color: isActive ? 'var(--text-1)' : 'var(--text-2)',
-                        borderLeft: isActive ? '3px solid var(--accent)' : '3px solid transparent',
+                        // Anti-slop fix: the 3px visible accent stripe is removed.
+                        // The transparent border-left is kept (3px) to preserve
+                        // the layout slot so removing the stripe doesn't shift
+                        // the title's left edge. The active row compensates
+                        // for that with +3px padding-left.
+                        borderLeft: '3px solid transparent',
                       }}
                       onMouseEnter={(e) => {
                         if (!isActive) {
@@ -183,6 +231,11 @@ export function ConversationList({
                             padding: 2,
                             borderRadius: 6,
                             lineHeight: 0,
+                            // REQ-DIM-1: row actions are non-interactive in incognito.
+                            // The dim wrapper applies opacity 0.4; we additionally
+                            // disable clicks on rename/delete so the user can't
+                            // accidentally mutate non-incognito state.
+                            pointerEvents: incognitoActive ? 'none' : 'auto',
                           }}
                           onMouseEnter={(e) => {
                             (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-1)';
@@ -220,6 +273,8 @@ export function ConversationList({
                             padding: 2,
                             borderRadius: 6,
                             lineHeight: 0,
+                            // REQ-DIM-1: see rename above.
+                            pointerEvents: incognitoActive ? 'none' : 'auto',
                           }}
                           onMouseEnter={(e) => {
                             (e.currentTarget as HTMLButtonElement).style.color = 'var(--m-rose)';

@@ -15,6 +15,25 @@ export function getGreeting(): 'morning' | 'afternoon' | 'evening' {
   return 'evening';
 }
 
+/**
+ * Compose the welcome greeting text. Pure function — no hooks, no i18n
+ * instance. The caller supplies the translated time-of-day prefix.
+ *
+ * Rules (Capability 9):
+ * - `profileLoading === true` → just the prefix (no name, no decision yet).
+ * - `incognito === true` → just the prefix (generic greeting in incognito).
+ * - Otherwise → prefix + ", " + displayName (when displayName is non-empty).
+ */
+export function buildGreeting(
+  prefix: string,
+  displayName: string,
+  profileLoading: boolean,
+  incognito: boolean
+): string {
+  if (profileLoading || incognito) return prefix;
+  return displayName ? `${prefix}, ${displayName}` : prefix;
+}
+
 export function getCouncilProviderColor(provider: string): string {
   if (provider === 'openai') return '#5cb08b';
   if (provider === 'anthropic') return '#cf9a5e';
@@ -224,6 +243,8 @@ export interface QuickAction {
     | 'chat.quickActionPrefixes.write'
     | 'chat.quickActionPrefixes.search'
     | 'chat.quickActionPrefixes.ideas';
+  /** Token name applied to the icon color + tinted container. */
+  iconColorToken: '--m-violet' | '--m-blue' | '--m-green' | '--m-rose';
 }
 
 export const QUICK_ACTIONS: QuickAction[] = [
@@ -231,20 +252,26 @@ export const QUICK_ACTIONS: QuickAction[] = [
     icon: <IconImage />,
     labelKey: 'chat.quickActions.image',
     prefixKey: 'chat.quickActionPrefixes.image',
+    iconColorToken: '--m-violet',
   },
   {
     icon: <IconPencil />,
     labelKey: 'chat.quickActions.write',
     prefixKey: 'chat.quickActionPrefixes.write',
+    iconColorToken: '--m-blue',
   },
   {
     icon: <IconSearch />,
     labelKey: 'chat.quickActions.search',
     prefixKey: 'chat.quickActionPrefixes.search',
+    iconColorToken: '--m-green',
   },
   {
     icon: <IconBulb />,
     labelKey: 'chat.quickActions.ideas',
     prefixKey: 'chat.quickActionPrefixes.ideas',
+    // Ideas uses --m-rose (NOT --m-amber — amber is overloaded: incognito,
+    // Anthropic provider, council medium-confidence, admin).
+    iconColorToken: '--m-rose',
   },
 ];

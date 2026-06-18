@@ -14,6 +14,8 @@ import { SidebarUserCard } from './SidebarUserCard';
 import { SidebarTopbarToggles } from './SidebarTopbarToggles';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { RenameModal } from './RenameModal';
+import { KeyboardShortcutsController } from './KeyboardShortcutsController';
+import { ComposerFocusProvider } from '../lib/composer-focus';
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -72,6 +74,7 @@ export default function Layout() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--bg-app)' }}>
+      <KeyboardShortcutsController />
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -185,7 +188,9 @@ export default function Layout() {
         />
 
         <StreamingContext.Provider value={{ streaming, setStreaming }}>
-          <Outlet />
+          <ComposerFocusProvider>
+            <Outlet />
+          </ComposerFocusProvider>
         </StreamingContext.Provider>
       </main>
 

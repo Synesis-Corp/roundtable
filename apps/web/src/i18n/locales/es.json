@@ -63,6 +63,15 @@
     "searchPlaceholder": "Buscar conversaciones…",
     "searchAria": "Buscar conversaciones",
     "closeSearch": "Cerrar búsqueda",
+    "incognitoDim": {
+      "notice": "Modo incógnito activo · estos chats no se ven afectados"
+    },
+    "userMenu": {
+      "open": "Abrir menú de usuario",
+      "settings": "Configuración",
+      "admin": "Panel de administración",
+      "logout": "Cerrar sesión"
+    },
     "userFallback": "Usuario",
     "logout": "Cerrar sesión",
     "adminLink": "Admin",
@@ -92,6 +101,22 @@
   "chat": {
     "auto": "Auto",
     "incognitoChip": "Incógnito · no se guarda",
+    "incognitoBar": {
+      "label": "Chat incógnito",
+      "exit": "Salir del modo incógnito",
+      "iconAlt": "Modo incógnito activo"
+    },
+    "incognito": {
+      "moreInfoLink": "Más información",
+      "explainer": {
+        "title": "Sobre el modo incógnito",
+        "p1": "Tus chats en esta sesión no se guardarán en tu historial. Al salir del modo incógnito, la conversación desaparecerá.",
+        "p2": "No usamos lo que escribas aquí para mejorar nuestros modelos, ni guardamos transcripciones, memorias ni adjuntos.",
+        "p3": "No usamos estos datos para entrenar modelos, personalizar la experiencia ni hacer analítica de producto. Solo se registran métricas anónimas de uso (conteos de tokens, número de requests) para facturación y prevención de abuso.",
+        "dismiss": "Cerrar",
+        "close": "Cerrar"
+      }
+    },
     "councilChip_one": "Consejo · {{count}} modelo",
     "councilChip_other": "Consejo · {{count}} modelos",
     "disclaimer": "Puede cometer errores.",
