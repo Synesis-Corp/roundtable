@@ -382,6 +382,22 @@ describe('ChatPage — Onboarding CTA (single mode)', () => {
     expect(screen.getByRole('link', { name: /settings|providers|provider/i })).toBeInTheDocument();
   });
 
+  it('kind=new: onboarding title uses the serif brand font (not the sans semibold)', () => {
+    mockUseOnboarding.mockReturnValue({
+      onboarding: {
+        kind: 'new',
+        titleKey: 'onboarding.copy.new.title' as const,
+        bodyKey: 'onboarding.copy.new.body' as const,
+        ctaKey: 'onboarding.copy.new.cta' as const,
+      },
+      clearIsNew: vi.fn(),
+    });
+    renderChatPage();
+    const title = screen.getByText('Connect your first provider to start');
+    expect(title.className).toContain('font-serif');
+    expect(title.className).not.toContain('font-semibold');
+  });
+
   it('kind=returning: greeting IS in DOM, soft banner with link to /settings IS present', () => {
     mockUseOnboarding.mockReturnValue({
       onboarding: {

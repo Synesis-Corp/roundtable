@@ -2,7 +2,6 @@ import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { StreamingContext } from '../lib/streaming-context';
 import { NEW_CHAT_EVENT } from '../lib/layout-helpers';
-import type { LayoutOutletContext } from '../lib/layout-outlet-context';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { useProfile } from '../hooks/useProfile';
 import { useConversations } from '../hooks/useConversations';
@@ -171,7 +170,7 @@ export default function Layout() {
 
         <StreamingContext.Provider value={{ streaming, setStreaming }}>
           <ComposerFocusProvider>
-            <Outlet context={{ conversations } satisfies LayoutOutletContext} />
+            <Outlet />
           </ComposerFocusProvider>
         </StreamingContext.Provider>
       </main>
