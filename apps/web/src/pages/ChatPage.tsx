@@ -1,7 +1,7 @@
 import { storage } from '../lib/storage';
-import { useState, useCallback, useRef, useEffect, lazy, Suspense } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { OnboardingWizard } from '../components/OnboardingWizard';
-import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useOutletContext, Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { useSSE } from '../hooks/useSSE';
 import { useChatStreamHandlers } from '../hooks/useChatStreamHandlers';
@@ -28,6 +28,9 @@ const ChatMessageItem = lazy(() =>
 );
 import { RoundtableBanner } from '../components/RoundtableBanner';
 import { QuickActions, DeliberationSteps } from '../components/QuickActions';
+import { PromptSuggestions } from '../components/PromptSuggestions';
+import { buildPromptSuggestions } from '../lib/prompt-suggestions';
+import type { LayoutOutletContext } from '../lib/layout-outlet-context';
 import type { OnboardingNew, OnboardingReturning } from '../lib/onboarding-helpers';
 import type { ChatMessage, MultiInfo, EffortSpec, CouncilInfo } from '../types/chat';
 
@@ -50,6 +53,16 @@ export default function ChatPage() {
   const [conversationTitleState, setConversationTitleState] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [files, setFiles] = useState<File[]>([]);
+
+  // Contextual prompt suggestions (#3): derived from the already-loaded
+  // conversation list (via Layout's <Outlet> context — no extra fetch).
+  // Null-safe so ChatPage still renders when mounted outside the Layout outlet
+  // (e.g. in unit tests). Empty in incognito — no usage-based hints there.
+  const outletCtx = useOutletContext<LayoutOutletContext | null>();
+  const promptSuggestions = useMemo(
+    () => (incognito ? [] : buildPromptSuggestions(outletCtx?.conversations ?? [])),
+    [incognito, outletCtx?.conversations]
+  );
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const { profile, loading: profileLoading } = useProfile();
   const displayName = profile?.displayName || profile?.name || '';
@@ -718,6 +731,13 @@ export default function ChatPage() {
               )}
 
               <ChatInputBar {...inputBarProps} stopStream={stopStream} />
+
+              {/* Contextual suggestions (#3) — dynamic, derived from recent
+                conversations. Single-model welcome only; hidden in Consejo and
+                when there is no usable history (returns null). */}
+              {!multiMode && (
+                <PromptSuggestions suggestions={promptSuggestions} onSelect={setInputText} />
+              )}
 
               {/* Quick actions — single-model shortcuts; in Consejo mode we show
                 the deliberation steps instead, since these are per-task prompts. */}

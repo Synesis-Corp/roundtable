@@ -197,16 +197,21 @@
       "synthesize": "Sintetizan"
     },
     "quickActions": {
-      "image": "Imagen",
       "write": "Escribir",
       "search": "Buscar",
       "ideas": "Ideas"
     },
     "quickActionPrefixes": {
-      "image": "Crea una imagen de ",
       "write": "Ayúdame a escribir ",
       "search": "Busca información sobre ",
       "ideas": "Generemos ideas para "
+    },
+    "suggestions": {
+      "label": "Basado en tu uso",
+      "continueLabel": "Continúa: {{title}}",
+      "continuePrompt": "Retomemos donde quedamos en «{{title}}». ¿Puedes resumir y continuar?",
+      "summarizeLabel": "Resumen: {{title}}",
+      "summarizePrompt": "Hazme un resumen conciso de nuestra conversación sobre «{{title}}»."
     },
     "banner": {
       "councilConvening": "Roundtable: convocando al Consejo"

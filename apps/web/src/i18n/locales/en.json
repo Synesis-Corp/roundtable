@@ -199,16 +199,21 @@
       "synthesize": "Synthesize"
     },
     "quickActions": {
-      "image": "Image",
       "write": "Write",
       "search": "Search",
       "ideas": "Ideas"
     },
     "quickActionPrefixes": {
-      "image": "Create an image of ",
       "write": "Help me write ",
       "search": "Search information about ",
       "ideas": "Let's brainstorm for "
+    },
+    "suggestions": {
+      "label": "Based on your usage",
+      "continueLabel": "Continue: {{title}}",
+      "continuePrompt": "Let's pick up where we left off on \"{{title}}\". Can you recap and continue?",
+      "summarizeLabel": "Recap: {{title}}",
+      "summarizePrompt": "Give me a concise summary of our conversation about \"{{title}}\"."
     },
     "banner": {
       "councilConvening": "Roundtable: convening the Council"

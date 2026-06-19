@@ -181,4 +181,24 @@ describe('LoginPage — auth-ui visual polish', () => {
       expect(header.className).not.toContain('mb-8');
     });
   });
+
+  // ── T7: Capability 7 — Brand accent alignment ──────────────────────────────
+  // The app accent is indigo (--accent #747bed). The account-switch link must
+  // use the brand accent class, NOT hardcoded Tailwind blue, so the auth pages
+  // align with the rest of the product's visual language.
+
+  describe('Cap 7 — Brand accent alignment', () => {
+    it('7.1 the create-account link uses the auth-link accent class', () => {
+      renderLoginPage();
+      const link = screen.getByRole('link');
+      expect(link.className).toContain('auth-link');
+    });
+
+    it('7.2 the create-account link does NOT use hardcoded Tailwind blue', () => {
+      renderLoginPage();
+      const link = screen.getByRole('link');
+      expect(link.className).not.toContain('text-blue-400');
+      expect(link.className).not.toContain('text-blue-300');
+    });
+  });
 });

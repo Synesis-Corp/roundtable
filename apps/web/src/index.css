@@ -429,14 +429,24 @@ body {
     padding: 2rem 2rem 1.75rem;
   }
 
-  /* Auth page background — blue tint + dot grid */
+  /* Auth page background — brand indigo tint + dot grid */
   .auth-bg {
     background-image:
-      radial-gradient(circle at top, rgba(59, 130, 246, 0.1), transparent 28rem),
+      radial-gradient(circle at top, rgba(116, 123, 237, 0.12), transparent 28rem),
       radial-gradient(circle, var(--border) 1px, transparent 1px);
     background-size:
       auto,
       24px 24px;
+  }
+
+  /* Auth page inline link — brand accent (mirrors .markdown-body a) */
+  .auth-link {
+    @apply underline underline-offset-2 font-medium;
+    color: var(--accent-text);
+    transition: color 0.15s ease;
+  }
+  .auth-link:hover {
+    color: var(--accent-hover);
   }
 }
 

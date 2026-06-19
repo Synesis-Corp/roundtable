@@ -2,24 +2,29 @@ import { describe, it, expect } from 'vitest';
 import { buildGreeting, QUICK_ACTIONS } from './chat-page-helpers';
 
 describe('QUICK_ACTIONS color tokens (Capability 10)', () => {
-  it('Imagen chip uses --m-violet', () => {
-    expect(QUICK_ACTIONS[0].labelKey).toBe('chat.quickActions.image');
-    expect(QUICK_ACTIONS[0].iconColorToken).toBe('--m-violet');
+  // Image generation chip removed by product decision — the three remaining
+  // chips are text-only tasks (write, search, ideas).
+  it('does NOT include an image-generation chip', () => {
+    expect(QUICK_ACTIONS.map((a) => a.labelKey)).not.toContain('chat.quickActions.image');
+  });
+
+  it('renders exactly 3 chips', () => {
+    expect(QUICK_ACTIONS).toHaveLength(3);
   });
 
   it('Escribir chip uses --m-blue', () => {
-    expect(QUICK_ACTIONS[1].labelKey).toBe('chat.quickActions.write');
-    expect(QUICK_ACTIONS[1].iconColorToken).toBe('--m-blue');
+    expect(QUICK_ACTIONS[0].labelKey).toBe('chat.quickActions.write');
+    expect(QUICK_ACTIONS[0].iconColorToken).toBe('--m-blue');
   });
 
   it('Buscar chip uses --m-green', () => {
-    expect(QUICK_ACTIONS[2].labelKey).toBe('chat.quickActions.search');
-    expect(QUICK_ACTIONS[2].iconColorToken).toBe('--m-green');
+    expect(QUICK_ACTIONS[1].labelKey).toBe('chat.quickActions.search');
+    expect(QUICK_ACTIONS[1].iconColorToken).toBe('--m-green');
   });
 
   it('Ideas chip uses --m-rose (NOT --m-amber, which is overloaded)', () => {
-    expect(QUICK_ACTIONS[3].labelKey).toBe('chat.quickActions.ideas');
-    expect(QUICK_ACTIONS[3].iconColorToken).toBe('--m-rose');
+    expect(QUICK_ACTIONS[2].labelKey).toBe('chat.quickActions.ideas');
+    expect(QUICK_ACTIONS[2].iconColorToken).toBe('--m-rose');
   });
 });
 

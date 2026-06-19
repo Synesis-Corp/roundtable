@@ -3,41 +3,33 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { QuickActions } from './QuickActions';
 
 describe('QuickActions — colorful chips (Capability 10)', () => {
-  it('renders exactly 4 chips', () => {
+  it('renders exactly 3 chips', () => {
     render(<QuickActions onSelect={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
-    expect(buttons).toHaveLength(4);
+    expect(buttons).toHaveLength(3);
   });
 
-  it('Imagen chip: icon container has the violet color-mix tint (12% alpha idle)', () => {
+  it('does NOT render an image-generation chip (icon color violet)', () => {
     render(<QuickActions onSelect={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
-    const imagen = buttons[0];
-    const iconWrap = imagen.querySelector('span')!;
-    const bg = iconWrap.style.backgroundColor;
-    expect(bg).toMatch(/(color-mix|rgba?)/);
+    const violetChips = buttons.filter(
+      (b) => b.querySelector('span')?.style.color === 'var(--m-violet)'
+    );
+    expect(violetChips).toHaveLength(0);
   });
 
   it('Ideas chip: icon color is rose (NOT amber)', () => {
     render(<QuickActions onSelect={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
-    const ideas = buttons[3];
+    const ideas = buttons[2];
     const iconWrap = ideas.querySelector('span')!;
     expect(iconWrap.style.color).toBe('var(--m-rose)');
-  });
-
-  it('Imagen chip: icon color is violet', () => {
-    render(<QuickActions onSelect={vi.fn()} />);
-    const buttons = screen.getAllByRole('button');
-    const imagen = buttons[0];
-    const iconWrap = imagen.querySelector('span')!;
-    expect(iconWrap.style.color).toBe('var(--m-violet)');
   });
 
   it('Escribir chip: icon color is blue', () => {
     render(<QuickActions onSelect={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
-    const escribir = buttons[1];
+    const escribir = buttons[0];
     const iconWrap = escribir.querySelector('span')!;
     expect(iconWrap.style.color).toBe('var(--m-blue)');
   });
@@ -45,7 +37,7 @@ describe('QuickActions — colorful chips (Capability 10)', () => {
   it('Buscar chip: icon color is green', () => {
     render(<QuickActions onSelect={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
-    const buscar = buttons[2];
+    const buscar = buttons[1];
     const iconWrap = buscar.querySelector('span')!;
     expect(iconWrap.style.color).toBe('var(--m-green)');
   });
@@ -71,9 +63,8 @@ describe('QuickActions — colorful chips (Capability 10)', () => {
     const buttons = screen.getAllByRole('button');
     fireEvent.click(buttons[0]);
     expect(onSelect).toHaveBeenCalledTimes(1);
-    // The prefix is the i18n translation of chat.quickActionPrefixes.image
-    // = "Create an image of " in en.
-    expect(onSelect).toHaveBeenCalledWith(expect.stringMatching(/image of/i));
+    // buttons[0] is now the "write" chip — prefix = "Help me write " in en.
+    expect(onSelect).toHaveBeenCalledWith(expect.stringMatching(/help me write/i));
   });
 
   it('icon container is a 24px square (or 18-24 range)', () => {

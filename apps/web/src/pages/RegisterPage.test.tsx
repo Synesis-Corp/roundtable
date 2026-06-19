@@ -217,3 +217,26 @@ describe('RegisterPage — onboarding flag on created', () => {
     expect(storageStub.get('token')).toBe('tok-def');
   });
 });
+
+// ─── Cap 7: Brand accent alignment ────────────────────────────────────────────
+// The sign-in link must use the brand accent (indigo) class, not Tailwind blue,
+// so the auth pages align with the rest of the product.
+
+describe('RegisterPage — Cap 7 brand accent alignment', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('7.1 the sign-in link uses the auth-link accent class', () => {
+    renderRegisterPage2();
+    const link = screen.getByRole('link');
+    expect(link.className).toContain('auth-link');
+  });
+
+  it('7.2 the sign-in link does NOT use hardcoded Tailwind blue', () => {
+    renderRegisterPage2();
+    const link = screen.getByRole('link');
+    expect(link.className).not.toContain('text-blue-400');
+    expect(link.className).not.toContain('text-blue-300');
+  });
+});

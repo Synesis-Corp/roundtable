@@ -155,24 +155,6 @@ export function mapPersistedCouncilInfo(message: {
 /*  SVG icon helpers (only used by QuickActions)                       */
 /* ------------------------------------------------------------------ */
 
-function IconImage({ className = 'w-[16px] h-[16px]' }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <path d="M21 15l-5-5L5 21" />
-    </svg>
-  );
-}
-
 function IconPencil({ className = 'w-[16px] h-[16px]' }: { className?: string }) {
   return (
     <svg
@@ -232,28 +214,17 @@ function IconBulb({ className = 'w-[16px] h-[16px]' }: { className?: string }) {
 export interface QuickAction {
   icon: React.ReactNode;
   /** i18n key under `chat.quickActions.*` for the visible label. */
-  labelKey:
-    | 'chat.quickActions.image'
-    | 'chat.quickActions.write'
-    | 'chat.quickActions.search'
-    | 'chat.quickActions.ideas';
+  labelKey: 'chat.quickActions.write' | 'chat.quickActions.search' | 'chat.quickActions.ideas';
   /** Prompt text key injected into the composer when the action is picked. */
   prefixKey:
-    | 'chat.quickActionPrefixes.image'
     | 'chat.quickActionPrefixes.write'
     | 'chat.quickActionPrefixes.search'
     | 'chat.quickActionPrefixes.ideas';
   /** Token name applied to the icon color + tinted container. */
-  iconColorToken: '--m-violet' | '--m-blue' | '--m-green' | '--m-rose';
+  iconColorToken: '--m-blue' | '--m-green' | '--m-rose';
 }
 
 export const QUICK_ACTIONS: QuickAction[] = [
-  {
-    icon: <IconImage />,
-    labelKey: 'chat.quickActions.image',
-    prefixKey: 'chat.quickActionPrefixes.image',
-    iconColorToken: '--m-violet',
-  },
   {
     icon: <IconPencil />,
     labelKey: 'chat.quickActions.write',
