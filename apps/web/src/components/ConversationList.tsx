@@ -185,7 +185,7 @@ export function ConversationList({
                           style={{
                             fontSize: 13.5,
                             fontWeight: 500,
-                            color: isActive ? 'var(--text-1)' : 'var(--text-1)',
+                            color: 'var(--text-1)',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',

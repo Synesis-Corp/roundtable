@@ -143,6 +143,72 @@ describe('SearchOverlay', () => {
     });
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('dialog', { name: /search conversations/i })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it('keeps Tab focus inside the dialog while results are visible', async () => {
+    searchMock.mockResolvedValueOnce({
+      results: [
+        {
+          id: 'conv-1',
+          title: 'First',
+          updatedAt: new Date().toISOString(),
+          matchedIn: 'title',
+          snippet: null,
+        },
+      ],
+    });
+    openOverlay();
+
+    const input = screen.getByRole('searchbox', { name: /search conversations/i });
+    fireEvent.change(input, { target: { value: 'hello' } });
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+      await Promise.resolve();
+    });
+
+    const result = screen.getByRole('button', { name: /first/i });
+    input.focus();
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(result).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(input).toHaveFocus();
+  });
+
+  it('renders multiple date groups for results across different days', async () => {
+    vi.setSystemTime(new Date('2026-06-18T12:00:00.000Z'));
+    searchMock.mockResolvedValueOnce({
+      results: [
+        {
+          id: 'conv-1',
+          title: 'Today result',
+          updatedAt: '2026-06-18T10:00:00.000Z',
+          matchedIn: 'title',
+          snippet: null,
+        },
+        {
+          id: 'conv-2',
+          title: 'Week result',
+          updatedAt: '2026-06-15T10:00:00.000Z',
+          matchedIn: 'content',
+          snippet: 'weekly <mark>result</mark>',
+        },
+      ],
+    });
+    openOverlay();
+
+    const input = screen.getByRole('searchbox', { name: /search conversations/i });
+    fireEvent.change(input, { target: { value: 'result' } });
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole('heading', { name: /today/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /this week/i })).toBeInTheDocument();
+    expect(screen.getByText('Today result')).toBeInTheDocument();
+    expect(screen.getByText('Week result')).toBeInTheDocument();
   });
 
   it('shows a no-results state for a settled query with zero matches', async () => {

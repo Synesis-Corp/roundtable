@@ -12,14 +12,19 @@ import { searchConversations } from '../lib/conversation-search';
 
 const router = Router();
 
+const SearchQuerySchema = z.object({
+  q: z.string().optional().default(''),
+  limit: z.coerce.number().int().positive().optional().catch(undefined),
+});
+
 // Full-text search endpoint — MUST be registered BEFORE /:id so Express does
 // not match the literal string "search" as a conversation ID param.
 
 router.get('/search', authMiddleware, async (req: AuthenticatedRequest, res) => {
   try {
-    const rawQ = typeof req.query.q === 'string' ? req.query.q : '';
-    const rawLimit = Number(req.query.limit);
-    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 50) : 20;
+    const parsed = SearchQuerySchema.parse(req.query);
+    const rawQ = parsed.q;
+    const limit = parsed.limit ? Math.min(parsed.limit, 50) : 20;
 
     const results = await searchConversations(req.userId!, rawQ, limit);
     res.json({ results });

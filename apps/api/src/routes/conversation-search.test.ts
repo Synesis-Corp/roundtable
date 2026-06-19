@@ -108,6 +108,13 @@ describe('GET /conversations/search', () => {
     expect(mockSearchConversations).toHaveBeenCalledWith('user-a', 'test', 20);
   });
 
+  // Decimal limits are invalid for SQL LIMIT; route must fall back before delegating.
+  it('uses default limit 20 when limit param is decimal', async () => {
+    mockSearchConversations.mockResolvedValueOnce([]);
+    await request(app).get('/conversations/search?q=test&limit=10.5').set(authA);
+    expect(mockSearchConversations).toHaveBeenCalledWith('user-a', 'test', 20);
+  });
+
   // Route is NOT shadowed by /:id (Express ordering guard)
   // The word "search" must not be treated as a conversation id
   it('is not shadowed by /:id — search route resolves before id param', async () => {
