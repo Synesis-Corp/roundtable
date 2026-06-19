@@ -153,32 +153,32 @@ describe('LoginPage — auth-ui visual polish', () => {
 
   // ── T6: Capability 6 — Form spacing (LoginPage) ────────────────────────────
 
-  describe('Cap 6 — Form spacing (LoginPage)', () => {
-    it('6.1 form has space-y-5 class', () => {
+  describe('Cap 6 — Compact form spacing (LoginPage)', () => {
+    it('6.1 form has the tighter space-y-4 class', () => {
       renderLoginPage();
       // The <form> has no accessible name so getByRole('form') won't work;
       // use querySelector as the spec-approved fallback.
       const formEl = document.querySelector('form')!;
       expect(formEl).toBeTruthy();
-      expect(formEl.className).toContain('space-y-5');
+      expect(formEl.className).toContain('space-y-4');
     });
 
-    it('6.2 form does NOT have space-y-4 class', () => {
+    it('6.2 form does NOT keep the looser space-y-5 class', () => {
       renderLoginPage();
       const formEl = document.querySelector('form')!;
-      expect(formEl.className).not.toContain('space-y-4');
+      expect(formEl.className).not.toContain('space-y-5');
     });
 
-    it('6.3 auth-header has mb-10 class', () => {
+    it('6.3 auth-header uses the tighter mb-7 class', () => {
       renderLoginPage();
       const header = screen.getByTestId('auth-header');
-      expect(header.className).toContain('mb-10');
+      expect(header.className).toContain('mb-7');
     });
 
-    it('6.4 auth-header does NOT have mb-8 class', () => {
+    it('6.4 auth-header does NOT keep the tall mb-10 class', () => {
       renderLoginPage();
       const header = screen.getByTestId('auth-header');
-      expect(header.className).not.toContain('mb-8');
+      expect(header.className).not.toContain('mb-10');
     });
   });
 

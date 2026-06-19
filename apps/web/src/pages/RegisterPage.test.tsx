@@ -147,17 +147,18 @@ describe('RegisterPage — auth-ui visual polish', () => {
 
   // ── T7: Capability 6 — Form spacing (RegisterPage) ─────────────────────────
 
-  describe('Cap 6 — Form spacing (RegisterPage)', () => {
-    it('7.1 form has space-y-5 class', () => {
+  describe('Cap 6 — Compact form spacing (RegisterPage)', () => {
+    it('7.1 form has the tighter space-y-4 class', () => {
       renderRegisterPage2();
       const formEl = document.querySelector('form')!;
-      expect(formEl.className).toContain('space-y-5');
+      expect(formEl.className).toContain('space-y-4');
     });
 
-    it('7.2 auth-header has mb-10 class', () => {
+    it('7.2 auth-header uses the tighter mb-7 class (not the tall mb-10)', () => {
       renderRegisterPage2();
       const header = screen.getByTestId('auth-header');
-      expect(header.className).toContain('mb-10');
+      expect(header.className).toContain('mb-7');
+      expect(header.className).not.toContain('mb-10');
     });
   });
 

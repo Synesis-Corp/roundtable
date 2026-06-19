@@ -420,13 +420,24 @@ body {
     }
   }
 
-  /* Auth page glassmorphism card */
+  /* Auth page glassmorphism card — compact padding on phones, roomier on sm+ */
   .auth-card {
     background-color: var(--bg-elevated);
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     box-shadow: var(--shadow-lg);
-    padding: 2rem 2rem 1.75rem;
+    padding: 1.5rem 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .auth-card {
+      padding: 2rem 2rem 1.75rem;
+    }
+  }
+  /* Prevent iOS Safari auto-zoom on focus: form inputs must be >=16px on phones. */
+  @media (max-width: 639px) {
+    .auth-card .input-dark {
+      font-size: 16px;
+    }
   }
 
   /* Auth page background — brand indigo tint + dot grid */

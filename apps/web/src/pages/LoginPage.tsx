@@ -37,16 +37,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div data-testid="auth-bg" className="auth-bg flex-1 flex items-center justify-center px-4">
+    <div
+      data-testid="auth-bg"
+      className="auth-bg flex-1 flex items-center justify-center px-4 py-8"
+    >
       <div data-testid="auth-card" className="auth-card w-full max-w-md">
-        <div className="mb-4 flex justify-end">
+        <div className="mb-3 flex justify-end">
           <LanguageSwitcher />
         </div>
-        <div data-testid="auth-header" className="text-center mb-10">
+        <div data-testid="auth-header" className="text-center mb-7">
           <img
             src="/logo/app-icon-gradient.svg"
             alt="Roundtable"
-            className="mx-auto mb-4 h-14 w-14 rounded-3xl shadow-2xl"
+            className="mx-auto mb-3 h-12 w-12 rounded-3xl shadow-2xl"
           />
           <h1
             className="font-serif text-[clamp(28px,4vw,36px)] leading-[1.1] tracking-tight"
@@ -63,7 +66,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1.5">
               {t('common.email')}
@@ -110,7 +113,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="my-6 flex items-center gap-3 text-xs text-gray-500">
+        <div className="my-5 flex items-center gap-3 text-xs text-gray-500">
           <div className="h-px flex-1 bg-gray-700/60" />
           <span>{t('common.or')}</span>
           <div className="h-px flex-1 bg-gray-700/60" />
@@ -121,7 +124,7 @@ export default function LoginPage() {
           <GitHubSignInButton onError={setError} />
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-5 text-center text-sm text-gray-500">
           {t('auth.login.noAccount')}{' '}
           <Link to="/register" className="auth-link">
             {t('auth.login.createAccount')}
