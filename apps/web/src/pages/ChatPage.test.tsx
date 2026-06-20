@@ -161,7 +161,7 @@ describe('ChatPage — Council Count Display', () => {
     await waitFor(() => {
       // With 2 providers and 4 models, auto-selection should show 4 models
       // (2 per provider: openai has gpt-4o + gpt-4o-mini, deepseek has deepseek-chat + deepseek-coder)
-      expect(screen.getByText(/4 models in council/i)).toBeInTheDocument();
+      expect(screen.getByText(/4 models deliberate/i)).toBeInTheDocument();
     });
   });
 
@@ -189,7 +189,7 @@ describe('ChatPage — Council Count Display', () => {
 
     await waitFor(() => {
       // Manual config has 3 models, so should show 3 models
-      expect(screen.getByText(/3 models in council/i)).toBeInTheDocument();
+      expect(screen.getByText(/3 models deliberate/i)).toBeInTheDocument();
     });
   });
 });
@@ -279,8 +279,8 @@ describe('ChatPage — generic greeting in incognito (Capability 9)', () => {
 
   it('incognito=false: subhead uses the default welcome title (not private)', () => {
     renderChatPage();
-    // Default mode: title is "What are we working on today?"
-    expect(screen.getByText(/what are we working on today\?/i)).toBeInTheDocument();
+    // Default mode: title is "What would you like to solve?"
+    expect(screen.getByText(/what would you like to solve\?/i)).toBeInTheDocument();
     expect(screen.queryByText(/what do you want to explore privately\?/i)).not.toBeInTheDocument();
   });
 
@@ -378,7 +378,7 @@ describe('ChatPage — Onboarding CTA (single mode)', () => {
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.queryByText('What are we working on today?')).not.toBeInTheDocument();
+    expect(screen.queryByText('What would you like to solve?')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /settings|providers|provider/i })).toBeInTheDocument();
   });
 
@@ -409,7 +409,7 @@ describe('ChatPage — Onboarding CTA (single mode)', () => {
       clearIsNew: vi.fn(),
     });
     renderChatPage();
-    expect(screen.getByText('What are we working on today?')).toBeInTheDocument();
+    expect(screen.getByText('What would you like to solve?')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /settings|providers|provider/i })).toBeInTheDocument();
   });
 

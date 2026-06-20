@@ -2,7 +2,7 @@ import { storage } from '../lib/storage';
 import { useState, useCallback, useRef, useEffect, lazy, Suspense } from 'react';
 import { OnboardingWizard } from '../components/OnboardingWizard';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { useTranslation, Trans } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { useSSE } from '../hooks/useSSE';
 import { useChatStreamHandlers } from '../hooks/useChatStreamHandlers';
 import { useChatActions } from '../hooks/useChatActions';
@@ -231,7 +231,7 @@ export default function ChatPage() {
     stopStream,
   });
 
-  // Load effort variants for the selected model. In Auto, Council or Mixin mode the
+  // Load effort variants for the selected model. In Auto, Council or Mixing mode the
   // target provider is not fixed, so no request-level effort can be applied.
   useEffortVariants({
     selectedModel,
@@ -677,28 +677,6 @@ export default function ChatPage() {
                     variant="replace"
                     onOpenInlineConnect={() => setWizardOpen(true)}
                   />
-                ) : multiMode ? (
-                  <p
-                    className="mt-4 max-w-sm mx-auto leading-relaxed select-none"
-                    style={{ fontSize: 14, color: 'var(--text-3)' }}
-                  >
-                    <Trans
-                      i18nKey="chat.welcome.councilSubtitle"
-                      count={availableCouncilModelCount}
-                      components={{
-                        accent: <span style={{ color: 'var(--accent)', fontWeight: 500 }} />,
-                      }}
-                    />
-                  </p>
-                ) : mixinMode ? (
-                  <p
-                    className="mt-4 max-w-md mx-auto leading-relaxed select-none"
-                    style={{ fontSize: 14, color: 'var(--text-3)' }}
-                  >
-                    {mixinEligibleCount > 8
-                      ? t('chat.input.mixinNoticeCapped', { count: mixinEligibleCount })
-                      : t('chat.input.mixinNoticeAll', { count: mixinEligibleCount })}
-                  </p>
                 ) : null}
               </div>
 

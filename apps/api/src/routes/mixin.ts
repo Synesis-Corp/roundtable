@@ -64,7 +64,7 @@ function filterActiveModels(
 }
 
 function titleFrom(messages: Message[]): string {
-  return messages.find((message) => message.role === 'user')?.content.slice(0, 50) || 'Mixin';
+  return messages.find((message) => message.role === 'user')?.content.slice(0, 50) || 'Mezcla';
 }
 
 function maybeExtractMixinMemories({
@@ -191,7 +191,7 @@ async function handleMixinRequest(req: AuthenticatedRequest, res: Response): Pro
     if (mixinModels.length === 0) {
       return sendSSEError(
         res,
-        'No hay modelos de chat activos disponibles para Mixin. Revisá tus proveedores y modelos activos en Settings.'
+        'No hay modelos de chat activos disponibles para Mezcla. Revisá tus proveedores y modelos activos en Settings.'
       );
     }
 
@@ -422,14 +422,15 @@ async function handleMixinRequest(req: AuthenticatedRequest, res: Response): Pro
         emit({
           type: 'turn.error',
           code: 'MIXIN_ERROR',
-          message: err instanceof Error ? err.message : 'Mixin failed',
+          message: err instanceof Error ? err.message : 'No se pudo completar Mezcla.',
         });
         streamHub.finish(session, 'error');
       }
     })();
   } catch (err) {
     req.log.error({ err }, 'Mixin: fatal error');
-    if (!res.writableEnded) sendSSEError(res, err instanceof Error ? err.message : 'Mixin failed');
+    if (!res.writableEnded)
+      sendSSEError(res, err instanceof Error ? err.message : 'No se pudo completar Mezcla.');
   }
 }
 

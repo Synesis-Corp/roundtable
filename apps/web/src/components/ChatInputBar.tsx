@@ -90,6 +90,23 @@ function NetworkIcon({ className }: { className?: string }) {
   );
 }
 
+function MergeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 5v4a5 5 0 0 0 5 5h5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m14 11 3 3-3 3" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 5v4a5 5 0 0 1-5 5H7" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m10 11-3 3 3 3" />
+    </svg>
+  );
+}
+
 function ChevronDownIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -217,9 +234,8 @@ export function ChatInputBar(props: ChatInputBarProps) {
     onRejectedFiles,
   } = props;
 
-  const councilCountLabel = t('chat.input.councilCount', { count: councilModelCount });
-  const mixinCountLabel = t('chat.input.mixinCount', { count: Math.min(mixinModelCount, 8) });
   const orchestratedMode = multiMode || mixinMode;
+  const mode = multiMode ? 'council' : mixinMode ? 'mixin' : 'single';
 
   // Mode is freely switchable: it only changes how the NEXT message is processed.
   const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
@@ -229,7 +245,17 @@ export function ChatInputBar(props: ChatInputBarProps) {
   const [isDragging, setIsDragging] = useState(false);
   // Incognito explainer modal (Capability 2) — additive to the inline banner.
   const [explainerOpen, setExplainerOpen] = useState(false);
+  const [modeRecentlyChanged, setModeRecentlyChanged] = useState(false);
   const moreInfoRef = useRef<HTMLButtonElement>(null);
+  const previousModeRef = useRef(mode);
+
+  useEffect(() => {
+    if (previousModeRef.current === mode) return;
+    previousModeRef.current = mode;
+    setModeRecentlyChanged(true);
+    const timer = window.setTimeout(() => setModeRecentlyChanged(false), 1_600);
+    return () => window.clearTimeout(timer);
+  }, [mode]);
 
   // Register the composer's textarea ref with the global focus context so
   // the KeyboardShortcutsController can focus it on the "/" shortcut.
@@ -280,6 +306,33 @@ export function ChatInputBar(props: ChatInputBarProps) {
         : hasMessages
           ? t('chat.input.placeholder.reply')
           : t('chat.input.placeholder.default');
+
+  const mixinDescription =
+    mixinModelCount > 8
+      ? t('chat.input.modeContext.mixinDescriptionCapped', { count: mixinModelCount })
+      : t('chat.input.modeContext.mixinDescriptionAll', { count: mixinModelCount });
+  const modeContext =
+    mode === 'mixin'
+      ? {
+          label: t('chat.input.mixinMode'),
+          title: t('chat.input.modeContext.mixinTitle', { count: Math.min(mixinModelCount, 8) }),
+          description: mixinDescription,
+          note: t('chat.input.modeContext.mixinNote'),
+        }
+      : mode === 'council'
+        ? {
+            label: t('chat.input.councilMode'),
+            title: t('chat.input.modeContext.councilTitle', { count: councilModelCount }),
+            description: t('chat.input.modeContext.councilDescription'),
+            note: undefined,
+          }
+        : {
+            label: t('chat.input.singleMode'),
+            title: t('chat.input.modeContext.singleTitle'),
+            description: t('chat.input.modeContext.singleDescription'),
+            note: undefined,
+          };
+  const showModeContext = mode !== 'single' || modeRecentlyChanged;
 
   // Onboarding UX gate (2026-06-14): disable the send button when the user
   // can't actually send. Without this, the input bar is enabled with 0
@@ -386,20 +439,21 @@ export function ChatInputBar(props: ChatInputBarProps) {
             </button>
           </div>
         )}
-        {mixinMode && (
+        {showModeContext && (
           <div
+            key={`${mode}-${modeRecentlyChanged ? 'changed' : 'stable'}`}
+            className={`composer-mode-context composer-mode-context--${mode} ${
+              modeRecentlyChanged ? 'composer-mode-context--changed' : ''
+            }`}
             role="status"
-            className="mb-2 px-2 text-xs leading-relaxed"
-            style={{ color: 'var(--text-2)' }}
+            aria-live="polite"
           >
-            <span>
-              {mixinModelCount > 8
-                ? t('chat.input.mixinNoticeCapped', { count: mixinModelCount })
-                : t('chat.input.mixinNoticeAll', { count: mixinModelCount })}
-            </span>
-            <span className="ml-1" style={{ color: 'var(--text-4)' }}>
-              {t('chat.input.mixinCostNote')}
-            </span>
+            <span className="composer-mode-context__label">{modeContext.label}</span>
+            <span className="composer-mode-context__title">{modeContext.title}</span>
+            <span className="composer-mode-context__description">{modeContext.description}</span>
+            {modeContext.note && (
+              <span className="composer-mode-context__note">{modeContext.note}</span>
+            )}
           </div>
         )}
         {/* Drag-and-drop visual cue (subtle label inside the composer). */}
@@ -546,9 +600,9 @@ export function ChatInputBar(props: ChatInputBarProps) {
             </svg>
           </button>
 
-          {/* Segmented control: Único | Mixin | Consejo */}
+          {/* Segmented control: Single | Mixing | Council (localized) */}
           <div
-            className="flex items-center shrink-0"
+            className="composer-mode-switcher flex items-center shrink-0"
             role="group"
             aria-label={t('chat.input.modeGroup')}
             style={{
@@ -565,13 +619,9 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 setMixinMode(false);
               }}
               disabled={streaming}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:cursor-not-allowed active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
-              style={{
-                backgroundColor: !orchestratedMode ? 'var(--accent-quiet)' : 'transparent',
-                color: !orchestratedMode ? 'var(--accent-text)' : 'var(--text-3)',
-                boxShadow: !orchestratedMode ? 'inset 0 0 0 1px var(--accent-line)' : 'none',
-                opacity: streaming ? 0.4 : 1,
-              }}
+              aria-pressed={mode === 'single'}
+              className="composer-mode-switcher__option flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
+              data-active={mode === 'single'}
             >
               <PersonIcon className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t('chat.input.singleMode')}</span>
@@ -583,14 +633,11 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 setMixinMode(true);
               }}
               disabled={streaming}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:opacity-40 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
-              style={{
-                backgroundColor: mixinMode ? 'var(--accent-quiet)' : 'transparent',
-                color: mixinMode ? 'var(--accent-text)' : 'var(--text-3)',
-                boxShadow: mixinMode ? 'inset 0 0 0 1px var(--accent-line)' : 'none',
-              }}
+              aria-pressed={mode === 'mixin'}
+              className="composer-mode-switcher__option flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
+              data-active={mode === 'mixin'}
             >
-              <NetworkIcon className="w-3.5 h-3.5" />
+              <MergeIcon className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t('chat.input.mixinMode')}</span>
             </button>
             <button
@@ -600,12 +647,9 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 setMultiMode(true);
               }}
               disabled={streaming}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:opacity-40 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
-              style={{
-                backgroundColor: multiMode ? 'var(--accent-quiet)' : 'transparent',
-                color: multiMode ? 'var(--accent-text)' : 'var(--text-3)',
-                boxShadow: multiMode ? 'inset 0 0 0 1px var(--accent-line)' : 'none',
-              }}
+              aria-pressed={mode === 'council'}
+              className="composer-mode-switcher__option flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
+              data-active={mode === 'council'}
             >
               <NetworkIcon className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t('chat.input.councilMode')}</span>
@@ -691,7 +735,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
                 </svg>
               )}
               <span className="truncate">
-                {multiMode ? councilCountLabel : mixinMode ? mixinCountLabel : selectedLabel}
+                {orchestratedMode ? t('chat.input.autoManaged') : selectedLabel}
               </span>
               {!orchestratedMode && selectedProvider && (
                 <span

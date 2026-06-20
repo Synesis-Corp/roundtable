@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { useState } from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import { ChatInputBar } from './ChatInputBar';
 import type { ChatInputBarProps } from './ChatInputBar';
@@ -173,34 +174,51 @@ describe('ChatInputBar — incognito mode', () => {
   });
 });
 
-describe('ChatInputBar — Mixin mode', () => {
-  it('places Mixin between Single and Council in the mode selector', () => {
+describe('ChatInputBar — Mixing mode', () => {
+  it('places Mixing between Single and Council in the mode selector', () => {
     render(<ChatInputBar {...defaultProps()} />);
 
     const modeButtons = Array.from(
       screen.getByRole('group', { name: /chat mode/i }).querySelectorAll('button')
     ).map((button) => button.textContent?.trim());
 
-    expect(modeButtons).toEqual(['Single', 'Mixin', 'Council']);
+    expect(modeButtons).toEqual(['Single', 'Mixing', 'Council']);
   });
 
-  it('shows the capped personalized notice and exposes the third mode', () => {
+  it('shows one compact, capped context rail for the third mode', () => {
     render(<ChatInputBar {...defaultProps({ mixinMode: true, mixinModelCount: 11 })} />);
 
-    expect(screen.getByRole('button', { name: 'Mixin' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mixing' })).toBeInTheDocument();
+    expect(screen.getByText('8 models, one answer')).toBeInTheDocument();
     expect(
-      screen.getByText(
-        'Mixin mode: 8 of your 11 models will be used to generate the best possible answer.'
-      )
+      screen.getByText('8 of your 11 active models contribute in parallel.')
     ).toBeInTheDocument();
+    expect(screen.getByText('More depth, more time and tokens.')).toBeInTheDocument();
   });
 
-  it('switches to Mixin and clears Council mode', () => {
+  it('switches to Mixing, clears Council mode and confirms the new mode visually', () => {
+    function ModeHarness() {
+      const [multiMode, setMultiMode] = useState(false);
+      const [mixinMode, setMixinMode] = useState(false);
+      return (
+        <ChatInputBar {...defaultProps({ multiMode, mixinMode, setMultiMode, setMixinMode })} />
+      );
+    }
+
+    render(<ModeHarness />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mixing' }));
+
+    expect(screen.getByRole('button', { name: 'Mixing' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('status')).toHaveClass('composer-mode-context--changed');
+  });
+
+  it('switches to Mixing and clears Council mode', () => {
     const setMultiMode = vi.fn();
     const setMixinMode = vi.fn();
     render(<ChatInputBar {...defaultProps({ setMultiMode, setMixinMode })} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Mixin' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mixing' }));
 
     expect(setMultiMode).toHaveBeenCalledWith(false);
     expect(setMixinMode).toHaveBeenCalledWith(true);

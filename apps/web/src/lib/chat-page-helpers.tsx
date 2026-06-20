@@ -61,7 +61,7 @@ export function getCouncilPreviewCount(
   return connectedProviderCount > 0 ? connectedProviderCount * 2 : 0;
 }
 
-/** Number used by the Mixin notice before the API applies the same eight-model cap. */
+/** Number used by the Mixing notice before the API applies the same eight-model cap. */
 export function getMixinEligibleCount(models: Array<{ capabilities?: string[] }>): number {
   return models.filter((model) => !model.capabilities || model.capabilities.includes('text'))
     .length;

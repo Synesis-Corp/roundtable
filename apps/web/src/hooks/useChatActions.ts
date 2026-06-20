@@ -56,7 +56,7 @@ export function buildPrefs(args: {
   } catch {
     // Intl unavailable (ancient runtime): skip — the API falls back to UTC.
   }
-  // In Council or Mixin mode the orchestrator picks the participating models;
+  // In Council or Mixing mode the orchestrator picks the participating models;
   // forcing a model would defeat the purpose, so we omit it.
   if (args.selectedModel && !args.multiMode && !args.mixinMode) {
     const parsedModel = parseSelectedModel(args.selectedModel);

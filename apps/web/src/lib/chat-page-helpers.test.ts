@@ -52,7 +52,7 @@ describe('buildGreeting (Capability 9)', () => {
 });
 
 describe('getMixinEligibleCount', () => {
-  it('counts only chat-capable models for the Mixin notice', () => {
+  it('counts only chat-capable models for the Mixing notice', () => {
     expect(
       getMixinEligibleCount([
         { capabilities: ['text', 'image'] },
