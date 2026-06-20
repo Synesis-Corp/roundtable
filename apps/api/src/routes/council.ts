@@ -30,6 +30,7 @@ import {
   buildConversationContext,
   assignCouncilAngles,
   aggregateConfidence,
+  unwrapWholeAnswerFence,
 } from '../lib/council';
 import type { ParsedProposalSource } from '../lib/council';
 import { generateConversationTitle } from '../lib/title';
@@ -761,7 +762,7 @@ export async function handleCouncilRequest(
               );
 
               await accountUsage(response);
-              synthesisAnswer = response.content;
+              synthesisAnswer = unwrapWholeAnswerFence(response.content);
 
               // Second-pass review: ask the winner to verify it incorporated
               // all suggested improvements. Keep it short and deterministic.
@@ -779,7 +780,7 @@ export async function handleCouncilRequest(
                   );
                   await accountUsage(reviewResponse);
                   if (reviewResponse.content.trim()) {
-                    synthesisAnswer = reviewResponse.content;
+                    synthesisAnswer = unwrapWholeAnswerFence(reviewResponse.content);
                   }
                 } catch (reviewErr) {
                   req.log.warn(
@@ -810,6 +811,9 @@ export async function handleCouncilRequest(
 
         const deliberationMs = Date.now() - deliberationStart;
         const webSearchCount = searchLedger.length;
+        const finalAnswer = unwrapWholeAnswerFence(
+          synthesisAnswer || winnerProposal?.content || 'No se pudo generar una respuesta'
+        );
 
         if (!incognito && targetConversationId) {
           // Conversation + user message were persisted before deliberation.
@@ -817,8 +821,7 @@ export async function handleCouncilRequest(
             data: {
               conversationId: targetConversationId,
               role: 'assistant',
-              content:
-                synthesisAnswer || winnerProposal?.content || 'No se pudo generar una respuesta',
+              content: finalAnswer,
               providerId: 'council',
               modelId: winnerModelId,
               inputTokens: totalInputTokens || null,
@@ -835,7 +838,7 @@ export async function handleCouncilRequest(
               tallyFor,
               tallyTotal,
               consensus,
-              answer: synthesisAnswer || winnerProposal?.content || '',
+              answer: finalAnswer,
               confidence: aggregatedConfidence,
               deliberationMs,
               searchSources: sharedSources.length

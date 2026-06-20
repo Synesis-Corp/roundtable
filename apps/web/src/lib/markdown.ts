@@ -10,12 +10,30 @@
 /** Protocols allowed in Markdown links. Everything else is replaced with "#". */
 const SAFE_PROTOCOLS = /^(https?:|mailto:|#)/i;
 
+/**
+ * Repairs historical model responses that put the entire prose answer in a
+ * `text`/`markdown` fence. Language-specific fences are real code and stay
+ * untouched.
+ */
+export function unwrapWholePresentationFence(content: string): string {
+  const match = content
+    .trim()
+    .match(
+      /^(```|~~~)(?:text|plaintext|plain|markdown|md|mdx)[^\S\r\n]*\r?\n([\s\S]*?)\r?\n?\1\s*$/i
+    );
+
+  return match ? match[2].trim() : content;
+}
+
 function safeHref(raw: string): string {
   return SAFE_PROTOCOLS.test(raw) ? raw : '#';
 }
 
 export function renderMarkdown(text: string): string {
-  let html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let html = unwrapWholePresentationFence(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
   html = html.replace(
     /```(\w*)\n([\s\S]*?)```/g,

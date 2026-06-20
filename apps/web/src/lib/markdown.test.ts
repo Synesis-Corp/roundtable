@@ -1,7 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { renderMarkdown } from './markdown';
+import { renderMarkdown, unwrapWholePresentationFence } from './markdown';
 
 describe('renderMarkdown', () => {
+  it('unwraps a persisted full-response text fence but preserves real code', () => {
+    expect(
+      unwrapWholePresentationFence(
+        '```text\n## Respuesta consensuada\n\nContenido **legible**.\n```'
+      )
+    ).toBe('## Respuesta consensuada\n\nContenido **legible**.');
+    expect(unwrapWholePresentationFence('```ts\nconst answer = 42;\n```')).toBe(
+      '```ts\nconst answer = 42;\n```'
+    );
+  });
+
   it('escapes HTML before applying markdown (no injection)', () => {
     const html = renderMarkdown('<script>alert("x")</script>');
     expect(html).not.toContain('<script>');

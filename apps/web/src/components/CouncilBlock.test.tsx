@@ -94,6 +94,16 @@ describe('CouncilBlock', () => {
     expect(container.querySelector('strong')).not.toBeNull();
   });
 
+  it('renders a historical full-response text fence as Markdown, not code', () => {
+    const { container } = renderCouncil({
+      ...mockCouncil,
+      answer: '```text\n## Respuesta consensuada\n\nContenido **visible**.\n```',
+    });
+
+    expect(screen.getByRole('heading', { name: 'Respuesta consensuada' })).toBeInTheDocument();
+    expect(container.querySelector('pre')).toBeNull();
+  });
+
   it('renders avatar stack with member titles', () => {
     renderCouncil();
     expect(screen.getAllByTitle('GPT-5 · openai').length).toBeGreaterThan(0);

@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Components } from 'react-markdown';
+import { unwrapWholePresentationFence } from '../lib/markdown';
 
 // Register only the languages we expect to see in AI responses. Using the
 // light build avoids bundling all ~200 Prism language definitions
@@ -111,6 +112,7 @@ interface MarkdownContentProps {
 }
 
 export function MarkdownContent({ content }: MarkdownContentProps) {
+  const visibleContent = unwrapWholePresentationFence(content);
   const components: Components = {
     h1({ children }) {
       return (
@@ -272,7 +274,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
   return (
     <div className="chat-markdown">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-        {content}
+        {visibleContent}
       </ReactMarkdown>
     </div>
   );

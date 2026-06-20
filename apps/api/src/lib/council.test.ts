@@ -14,10 +14,28 @@ import {
   parseProposalSources,
   aggregateConfidence,
   needsCurrentData,
+  unwrapWholeAnswerFence,
   COUNCIL_ANGLES,
 } from './council';
 
 describe('council helpers', () => {
+  describe('unwrapWholeAnswerFence', () => {
+    it('unwraps a complete plaintext or markdown fence around a final answer', () => {
+      expect(unwrapWholeAnswerFence('```text\n## Respuesta\n\nContenido **visible**.\n```')).toBe(
+        '## Respuesta\n\nContenido **visible**.'
+      );
+      expect(unwrapWholeAnswerFence('```markdown\n# Título\n```')).toBe('# Título');
+    });
+
+    it('preserves intentional code blocks and prose with partial fences', () => {
+      const codeAnswer = '```ts\nconst answer = 42;\n```';
+      const mixedAnswer = 'Explicación:\n\n```text\nEjemplo\n```';
+
+      expect(unwrapWholeAnswerFence(codeAnswer)).toBe(codeAnswer);
+      expect(unwrapWholeAnswerFence(mixedAnswer)).toBe(mixedAnswer);
+    });
+  });
+
   it('selects one best member per provider, with tier from the matrix', () => {
     const selected = selectCouncilModels([
       {
@@ -456,5 +474,6 @@ describe('council prompts carry conversation context (#6)', () => {
       HISTORY
     );
     expect(prompt).toContain('cache LRU');
+    expect(prompt).toContain('NO encierres toda la respuesta en un bloque de código');
   });
 });

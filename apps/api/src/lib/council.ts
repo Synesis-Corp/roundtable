@@ -153,6 +153,22 @@ function stripMarkdownDecorators(value: string): string {
     .trim();
 }
 
+/**
+ * Some providers occasionally put an entire prose answer inside a `text` or
+ * `markdown` fence. That turns every heading and emphasis into literal code in
+ * the client. Only unwrap those presentation-only fences: real code blocks
+ * (for example `ts` or `python`) must remain intact.
+ */
+export function unwrapWholeAnswerFence(content: string): string {
+  const match = content
+    .trim()
+    .match(
+      /^(```|~~~)(?:text|plaintext|plain|markdown|md|mdx)[^\S\r\n]*\r?\n([\s\S]*?)\r?\n?\1\s*$/i
+    );
+
+  return match ? match[2].trim() : content;
+}
+
 function extractMeaningfulLines(fullText: string): string[] {
   return fullText
     .split('\n')
@@ -475,6 +491,7 @@ Tu tarea: Redactar la respuesta FINAL consensuada para el usuario. Debes:
 4. Si incluyes diagramas ASCII o bloques técnicos, SIEMPRE usa fenced code blocks.
 5. Si incluyes tablas, usa markdown de tabla correcto.
 6. NO digas que no hubo acuerdo. El consejo ya convergió.
+7. NO encierres toda la respuesta en un bloque de código (nunca uses \`\`\`text ni \`\`\`markdown para la respuesta completa). Usa fences únicamente para código o diagramas reales.
 
 Formato recomendado:
 - Título corto
