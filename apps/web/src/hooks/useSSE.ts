@@ -9,12 +9,25 @@ export type StartStreamFn = (
   files?: File[]
 ) => void;
 
+/** Error payload shape received from the backend SSE error envelope. The
+ *  backend tags terminal errors with `errorKind` so the frontend can pick
+ *  the right i18n key; `provider` is the display name of the last candidate
+ *  the loop tried (e.g. "Google"); `attemptsTried` distinguishes
+ *  multi-provider exhaustion (>= 2) from a single-provider quota (=== 1). */
+export interface SSEErrorKind {
+  kind?: 'quota' | 'rate-limit' | 'not-found' | 'other';
+  provider?: string;
+  attemptsTried?: number;
+}
+
+export type ChatStreamError = Error & SSEErrorKind;
+
 export interface SSEOptions {
   onMessage: (token: string, metadata?: { provider?: string; model?: string }) => void;
   /** Fired for reasoning/thinking deltas (empty-token chunks with a reasoning field). */
   onReasoning?: (reasoning: string, metadata?: { provider?: string; model?: string }) => void;
   onFinish: (extra?: Record<string, unknown>) => void;
-  onError: (error: Error) => void;
+  onError: (error: ChatStreamError) => void;
   onMultiStatus?: (status: {
     type: 'started' | 'plan' | 'contributors';
     plan?: string[];
@@ -139,7 +152,12 @@ export function useSSE({
             if (typeof json.type === 'string' && councilEventTypes.has(json.type)) {
               onCouncilEvent?.(json);
               if (json.type === 'turn.error' && json.message) {
-                throw new Error(String(json.message));
+                const err = Object.assign(new Error(String(json.message)) as ChatStreamError, {
+                  kind: typeof json.errorKind === 'string' ? json.errorKind : 'other',
+                  provider: typeof json.errorProvider === 'string' ? json.errorProvider : undefined,
+                  attemptsTried: typeof json.attemptsTried === 'number' ? json.attemptsTried : 1,
+                });
+                throw err;
               }
               if (json.type === 'council.answer.delta' && json.textDelta) {
                 onMessage(json.textDelta, { provider: 'council', model: 'council' });
@@ -180,7 +198,19 @@ export function useSSE({
               return;
             }
             if (json.error) {
-              throw new Error(json.error);
+              // Backend tags the terminal error with the SSE error envelope
+              // (errorKind, errorProvider, attemptsTried) so the frontend can
+              // pick a localized message. `attemptsTried === 1` means
+              // single-provider exhaustion (use `allCandidatesExhausted`),
+              // `> 1` means multi-provider exhaustion (use
+              // `rateLimitExceeded`). Default `kind: 'other'` keeps legacy
+              // error paths rendering the raw message.
+              const err = Object.assign(new Error(String(json.error)) as ChatStreamError, {
+                kind: typeof json.errorKind === 'string' ? json.errorKind : 'other',
+                provider: typeof json.errorProvider === 'string' ? json.errorProvider : undefined,
+                attemptsTried: typeof json.attemptsTried === 'number' ? json.attemptsTried : 1,
+              });
+              throw err;
             }
           } catch (err) {
             if (err instanceof SyntaxError) {
@@ -198,7 +228,7 @@ export function useSSE({
     setStreaming(false);
   };
 
-  const handleStreamError = (err: Error) => {
+  const handleStreamError = (err: ChatStreamError) => {
     if (err.name !== 'AbortError') {
       onError(err);
     }
@@ -252,7 +282,7 @@ export function useSSE({
       body,
     })
       .then(consume)
-      .catch(handleStreamError);
+      .catch((err: unknown) => handleStreamError(err as ChatStreamError));
   };
 
   // Re-attach to a generation that is still running in the background for this
@@ -268,7 +298,7 @@ export function useSSE({
       signal: ctrl.signal,
     })
       .then(consume)
-      .catch(handleStreamError);
+      .catch((err: unknown) => handleStreamError(err as ChatStreamError));
   };
 
   const stopStream = () => {

@@ -60,6 +60,61 @@ export function isUpstreamModelNotFoundError(err: unknown): boolean {
   );
 }
 
+/**
+ * Auto-fallback trigger for rate-limit / quota errors (change
+ * `2026-06-20-auto-rate-limit-fallback`).
+ *
+ * The 404 / "not a chat model" trigger above only fires for phantoms the
+ * registry has never seen. A different class of failure — a real model whose
+ * plan ran out, or an upstream throttling us — surfaces as a quota or
+ * 429 error. Today the loop terminates with `!finishedOk` and the user sees
+ * the raw AI SDK wrapper "Failed after 3 attempts. Last error: You exceeded
+ * your current quota…". This classifier catches both the direct provider
+ * message and the SDK wrapper so the swap loop can move to the next
+ * candidate silently.
+ *
+ * Conservative regex: requires at least one *strong* token (`quota`,
+ * `RESOURCE_EXHAUSTED`, `429`, `payment required`, `Plan not active`) or
+ * one of the well-known auxiliary tokens (`rate_limit_exceeded`,
+ * `free_tier`, `usage limit`, `TPM`, `RPM`). Bare "rate limit" mentions in
+ * passing messages are rejected — see the
+ * `'rejects incidental "rate limit" mention without a strong token'` test.
+ *
+ * Operates on `err.message` substring (case-insensitive), so it matches the
+ * full AI SDK wrapper text (`"Failed after N attempts. Last error: …"`).
+ *
+ * @param err - The error thrown by `provider.streamChat()` (sync or async)
+ * @returns `true` if the error is a quota / rate-limit error that should
+ *   trigger a silent swap to the next fallback candidate.
+ */
+export function isRateLimitOrQuotaError(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message;
+  return (
+    /quota|RESOURCE_EXHAUSTED|429|payment required|Plan not active/i.test(msg) ||
+    /rate_limit_exceeded|rate limit exceeded/i.test(msg) ||
+    /free.?tier/i.test(msg) ||
+    /usage limit/i.test(msg) ||
+    /\bTPM\b/.test(msg) ||
+    /\bRPM\b/.test(msg)
+  );
+}
+
+/** Tag used in the SSE error envelope (and `log.warn`) to tell the frontend
+ *  which i18n key to render. `'other'` is the legacy default for errors that
+ *  don't match any classifier (5xx, timeout, auth, etc.). */
+export type ChatErrorKind = 'quota' | 'rate-limit' | 'not-found' | 'other';
+
+/** Classify an error into the ChatErrorKind the frontend keys off of. Order
+ *  matters: the rate-limit/quota check runs first because 404 patterns can
+ *  never match a quota message, but the reverse is also safe — a "not a chat
+ *  model" error is never going to mention "quota" or "RESOURCE_EXHAUSTED". */
+export function classifyChatError(err: unknown): ChatErrorKind {
+  if (isRateLimitOrQuotaError(err)) return 'quota';
+  if (isUpstreamModelNotFoundError(err)) return 'not-found';
+  return 'other';
+}
+
 /** Cap of automatic model-fallback retries per request. Hard-coded to keep
  *  the failure-mode obvious in logs; if you need more, think about why the
  *  exclusion list isn't catching the bad models. */
@@ -239,14 +294,23 @@ async function runChatGeneration(ctx: ChatGenerationContext): Promise<void> {
       );
     } catch (streamErr) {
       // Constructing the generator threw synchronously (rare, but defensive):
-      // same retry rules as an iteration error.
-      if (!streamed && !isLastAttempt && isUpstreamModelNotFoundError(streamErr)) {
+      // same retry rules as an iteration error. Auto-fallback swap triggers:
+      //   - isUpstreamModelNotFoundError (Post-deploy #1 v2): phantom / 404
+      //   - isRateLimitOrQuotaError (2026-06-20-auto-rate-limit-fallback):
+      //     primary ran out of quota or is being throttled upstream
+      if (
+        !streamed &&
+        !isLastAttempt &&
+        (isUpstreamModelNotFoundError(streamErr) || isRateLimitOrQuotaError(streamErr))
+      ) {
+        const errorKind = classifyChatError(streamErr);
         log.warn(
           {
             originalModel: candidate.modelId,
             fallbackModel: attempts[attempt + 1]!.modelId,
             attempt: attempt + 1,
             maxRetries: MAX_MODEL_RETRIES,
+            errorKind,
           },
           'chat stream: model rejected by upstream on open; retrying with fallback'
         );
@@ -255,6 +319,9 @@ async function runChatGeneration(ctx: ChatGenerationContext): Promise<void> {
       log.error({ err: streamErr }, 'chat stream: failed to start');
       streamHub.publish(session, {
         error: streamErr instanceof Error ? streamErr.message : 'Failed to start stream',
+        errorKind: classifyChatError(streamErr),
+        errorProvider: candidate.provider.name,
+        attemptsTried: attempt + 1,
       });
       streamHub.finish(session, 'error');
       return;
@@ -306,16 +373,23 @@ async function runChatGeneration(ctx: ChatGenerationContext): Promise<void> {
       }
       // Post-deploy #1 v2: this is where the upstream 404 / "not a chat model"
       // actually surfaces. If nothing has streamed yet AND a fallback remains,
-      // swap models silently and retry the loop.
-      if (!streamed && !isLastAttempt && isUpstreamModelNotFoundError(err)) {
+      // swap models silently and retry the loop. Auto-fallback (2026-06-20)
+      // adds rate-limit / quota as a second swap trigger.
+      if (
+        !streamed &&
+        !isLastAttempt &&
+        (isUpstreamModelNotFoundError(err) || isRateLimitOrQuotaError(err))
+      ) {
+        const errorKind = classifyChatError(err);
         log.warn(
           {
             originalModel: candidate.modelId,
             fallbackModel: attempts[attempt + 1]!.modelId,
             attempt: attempt + 1,
             maxRetries: MAX_MODEL_RETRIES,
+            errorKind,
           },
-          'chat stream: model rejected by upstream (404/not-a-chat-model); retrying with fallback'
+          'chat stream: model rejected by upstream; retrying with fallback'
         );
         continue;
       }
@@ -323,6 +397,9 @@ async function runChatGeneration(ctx: ChatGenerationContext): Promise<void> {
       if (fullContent) await flushPartial();
       streamHub.publish(session, {
         error: err instanceof Error ? err.message : 'Stream interrupted',
+        errorKind: classifyChatError(err),
+        errorProvider: candidate.provider.name,
+        attemptsTried: attempt + 1,
       });
       streamHub.finish(session, 'error');
       return;
@@ -706,6 +783,11 @@ router.post('/', authMiddleware, uploadFiles, async (req: AuthenticatedRequest, 
 // POST /chat/stream — streaming with POST body (for large payloads like images)
 router.post('/stream', authMiddleware, uploadFiles, async (req: AuthenticatedRequest, res) => {
   const startTime = Date.now();
+  // Captured here so the catch block below can surface the provider name in
+  // the SSE error envelope (the frontend uses it to pick the localized error
+  // message). Stays undefined if the route setup itself fails before
+  // resolution (e.g. "No API key configured" — nothing to attribute to).
+  let streamProviderName: string | undefined;
   try {
     let messages: Message[];
     let preferences: Record<string, unknown> | undefined;
@@ -789,6 +871,7 @@ router.post('/stream', authMiddleware, uploadFiles, async (req: AuthenticatedReq
     }
 
     const { provider, credential } = selected;
+    streamProviderName = provider.name;
     const recalledMemories = await recallMemoriesForChat({
       repository: memoryRepository,
       userId,
@@ -912,6 +995,9 @@ router.post('/stream', authMiddleware, uploadFiles, async (req: AuthenticatedReq
         `data: ${JSON.stringify({
           type: 'turn.error',
           code: 'NO_CHAT_MODELS',
+          errorKind: 'not-found',
+          errorProvider: streamProviderName,
+          attemptsTried: 1,
           message:
             'No hay modelos de chat disponibles para esta solicitud. Conectá otro proveedor o cambiá el modelo.',
         })}\n\n`
@@ -925,7 +1011,12 @@ router.post('/stream', authMiddleware, uploadFiles, async (req: AuthenticatedReq
       return;
     }
     res.write(
-      `data: ${JSON.stringify({ error: err instanceof Error ? err.message : 'Stream failed' })}\n\n`
+      `data: ${JSON.stringify({
+        error: err instanceof Error ? err.message : 'Stream failed',
+        errorKind: 'other',
+        errorProvider: streamProviderName,
+        attemptsTried: 1,
+      })}\n\n`
     );
     res.end();
   }

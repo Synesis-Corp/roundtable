@@ -15,7 +15,8 @@ import type {
   CouncilVote,
   MultiInfo,
 } from '../types/chat';
-import type { SSEOptions } from './useSSE';
+import type { ChatStreamError, SSEOptions } from './useSSE';
+import { renderErrorMessage } from './renderErrorMessage';
 
 interface HandlerArgs {
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
@@ -145,13 +146,13 @@ export function useChatStreamHandlers({
       setConversationTitleState(title);
       window.dispatchEvent(new CustomEvent('conversation:updated'));
     },
-    onError: (err) => {
+    onError: (err: ChatStreamError) => {
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         const errMsg: ChatMessage = {
           id: `err-${Date.now()}`,
           role: 'assistant',
-          content: `Error: ${err.message}`,
+          content: renderErrorMessage(err, t),
           isError: true,
         };
         if (

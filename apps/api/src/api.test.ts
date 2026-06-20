@@ -39,6 +39,44 @@ function parseSSE(text: string): Array<Record<string, unknown>> {
   return events;
 }
 
+/** Default `getProvider` mock factory — returns a single OpenAI-shaped
+ *  provider that yields a tiny "Hello!" response. Re-applied in
+ *  `afterEach` of the defensive Council/Mixin tests so the per-id
+ *  `mockImplementation` they swap in does not leak into neighboring
+ *  tests (`vi.clearAllMocks` clears call history but not the
+ *  implementation). */
+function mockDefaultGetProvider(): void {
+  vi.mocked(getProvider).mockReset();
+  vi.mocked(getProvider).mockImplementation(
+    () =>
+      ({
+        chat: vi.fn(() =>
+          Promise.resolve({
+            content: 'Hello!',
+            model: 'gpt-4o',
+            provider: 'openai',
+            tokensUsed: 10,
+            inputTokens: 4,
+            outputTokens: 6,
+            latencyMs: 100,
+          })
+        ),
+        streamChat: vi.fn(async function* () {
+          yield { token: 'Hello', model: 'gpt-4o', provider: 'openai', isFinished: false };
+          yield {
+            token: '!',
+            model: 'gpt-4o',
+            provider: 'openai',
+            isFinished: true,
+            usage: { inputTokens: 4, outputTokens: 6, totalTokens: 10 },
+          };
+        }),
+        chatStructured: vi.fn(),
+        getCapabilities: vi.fn(() => []),
+      }) as never
+  );
+}
+
 const mockPrisma = {
   user: {
     findUnique: vi.fn(),
@@ -641,6 +679,132 @@ describe('API Integration', () => {
       expect(text).toContain('Half');
       expect(text).not.toContain('SHOULD-NOT-APPEAR');
       expect(events.find((event) => event.error)).toBeDefined();
+    });
+
+    it('auto-retries with the next candidate when the primary hits a quota error (2026-06-20)', async () => {
+      // New Auto-fallback trigger: a quota / rate-limit error on the primary
+      // should swap to the next candidate silently, just like the 404 case
+      // above. The user MUST see the fallback's response, NOT the raw
+      // "Failed after 3 attempts. Last error: …" wrapper from the AI SDK.
+      vi.mocked(route).mockReturnValueOnce({
+        primary: { provider: 'openai', modelId: 'gpt-5.2-pro' },
+        fallbacks: [{ provider: 'openai', modelId: 'gpt-4o' }],
+      } as never);
+
+      // First resolution (primary) → stream that throws the quota error
+      // before emitting any token. Second (fallback) → streams a real answer.
+      vi.mocked(getProvider)
+        .mockReturnValueOnce({
+          id: 'openai',
+          name: 'OpenAI',
+          streamChat: vi.fn(async function* () {
+            await Promise.reject(
+              new Error(
+                'Failed after 3 attempts. Last error: You exceeded your current quota, please check your plan and billing details.'
+              )
+            );
+            yield { token: '', model: 'gpt-5.2-pro', provider: 'openai', isFinished: true };
+          }),
+        } as never)
+        .mockReturnValueOnce({
+          id: 'openai',
+          name: 'OpenAI',
+          streamChat: vi.fn(async function* () {
+            yield { token: 'Fallback', model: 'gpt-4o', provider: 'openai', isFinished: false };
+            yield {
+              token: ' answer',
+              model: 'gpt-4o',
+              provider: 'openai',
+              isFinished: true,
+              usage: { inputTokens: 4, outputTokens: 6, totalTokens: 10 },
+            };
+          }),
+        } as never);
+
+      const res = await request(app)
+        .post('/chat/stream')
+        .set({ ...authHeader, 'Content-Type': 'application/json' })
+        .send({
+          messages: [{ role: 'user', content: 'Hola' }],
+          preferences: { incognito: true },
+        })
+        .buffer(true)
+        .parse((response, cb) => {
+          let data = '';
+          response.on('data', (chunk: Buffer) => {
+            data += chunk.toString();
+          });
+          response.on('end', () => cb(null, data));
+        });
+
+      expect(res.status).toBe(200);
+      const events = parseSSE(res.body as string);
+      // No error event surfaced to the user: the retry swapped models cleanly.
+      expect(events.find((event) => event.error)).toBeUndefined();
+      // The fallback model's real answer reached the client.
+      const text = events.map((event) => event.token ?? '').join('');
+      expect(text).toContain('Fallback answer');
+    });
+
+    it('does NOT swap on a generic 5xx error (2026-06-20)', async () => {
+      // Per design.md decision 4 + spec REQ-4: a 5xx sustained after the
+      // AI SDK's internal retries is treated as TERMINAL. Swapping would
+      // hide the infra problem. The error event MUST carry
+      // `errorKind: 'other'` so the frontend falls back to the legacy
+      // "Error: ${message}" literal.
+      vi.mocked(route).mockReturnValueOnce({
+        primary: { provider: 'openai', modelId: 'gpt-4o' },
+        fallbacks: [{ provider: 'openai', modelId: 'gpt-4o-mini' }],
+      } as never);
+
+      const fallbackStreamChat = vi.fn(async function* () {
+        yield {
+          token: 'SHOULD-NOT-APPEAR',
+          model: 'gpt-4o-mini',
+          provider: 'openai',
+          isFinished: true,
+        };
+      });
+      vi.mocked(getProvider)
+        .mockReturnValueOnce({
+          id: 'openai',
+          name: 'OpenAI',
+          streamChat: vi.fn(async function* () {
+            await Promise.reject(
+              new Error('Failed after 3 attempts. Last error: Provider returned 500')
+            );
+            yield { token: '', model: 'gpt-4o', provider: 'openai', isFinished: true };
+          }),
+        } as never)
+        .mockReturnValueOnce({
+          id: 'openai',
+          name: 'OpenAI',
+          streamChat: fallbackStreamChat,
+        } as never);
+
+      const res = await request(app)
+        .post('/chat/stream')
+        .set({ ...authHeader, 'Content-Type': 'application/json' })
+        .send({
+          messages: [{ role: 'user', content: 'Hola' }],
+          preferences: { incognito: true },
+        })
+        .buffer(true)
+        .parse((response, cb) => {
+          let data = '';
+          response.on('data', (chunk: Buffer) => {
+            data += chunk.toString();
+          });
+          response.on('end', () => cb(null, data));
+        });
+
+      expect(res.status).toBe(200);
+      const events = parseSSE(res.body as string);
+      const errorEvent = events.find((event) => event.error);
+      expect(errorEvent).toBeDefined();
+      expect(errorEvent?.errorKind).toBe('other');
+      // Fallback was NOT tried.
+      expect(fallbackStreamChat).not.toHaveBeenCalled();
     });
 
     it('persists the partial answer when the stream breaks mid-way (P.2)', async () => {
@@ -1411,6 +1575,170 @@ describe('API Integration', () => {
     });
   });
 
+  describe('POST /chat/multi — Council voice quota resilience (2026-06-20 defensive)', () => {
+    // REQ-9: a Council voice that throws a quota / rate-limit error MUST
+    // NOT abort the whole deliberation. The other voices proceed to
+    // debate/vote, and the synthesis runs with the survivors. The user
+    // sees a `voice.error` for the failed voice and a final answer that
+    // uses the surviving proposals.
+    const authHeader = { Authorization: `Bearer ${TEST_TOKEN}` };
+
+    afterEach(() => {
+      // The defensive test swaps `getProvider` to a per-id mock
+      // implementation. `vi.clearAllMocks()` (in the parent beforeEach)
+      // does NOT reset the implementation, so subsequent tests would
+      // inherit it. Reset to the default single-provider behavior.
+      mockDefaultGetProvider();
+    });
+
+    beforeEach(() => {
+      mockPrisma.providerConfig.findMany.mockResolvedValue([
+        {
+          id: 'c1',
+          providerId: 'openai',
+          userId: 'test-user',
+          encryptedApiKey: 'enc:test-api-key-1',
+          isActive: true,
+        },
+        {
+          id: 'c2',
+          providerId: 'anthropic',
+          userId: 'test-user',
+          encryptedApiKey: 'enc:test-api-key-2',
+          isActive: true,
+        },
+        {
+          id: 'c3',
+          providerId: 'google',
+          userId: 'test-user',
+          encryptedApiKey: 'enc:test-api-key-3',
+          isActive: true,
+        },
+      ]);
+      mockPrisma.conversation.create.mockResolvedValue({
+        id: 'council-conv',
+        userId: 'test-user',
+        title: 'Council test',
+        modelUsed: 'council',
+      });
+      mockPrisma.message.create.mockResolvedValue({ id: 'council-msg' });
+      mockPrisma.councilTurn.create.mockResolvedValue({ id: 'council-turn' });
+      mockPrisma.councilConfig.findUnique.mockResolvedValue(null);
+      mockPrisma.activeModelsConfig.findMany.mockResolvedValue([]);
+    });
+
+    it('emits voice.error for the quota-failed voice and proceeds with the survivors', async () => {
+      const { findCapableModels } = await import('@chat/router');
+      vi.mocked(findCapableModels).mockReturnValueOnce([
+        {
+          provider: 'openai',
+          modelId: 'gpt-4o',
+          modalities: ['text'],
+          features: ['tool-use', 'reasoning'],
+          contextWindow: 128000,
+        },
+        {
+          provider: 'anthropic',
+          modelId: 'claude-3-5-sonnet-20241022',
+          modalities: ['text'],
+          features: ['reasoning'],
+          contextWindow: 200000,
+        },
+        {
+          provider: 'google',
+          modelId: 'gemini-2.5-flash',
+          modalities: ['text'],
+          features: [],
+          contextWindow: 1000000,
+        },
+      ] as never);
+
+      // Voice 1: openai throws quota; voice 2 + 3 succeed.
+      // The Council calls `provider.chat()` for the proposal (not
+      // `streamChat`), so the mock must throw from `chat` to surface as
+      // `voice.error` with code `PROPOSAL_FAILED`. The Council calls
+      // `getProvider` many times per voice (filter, proposal, debate,
+      // vote, synthesis, title), so we key the mock on the provider id
+      // instead of consuming a queue.
+      vi.mocked(getProvider).mockImplementation((providerId: string) => {
+        if (providerId === 'openai') {
+          return {
+            id: 'openai',
+            name: 'OpenAI',
+            chat: vi.fn(() =>
+              Promise.reject(new Error('You exceeded your current quota, please check your plan.'))
+            ),
+            streamChat: vi.fn(),
+          } as never;
+        }
+        if (providerId === 'anthropic') {
+          return {
+            id: 'anthropic',
+            name: 'Anthropic',
+            chat: vi.fn(() =>
+              Promise.resolve({
+                content: 'Anthropic proposal body.',
+                model: 'claude-3-5-sonnet-20241022',
+                provider: 'anthropic',
+                tokensUsed: 10,
+                inputTokens: 4,
+                outputTokens: 6,
+                latencyMs: 100,
+              })
+            ),
+            streamChat: vi.fn(),
+          } as never;
+        }
+        // google + any other provider (synthesis winner may vary)
+        return {
+          id: 'google',
+          name: 'Google',
+          chat: vi.fn(() =>
+            Promise.resolve({
+              content: 'Google proposal body.',
+              model: 'gemini-2.5-flash',
+              provider: 'google',
+              tokensUsed: 10,
+              inputTokens: 4,
+              outputTokens: 6,
+              latencyMs: 100,
+            })
+          ),
+          streamChat: vi.fn(),
+        } as never;
+      });
+
+      const res = await request(app)
+        .post('/chat/multi')
+        .set({ ...authHeader, 'Content-Type': 'application/json' })
+        .send({ messages: [{ role: 'user', content: 'Council test' }] });
+
+      expect(res.status).toBe(200);
+      const events = parseSSE(res.text);
+
+      // The Council started with the 3 voices we configured.
+      const start = events.find((e) => e.type === 'council.start');
+      expect(start).toBeDefined();
+      expect((start?.members as Array<unknown>)?.length).toBe(3);
+
+      // voice.error emitted exactly once — for the quota voice.
+      const voiceErrors = events.filter((e) => e.type === 'voice.error');
+      expect(voiceErrors).toHaveLength(1);
+      expect(String(voiceErrors[0]?.modelId)).toBe('gpt-4o');
+
+      // The 2 surviving voices produced proposals.
+      const proposals = events.filter((e) => e.type === 'voice.proposal');
+      expect(proposals.length).toBeGreaterThanOrEqual(2);
+      const proposalModelIds = proposals.map((e) => String(e.modelId));
+      expect(proposalModelIds).toContain('claude-3-5-sonnet-20241022');
+      expect(proposalModelIds).toContain('gemini-2.5-flash');
+
+      // Final synthesis ran (the user got an answer, not a turn.error).
+      expect(events.some((e) => e.type === 'turn.error')).toBe(false);
+      expect(events.some((e) => e.type === 'council.answer.delta')).toBe(true);
+    });
+  });
+
   describe('POST /chat/mixin', () => {
     const authHeader = { Authorization: `Bearer ${TEST_TOKEN}` };
 
@@ -1472,6 +1800,67 @@ describe('API Integration', () => {
       const events = parseSSE(res.text);
       expect(events.find((event) => event.type === 'mixin.start')).toMatchObject({ modelCount: 1 });
       expect(mockPrisma.usageEvent.create).toHaveBeenCalledTimes(2);
+    });
+
+    // REQ-10: defensive — see design.md decision 6. Reset the
+    // per-provider mock after the test so it doesn't leak into the
+    // other Mixin tests in this describe.
+    it('keeps Mixin synthesis alive when one voice hits a quota error (2026-06-20 defensive)', async () => {
+      vi.mocked(getProvider).mockImplementation((providerId: string) => {
+        if (providerId === 'openai') {
+          return {
+            id: 'openai',
+            name: 'OpenAI',
+            chat: vi.fn(() =>
+              Promise.reject(new Error('You exceeded your current quota, please check your plan.'))
+            ),
+            streamChat: vi.fn(),
+          } as never;
+        }
+        // deepseek succeeds — drives both the parallel contribution and
+        // the synthesis.
+        return {
+          id: 'deepseek',
+          name: 'DeepSeek',
+          chat: vi.fn(() =>
+            Promise.resolve({
+              content: 'DeepSeek surviving response.',
+              model: 'deepseek-chat',
+              provider: 'deepseek',
+              tokensUsed: 10,
+              inputTokens: 4,
+              outputTokens: 6,
+              latencyMs: 100,
+            })
+          ),
+          streamChat: vi.fn(),
+        } as never;
+      });
+
+      try {
+        const res = await request(app)
+          .post('/chat/mixin')
+          .set({ ...authHeader, 'Content-Type': 'application/json' })
+          .send({ messages: [{ role: 'user', content: 'Mix with quota voice' }] });
+
+        expect(res.status).toBe(200);
+        const events = parseSSE(res.text);
+
+        // mixin.member.error emitted exactly once — for the openai voice.
+        const memberErrors = events.filter((e) => e.type === 'mixin.member.error');
+        expect(memberErrors.length).toBe(1);
+        expect(String(memberErrors[0]?.modelId)).toBe('gpt-4o');
+
+        // mixin.done carries the surviving count (1) — not the original 2.
+        const mixinDone = events.find((e) => e.type === 'mixin.done');
+        expect(mixinDone).toMatchObject({ modelCount: 1 });
+
+        // The user gets a final answer (no turn.error).
+        expect(events.some((e) => e.type === 'turn.error')).toBe(false);
+        expect(events.some((e) => typeof e.token === 'string' && e.token.length > 0)).toBe(true);
+      } finally {
+        mockDefaultGetProvider();
+      }
     });
   });
 

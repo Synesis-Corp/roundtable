@@ -358,7 +358,9 @@
       "openAiConnected": "OpenAI conectado con ChatGPT Plus/Pro.",
       "openAiLoginFailed": "El inicio de sesión de OpenAI Codex falló. Inténtalo de nuevo.",
       "loadUsageDataFailed": "No se pudieron cargar los datos de uso",
-      "councilVoiceError": "No se pudo completar esta participación: {{message}}"
+      "councilVoiceError": "No se pudo completar esta participación: {{message}}",
+      "rateLimitExceeded": "Los {{count}} modelos intentados tienen cuota agotada o rate limit. Probá de nuevo en unos minutos o cambiá de proveedor.",
+      "allCandidatesExhausted": "Tu proveedor conectado no tiene cuota o está rate-limited. Revisá el billing en Configuración o conectá otro proveedor."
     },
     "confirmLeaveStreaming": "Hay una respuesta en curso. Si sales ahora se perderá lo último que enviaste. ¿Salir igual?"
   },

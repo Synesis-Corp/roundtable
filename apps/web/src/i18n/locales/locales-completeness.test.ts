@@ -22,6 +22,13 @@ const REQUIRED_KEYS: ReadonlyArray<string> = [
   // for the close (×) button. Without it, the modal falls back to a
   // hardcoded English "Dismiss" in ES locales (see verify-report.md).
   'chat.incognito.explainer.dismiss',
+  // Auto-fallback rate-limit/quota (2026-06-20-auto-rate-limit-fallback).
+  // Multi-provider exhaustion (attemptsTried > 1) — interpolates {{count}}
+  // and {{provider}}.
+  'chat.errors.rateLimitExceeded',
+  // Single-provider quota exhaustion (attemptsTried === 1) — interpolates
+  // {{provider}}.
+  'chat.errors.allCandidatesExhausted',
 ];
 
 function read(obj: unknown, path: string): unknown {
