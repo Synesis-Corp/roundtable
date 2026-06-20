@@ -44,6 +44,10 @@ export function stableStringify(obj: Record<string, unknown>): string {
 
 /** Known OpenAI-compatible provider base URLs (fallback when Models.dev doesn't provide one) */
 const KNOWN_BASE_URLS: Record<string, string> = {
+  // Models.dev deliberately omits this field for Google. Falling through to
+  // the OpenAI-compatible default sends Gemini requests to api.openai.com and
+  // returns 405 Method Not Allowed instead of an actionable credential error.
+  google: 'https://generativelanguage.googleapis.com/v1beta',
   groq: 'https://api.groq.com/openai/v1',
   mistral: 'https://api.mistral.ai/v1',
   togetherai: 'https://api.together.xyz/v1',
@@ -58,11 +62,15 @@ const KNOWN_BASE_URLS: Record<string, string> = {
   azure: 'https://api.openai.azure.com',
 };
 
+export function getKnownProviderBaseURL(id: string): string | undefined {
+  return KNOWN_BASE_URLS[id];
+}
+
 /** Maps Models.dev npm packages to provider adapter factory */
 function createProviderByNpm(
   id: string,
   npm: string,
-  baseURL: string,
+  baseURL: string | undefined,
   options?: Record<string, unknown>
 ): ProviderPlugin | undefined {
   // Anthropic SDK providers
@@ -103,11 +111,15 @@ function createProviderByNpm(
     return new GoogleProvider({ id, name: id, baseURL });
   }
 
-  // OpenAI-compatible (default fallback)
+  // Never guess api.openai.com for an unknown provider. A wrong endpoint
+  // produces opaque 405s and may send a provider key to the wrong host.
+  if (!baseURL) return undefined;
+
+  // OpenAI-compatible provider with a verified endpoint.
   return new OpenAICompatibleProvider({
     id,
     name: id,
-    baseURL: baseURL ?? 'https://api.openai.com/v1',
+    baseURL,
     apiEndpoint: typeof options?.endpoint === 'string' ? options.endpoint : undefined,
     headers:
       typeof options?.headers === 'object' &&
@@ -135,11 +147,7 @@ export function getProvider(
   // 3. Look up provider in Models.dev for npm package and API URL
   const modelsDevInfo = getModelsDevProvider(id);
   const npm = modelsDevInfo?.npm ?? '@ai-sdk/openai-compatible';
-  const baseURL =
-    (options?.baseURL as string) ??
-    modelsDevInfo?.api ??
-    KNOWN_BASE_URLS[id] ??
-    'https://api.openai.com/v1';
+  const baseURL = (options?.baseURL as string) ?? modelsDevInfo?.api ?? getKnownProviderBaseURL(id);
 
   // 4. Create provider based on npm package
   const provider = createProviderByNpm(id, npm, baseURL, options);

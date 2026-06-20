@@ -1,5 +1,26 @@
 import { describe, it, expect } from 'vitest';
-import { LruCache, stableStringify } from './provider-registry';
+import {
+  getKnownProviderBaseURL,
+  getProvider,
+  LruCache,
+  stableStringify,
+} from './provider-registry';
+
+describe('provider base URL fallbacks', () => {
+  it('uses the Gemini API endpoint when Models.dev omits Google.api', () => {
+    expect(getKnownProviderBaseURL('google')).toBe(
+      'https://generativelanguage.googleapis.com/v1beta'
+    );
+  });
+
+  it('does not assign the OpenAI endpoint to native providers without a catalog URL', () => {
+    expect(getKnownProviderBaseURL('anthropic')).toBeUndefined();
+  });
+
+  it('fails closed instead of sending an unknown provider key to api.openai.com', () => {
+    expect(getProvider('unknown-provider-without-endpoint')).toBeUndefined();
+  });
+});
 
 describe('LruCache', () => {
   it('round-trips set → get', () => {
