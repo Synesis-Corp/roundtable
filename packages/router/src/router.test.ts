@@ -149,6 +149,49 @@ describe('router', () => {
     expect(decision.primary.modelId).toBe('anthropic/claude-3-sonnet');
   });
 
+  it('ranks Auto candidates by capability instead of registration order', () => {
+    registerModel({
+      modelId: 'basic-first',
+      provider: 'openai',
+      modalities: ['text'],
+      features: [],
+      contextWindow: 8_000,
+    });
+    registerModel({
+      modelId: 'capable-second',
+      provider: 'openai',
+      modalities: ['text'],
+      features: ['reasoning', 'tool-use', 'structured-output'],
+      contextWindow: 128_000,
+    });
+
+    const decision = route({ messages: [{ role: 'user', content: 'hola' }], model: 'gpt-4o' });
+
+    expect(decision.primary.modelId).toBe('capable-second');
+  });
+
+  it('recognizes Spanish reasoning prompts when ranking Auto candidates', () => {
+    registerModel({
+      modelId: 'plain-first',
+      provider: 'openai',
+      modalities: ['text'],
+      features: [],
+    });
+    registerModel({
+      modelId: 'reasoning-second',
+      provider: 'openai',
+      modalities: ['text'],
+      features: ['reasoning'],
+    });
+
+    const decision = route({
+      messages: [{ role: 'user', content: 'Explícame por qué esta decisión es mejor.' }],
+      model: 'gpt-4o',
+    });
+
+    expect(decision.primary.modelId).toBe('reasoning-second');
+  });
+
   it('throws "No capable models available" when only completion-only models are registered (Post-deploy #1)', () => {
     registerModel({
       modelId: 'openai/gpt-3.5-turbo-instruct',

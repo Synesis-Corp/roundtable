@@ -604,7 +604,10 @@ export function ChatInputBar(props: ChatInputBarProps) {
               onClick={() => {
                 if (multiMode) return;
                 setIsEffortDropdownOpen(false);
-                setIsModelDropdownOpen((v) => !v);
+                setIsModelDropdownOpen((v) => {
+                  if (v) setModelSearch('');
+                  return !v;
+                });
               }}
               disabled={modelsLoading || models.length === 0 || multiMode}
               title={
@@ -612,7 +615,10 @@ export function ChatInputBar(props: ChatInputBarProps) {
                   ? t('chat.input.modelSelectorTitle.council')
                   : t('chat.input.modelSelectorTitle.single')
               }
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-colors max-w-[180px] sm:max-w-[260px] active:scale-95 transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)] disabled:opacity-40"
+              aria-haspopup="listbox"
+              aria-expanded={isModelDropdownOpen}
+              aria-controls="model-selector-listbox"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-colors max-w-[180px] sm:max-w-[260px] active:scale-95 transition-transform duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-app)] disabled:opacity-40"
               style={{
                 backgroundColor: multiMode ? 'transparent' : 'var(--hover)',
                 color: multiMode ? 'var(--text-4)' : 'var(--text-2)',
@@ -665,6 +671,10 @@ export function ChatInputBar(props: ChatInputBarProps) {
                     type="text"
                     value={modelSearch}
                     onChange={(e) => setModelSearch(e.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape') setIsModelDropdownOpen(false);
+                    }}
+                    autoFocus
                     placeholder={t('chat.input.modelSearchPlaceholder')}
                     className="w-full rounded-lg px-3 py-1.5 outline-none text-sm transition-colors focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
                     style={{
@@ -674,7 +684,33 @@ export function ChatInputBar(props: ChatInputBarProps) {
                     }}
                   />
                 </div>
-                <div className="max-h-72 overflow-y-auto py-1">
+                <div
+                  id="model-selector-listbox"
+                  role="listbox"
+                  className="max-h-72 overflow-y-auto py-1"
+                >
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selectedModel === null}
+                    onClick={() => {
+                      setSelectedModel(null);
+                      setIsModelDropdownOpen(false);
+                      setModelSearch('');
+                    }}
+                    className="w-full text-left px-3 py-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-app)]"
+                    style={{
+                      backgroundColor:
+                        selectedModel === null ? 'var(--accent-quiet)' : 'transparent',
+                    }}
+                  >
+                    <span className="text-sm font-medium" style={{ color: 'var(--text-1)' }}>
+                      {t('chat.auto')}
+                    </span>
+                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
+                      {t('chat.input.autoDescription')}
+                    </span>
+                  </button>
                   {modelsLoading && (
                     <div className="p-4 text-sm text-center" style={{ color: 'var(--text-3)' }}>
                       {t('chat.input.modelLoading')}
@@ -699,11 +735,13 @@ export function ChatInputBar(props: ChatInputBarProps) {
                       <button
                         key={key}
                         type="button"
+                        role="option"
+                        aria-selected={isSel}
                         onClick={() => {
                           setSelectedModel(isSel ? null : key);
                           setIsModelDropdownOpen(false);
                         }}
-                        className="w-full text-left px-3 py-2.5 flex items-center gap-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
+                        className="w-full text-left px-3 py-2.5 flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-app)]"
                         style={{
                           backgroundColor: isSel ? 'var(--accent-quiet)' : 'transparent',
                         }}

@@ -1,5 +1,5 @@
 import type { Modality, Feature } from '@chat/sdk';
-import { getAllModels, getEffortSpec, registerModel } from '@chat/router';
+import { clearRegistry, getAllModels, getEffortSpec, registerModel } from '@chat/router';
 import type { EffortModelMetadata, EffortSpec } from '@chat/router';
 import {
   fetchModelsDev,
@@ -122,6 +122,11 @@ export async function initCapabilityRegistry(): Promise<void> {
     logger.error({ err }, 'providers: failed to load capabilities from DB');
   }
 
+  await refreshCapabilityRegistry();
+}
+
+/** Refreshes the catalogue without leaving removed models in Auto's registry. */
+export async function refreshCapabilityRegistry(): Promise<boolean> {
   await fetchModelsDev();
   const cache = getModelsDevCache();
   if (!cache) {
@@ -129,10 +134,11 @@ export async function initCapabilityRegistry(): Promise<void> {
       { err: getModelsDevFetchError() },
       'providers: failed to fetch Models.dev — serving DB-cached capabilities'
     );
-    return;
+    return false;
   }
 
   logger.info({ providerCount: cache.size }, 'providers: fetched providers from Models.dev');
+  clearRegistry();
   populateRouterRegistry();
 
   try {
@@ -141,6 +147,18 @@ export async function initCapabilityRegistry(): Promise<void> {
   } catch (err) {
     logger.error({ err }, 'providers: failed to persist capabilities to DB');
   }
+  return true;
+}
+
+/** Models.dev is the live catalogue; refresh it hourly without a manual deploy. */
+export function startCapabilityRegistryRefresh(intervalMs = 60 * 60 * 1000): () => void {
+  const timer = setInterval(() => {
+    void refreshCapabilityRegistry().then((updated) => {
+      if (updated) logger.info('providers: automatic catalogue refresh completed');
+    });
+  }, intervalMs);
+  timer.unref();
+  return () => clearInterval(timer);
 }
 
 // ── Model scoring and selection ────────────────────────────────────────────

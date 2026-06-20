@@ -9,6 +9,19 @@ export interface SelectedProvider {
   credential: RuntimeProviderCredential;
 }
 
+async function getActiveModelAllowlist(userId: string): Promise<Map<string, Set<string>>> {
+  const configs = await prisma.activeModelsConfig.findMany({
+    where: { userId },
+    select: { providerId: true, modelIds: true },
+  });
+  return new Map(configs.map((config) => [config.providerId, new Set(config.modelIds)]));
+}
+
+function isActiveModel(model: ModelCapability, allowlist: Map<string, Set<string>>): boolean {
+  const providerModels = allowlist.get(model.provider);
+  return !providerModels || providerModels.has(model.modelId);
+}
+
 /**
  * Resolves a single routing candidate into a usable provider: the user must
  * have an API key for it AND its adapter must resolve. Returns null otherwise.
@@ -43,8 +56,10 @@ export async function selectConfiguredProvider(
   decision: RoutingDecision,
   userId: string
 ): Promise<SelectedProvider | null> {
+  const allowlist = await getActiveModelAllowlist(userId);
   const candidates = [decision.primary, ...decision.fallbacks];
   for (const model of candidates) {
+    if (!isActiveModel(model, allowlist)) continue;
     const selected = await resolveCandidate(model, userId);
     if (selected) return selected;
   }
@@ -65,9 +80,11 @@ export async function selectAllConfiguredProviders(
   decision: RoutingDecision,
   userId: string
 ): Promise<SelectedProvider[]> {
+  const allowlist = await getActiveModelAllowlist(userId);
   const candidates = [decision.primary, ...decision.fallbacks];
   const out: SelectedProvider[] = [];
   for (const model of candidates) {
+    if (!isActiveModel(model, allowlist)) continue;
     const selected = await resolveCandidate(model, userId);
     if (selected) out.push(selected);
   }

@@ -173,6 +173,7 @@
         "single": "Elegir modelo"
       },
       "modelSearchPlaceholder": "Buscar modelos…",
+      "autoDescription": "Elige el mejor modelo disponible para tu mensaje",
       "modelLoading": "Cargando…",
       "modelEmpty": "Conectar proveedores en Configuración",
       "effortTitle": "Variante de modelo",

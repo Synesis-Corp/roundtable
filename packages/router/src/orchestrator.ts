@@ -1,6 +1,6 @@
 import type { ChatRequest, RoutingDecision, UserPreference } from '@chat/sdk';
 import { findCapableModels, getModel, getAllModels } from './registry';
-import { isUseCaseEligible } from './capability-matrix';
+import { defaultTierFor, isUseCaseEligible } from './capability-matrix';
 
 function detectRequiredModalities(request: ChatRequest): string[] {
   const mods = new Set<string>(['text']);
@@ -19,13 +19,56 @@ function detectFeatures(request: ChatRequest): string[] {
     .map((m) => m.content)
     .join(' ')
     .toLowerCase();
-  if (/code|function|json|schema|programming/i.test(content)) {
+  if (
+    /code|function|json|schema|programming|c[oó]digo|funci[oó]n|programaci[oó]n|desarrolla/i.test(
+      content
+    )
+  ) {
     features.add('tool-use');
   }
-  if (/why|how|explain|reason|think|compare/i.test(content)) {
+  if (
+    /why|how|explain|reason|think|compare|por qu[eé]|c[oó]mo|explica|razona|compara|analiza/i.test(
+      content
+    )
+  ) {
     features.add('reasoning');
   }
   return Array.from(features);
+}
+
+/**
+ * Auto must have a stable, explainable preference order. Registry insertion
+ * order changes with the Models.dev payload and DB query order, so it cannot
+ * decide which model receives a user's request.
+ */
+function autoScore(model: {
+  provider: string;
+  modelId: string;
+  features: string[];
+  contextWindow?: number;
+}): number {
+  let score = defaultTierFor(model.provider, model.modelId) === 'strong' ? 32 : 12;
+  if (model.features.includes('reasoning')) score += 12;
+  if (model.features.includes('tool-use')) score += 8;
+  if (model.features.includes('structured-output')) score += 4;
+  score += Math.min(Math.log2(Math.max(model.contextWindow ?? 1, 1)), 20);
+  return score;
+}
+
+function rankAutoCandidates<
+  T extends {
+    provider: string;
+    modelId: string;
+    features: string[];
+    contextWindow?: number;
+  },
+>(candidates: T[]): T[] {
+  return [...candidates].sort(
+    (left, right) =>
+      autoScore(right) - autoScore(left) ||
+      left.provider.localeCompare(right.provider) ||
+      left.modelId.localeCompare(right.modelId)
+  );
 }
 
 export function route(request: ChatRequest, preferences?: UserPreference): RoutingDecision {
@@ -66,10 +109,10 @@ export function route(request: ChatRequest, preferences?: UserPreference): Routi
   // 3. Default routing based on request content
   const modalities = detectRequiredModalities(request);
   const features = detectFeatures(request);
-  const candidates = findCapableModels(modalities, features).filter(eligible);
+  const candidates = rankAutoCandidates(findCapableModels(modalities, features).filter(eligible));
 
   if (candidates.length === 0) {
-    const textFallbacks = findCapableModels(['text'], []).filter(eligible);
+    const textFallbacks = rankAutoCandidates(findCapableModels(['text'], []).filter(eligible));
     if (textFallbacks.length === 0) {
       // Use a recognizable message so API endpoints can map this to a 422
       // with a clear user-facing error (Post-deploy #1: surfacing a clear

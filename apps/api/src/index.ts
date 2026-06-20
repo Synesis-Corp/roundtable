@@ -29,6 +29,7 @@ import councilRoutes from './routes/council';
 import councilConfigRoutes from './routes/council-config';
 import conversationRoutes from './routes/conversations';
 import providerRoutes, { capabilityRegistryReady } from './routes/providers';
+import { startCapabilityRegistryRefresh } from './services/model-registry';
 import usageRoutes from './routes/usage';
 import memoryRoutes from './routes/memory';
 import adminRoutes from './routes/admin';
@@ -122,6 +123,7 @@ if (process.env.NODE_ENV !== 'test') {
   validateEnv();
 
   capabilityRegistryReady.then(() => {
+    startCapabilityRegistryRefresh();
     const server = app.listen(PORT, () => {
       logger.info({ port: PORT }, `API server running on http://localhost:${PORT}`);
     });

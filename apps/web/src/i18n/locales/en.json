@@ -175,6 +175,7 @@
         "single": "Choose model"
       },
       "modelSearchPlaceholder": "Search models…",
+      "autoDescription": "Chooses the best available model for your message",
       "modelLoading": "Loading…",
       "modelEmpty": "Connect providers in Settings",
       "effortTitle": "Model variant",

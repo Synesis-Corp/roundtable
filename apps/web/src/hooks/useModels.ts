@@ -46,6 +46,13 @@ export function useModels(): UseModelsReturn {
     fetchModels();
   }, [fetchModels]);
 
+  // Keep an open tab current after the server refreshes Models.dev. A provider
+  // can ship a model without the user reconnecting or manually refreshing.
+  useEffect(() => {
+    const timer = window.setInterval(fetchModels, 15 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [fetchModels]);
+
   // Onboarding Fase 2.1 (2026-06-14): keep the visible model list in sync
   // with connect/disconnect events. useSettings emits the event; we refetch.
   // Listener is added once per mount and removed on unmount.
