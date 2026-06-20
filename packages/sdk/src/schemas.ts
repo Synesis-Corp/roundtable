@@ -60,12 +60,12 @@ export type CreateConversationInput = z.infer<typeof CreateConversationSchema>;
 // when users add custom OpenAI-compatible providers. See ADR in providers.ts.
 
 const DANGEROUS_HOST_PATTERNS = [
-  /^169\.254\./, // AWS / cloud metadata
-  /^0\.0\.0\.0$/, // Catch-all
-  /^fe80:/i, // Link-local IPv6
-  /^fc00:/i, // Unique local IPv6
+  /^169\.254\./, // IPv4 link-local / cloud metadata (169.254.0.0/16)
+  /^0\./, // 0.0.0.0/8 ("this" network; 0.0.0.0 can route to localhost)
+  /^fe[89ab][0-9a-f]:/i, // Link-local IPv6 (fe80::/10)
+  /^f[cd][0-9a-f]{2}:/i, // Unique local IPv6 (fc00::/7 — both fc.. and fd..)
   /^fec0:/i, // Site-local IPv6 (deprecated but blocked)
-  /^ff00:/i, // Multicast
+  /^ff[0-9a-f]{2}:/i, // Multicast IPv6 (ff00::/8)
 ] as const;
 
 const DANGEROUS_HOSTNAMES = new Set([
@@ -74,20 +74,49 @@ const DANGEROUS_HOSTNAMES = new Set([
   '169.254.169.254', // AWS metadata IP
 ]);
 
-function isPrivateHost(hostname: string): boolean {
-  // Block private IPv4 ranges
-  if (/^10\./.test(hostname)) return true;
-  if (/^172\.(1[6-9]|2\d|3[01])\./.test(hostname)) return true;
-  if (/^192\.168\./.test(hostname)) return true;
-  if (/^127\./.test(hostname)) return true;
+/**
+ * IPv4-mapped IPv6 lets an attacker smuggle a private/metadata IPv4 past the
+ * plain IPv4 checks: `new URL()` serializes e.g. `::ffff:169.254.169.254` to its
+ * hex form `::ffff:a9fe:a9fe`. Unwrap both the dotted and hex mapped forms back
+ * to the embedded IPv4 so the IPv4 range checks catch them. (Decimal/hex IPv4
+ * such as `2130706433` are already normalized to dotted form by `new URL()`.)
+ */
+function unwrapMappedIpv4(host: string): string {
+  const dotted = host.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i);
+  if (dotted) return dotted[1];
+  const hex = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+  if (hex) {
+    const hi = parseInt(hex[1], 16);
+    const lo = parseInt(hex[2], 16);
+    return `${(hi >> 8) & 255}.${hi & 255}.${(lo >> 8) & 255}.${lo & 255}`;
+  }
+  return host;
+}
 
-  // Block dangerous / metadata IPs
+function isPrivateHost(hostname: string): boolean {
+  // Normalize: drop IPv6 brackets, lowercase, and unwrap IPv4-mapped IPv6 so a
+  // mapped private/metadata address can't slip past the IPv4 range checks.
+  let host = hostname.toLowerCase();
+  if (host.startsWith('[') && host.endsWith(']')) host = host.slice(1, -1);
+  host = unwrapMappedIpv4(host);
+
+  // IPv6 unspecified (== 0.0.0.0). Loopback `::1` stays allowed for local LLMs,
+  // consistent with the protocol-level allowance in the baseURL refine.
+  if (host === '::' || host === '0:0:0:0:0:0:0:0') return true;
+
+  // Block private / loopback IPv4 ranges
+  if (/^10\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^127\./.test(host)) return true;
+
+  // Block dangerous / metadata IP patterns
   for (const pattern of DANGEROUS_HOST_PATTERNS) {
-    if (pattern.test(hostname)) return true;
+    if (pattern.test(host)) return true;
   }
 
   // Block known cloud metadata hostnames
-  if (DANGEROUS_HOSTNAMES.has(hostname)) return true;
+  if (DANGEROUS_HOSTNAMES.has(host)) return true;
 
   return false;
 }

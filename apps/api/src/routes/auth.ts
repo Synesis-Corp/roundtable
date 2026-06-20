@@ -25,6 +25,12 @@ import { refreshCookiePath } from '../lib/refresh-token';
 const router = Router();
 const googleClient = new OAuth2Client();
 
+// Precomputed bcrypt hash (cost 12) of a fixed throwaway string — NOT a secret.
+// `/login` compares against it when no user / passwordHash exists so the request
+// takes ~constant time regardless of whether the email is registered, defeating
+// timing-based account enumeration.
+const DUMMY_PASSWORD_HASH = '$2b$12$DrmMsDwemfryjDInTF4AseE1FOH88jrbVeBarWMIZyFZoCskbdR/2';
+
 /** Persists a new refresh token (hashed), captures session metadata, and sets the cookie. */
 async function issueRefreshCookie(res: Response, userId: string, req?: Request): Promise<void> {
   const { raw, hash, expiresAt } = generateRefreshToken();
@@ -109,14 +115,11 @@ router.post('/login', validateBody(LoginSchema), async (req, res) => {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });
-    // No passwordHash = OAuth-only account (e.g. Google) — can't log in by password.
-    if (!user || !user.passwordHash) {
-      res.status(401).json({ error: 'Invalid credentials' });
-      return;
-    }
-
-    const valid = await bcrypt.compare(password, user.passwordHash);
-    if (!valid) {
+    // Always run a bcrypt comparison — against a dummy hash when the account does
+    // not exist or is OAuth-only (no passwordHash) — so the response takes
+    // ~constant time and can't be used to enumerate which emails are registered.
+    const valid = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
+    if (!user || !user.passwordHash || !valid) {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }

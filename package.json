@@ -5,6 +5,9 @@
   "description": "Roundtable — fullstack TypeScript multiprovider AI chat monorepo",
   "packageManager": "pnpm@9.0.0",
   "pnpm": {
+    "overrides": {
+      "qs@>=6.11.1 <=6.15.1": ">=6.15.2"
+    },
     "peerDependencyRules": {
       "allowedVersions": {
         "zod": "4"

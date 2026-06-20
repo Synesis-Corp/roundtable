@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import { route } from '@chat/router';
 import { getProvider } from './lib/provider-registry';
 
@@ -312,6 +313,20 @@ describe('API Integration', () => {
     });
     expect(res.status).toBe(200);
     expect(res.body.token).toBeDefined();
+  });
+
+  it('runs a password comparison for unknown emails (timing-safe enumeration guard)', async () => {
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+
+    const res = await request(app).post('/auth/login').send({
+      email: 'ghost@example.com',
+      password: 'whatever',
+    });
+
+    expect(res.status).toBe(401);
+    // The bcrypt comparison must still run for a non-existent account so the
+    // response time can't reveal whether the email is registered.
+    expect(bcrypt.compare).toHaveBeenCalledTimes(1);
   });
 
   // ─── Multipart Image Upload Tests ───────────────────────────────────────
