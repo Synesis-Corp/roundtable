@@ -2943,6 +2943,14 @@ describe('Admin Dashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.ADMIN_EMAILS = 'admin@example.com';
+    // requireAdmin now verifies the admin account OWNS its email via a linked
+    // OAuth identity (googleId/githubId). Default the lookup to a verified admin
+    // so the route tests below exercise the handlers, not the guard.
+    mockPrisma.user.findUnique.mockResolvedValue({
+      email: 'admin@example.com',
+      googleId: 'g-admin',
+      githubId: null,
+    });
   });
 
   afterEach(() => {
@@ -2978,6 +2986,24 @@ describe('Admin Dashboard', () => {
         .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
 
       expect(res.status).toBe(200);
+    });
+
+    it('returns 403 for an allowlisted email on a password-only (unverified) account', async () => {
+      // Escalation guard: open registration lets anyone claim an unclaimed admin
+      // email. Such an account has no OAuth link → admin must be denied even
+      // though the email is in ADMIN_EMAILS.
+      mockPrisma.user.findUnique.mockResolvedValue({
+        email: 'admin@example.com',
+        googleId: null,
+        githubId: null,
+      });
+
+      const res = await request(app)
+        .get('/admin/metrics/overview')
+        .set('Authorization', `Bearer ${TEST_ADMIN_TOKEN}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('Forbidden');
     });
   });
 
