@@ -24,6 +24,8 @@ export interface ChatInputBarProps {
   modelsLoading: boolean;
   multiMode: boolean;
   setMultiMode: React.Dispatch<React.SetStateAction<boolean>>;
+  mixinMode?: boolean;
+  setMixinMode?: React.Dispatch<React.SetStateAction<boolean>>;
   incognito: boolean;
   setIncognito: (value: boolean) => void;
   /** Connected providers for the current user (drives the send-button gate). */
@@ -45,6 +47,7 @@ export interface ChatInputBarProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   hasMessages?: boolean;
   councilModelCount?: number;
+  mixinModelCount?: number;
   /**
    * Called with the rejected files when a drop or file picker selection
    * contains types other than images or PDFs. Lets the parent surface a
@@ -189,6 +192,8 @@ export function ChatInputBar(props: ChatInputBarProps) {
     modelsLoading,
     multiMode,
     setMultiMode,
+    mixinMode = false,
+    setMixinMode = () => undefined,
     incognito,
     setIncognito,
     userProviders,
@@ -208,13 +213,15 @@ export function ChatInputBar(props: ChatInputBarProps) {
     textareaRef,
     hasMessages,
     councilModelCount = 0,
+    mixinModelCount = 0,
     onRejectedFiles,
   } = props;
 
   const councilCountLabel = t('chat.input.councilCount', { count: councilModelCount });
+  const mixinCountLabel = t('chat.input.mixinCount', { count: Math.min(mixinModelCount, 8) });
+  const orchestratedMode = multiMode || mixinMode;
 
-  // Mode is freely switchable: Único ⇄ Consejo only changes how the NEXT message
-  // is processed; a conversation can mix single and council turns without issue.
+  // Mode is freely switchable: it only changes how the NEXT message is processed.
   const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
   const [sendPulsing, setSendPulsing] = useState(false);
   // True while a file is being dragged over the composer. Used to render a
@@ -268,9 +275,11 @@ export function ChatInputBar(props: ChatInputBarProps) {
     ? t('chat.input.placeholder.incognito')
     : multiMode
       ? t('chat.input.placeholder.council')
-      : hasMessages
-        ? t('chat.input.placeholder.reply')
-        : t('chat.input.placeholder.default');
+      : mixinMode
+        ? t('chat.input.placeholder.mixin')
+        : hasMessages
+          ? t('chat.input.placeholder.reply')
+          : t('chat.input.placeholder.default');
 
   // Onboarding UX gate (2026-06-14): disable the send button when the user
   // can't actually send. Without this, the input bar is enabled with 0
@@ -375,6 +384,22 @@ export function ChatInputBar(props: ChatInputBarProps) {
             >
               {t('chat.incognito.moreInfoLink')}
             </button>
+          </div>
+        )}
+        {mixinMode && (
+          <div
+            role="status"
+            className="mb-2 px-2 text-xs leading-relaxed"
+            style={{ color: 'var(--text-2)' }}
+          >
+            <span>
+              {mixinModelCount > 8
+                ? t('chat.input.mixinNoticeCapped', { count: mixinModelCount })
+                : t('chat.input.mixinNoticeAll', { count: mixinModelCount })}
+            </span>
+            <span className="ml-1" style={{ color: 'var(--text-4)' }}>
+              {t('chat.input.mixinCostNote')}
+            </span>
           </div>
         )}
         {/* Drag-and-drop visual cue (subtle label inside the composer). */}
@@ -521,7 +546,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
             </svg>
           </button>
 
-          {/* Segmented control: Único | Consejo */}
+          {/* Segmented control: Único | Mixin | Consejo */}
           <div
             className="flex items-center shrink-0"
             role="group"
@@ -535,13 +560,16 @@ export function ChatInputBar(props: ChatInputBarProps) {
           >
             <button
               type="button"
-              onClick={() => setMultiMode(false)}
+              onClick={() => {
+                setMultiMode(false);
+                setMixinMode(false);
+              }}
               disabled={streaming}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:cursor-not-allowed active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
               style={{
-                backgroundColor: !multiMode ? 'var(--accent-quiet)' : 'transparent',
-                color: !multiMode ? 'var(--accent-text)' : 'var(--text-3)',
-                boxShadow: !multiMode ? 'inset 0 0 0 1px var(--accent-line)' : 'none',
+                backgroundColor: !orchestratedMode ? 'var(--accent-quiet)' : 'transparent',
+                color: !orchestratedMode ? 'var(--accent-text)' : 'var(--text-3)',
+                boxShadow: !orchestratedMode ? 'inset 0 0 0 1px var(--accent-line)' : 'none',
                 opacity: streaming ? 0.4 : 1,
               }}
             >
@@ -550,7 +578,27 @@ export function ChatInputBar(props: ChatInputBarProps) {
             </button>
             <button
               type="button"
-              onClick={() => setMultiMode(true)}
+              onClick={() => {
+                setMultiMode(false);
+                setMixinMode(true);
+              }}
+              disabled={streaming}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:opacity-40 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
+              style={{
+                backgroundColor: mixinMode ? 'var(--accent-quiet)' : 'transparent',
+                color: mixinMode ? 'var(--accent-text)' : 'var(--text-3)',
+                boxShadow: mixinMode ? 'inset 0 0 0 1px var(--accent-line)' : 'none',
+              }}
+            >
+              <NetworkIcon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{t('chat.input.mixinMode')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMixinMode(false);
+                setMultiMode(true);
+              }}
               disabled={streaming}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium transition-all disabled:opacity-40 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--bg-app)]"
               style={{
@@ -602,30 +650,32 @@ export function ChatInputBar(props: ChatInputBarProps) {
             <button
               type="button"
               onClick={() => {
-                if (multiMode) return;
+                if (orchestratedMode) return;
                 setIsEffortDropdownOpen(false);
                 setIsModelDropdownOpen((v) => {
                   if (v) setModelSearch('');
                   return !v;
                 });
               }}
-              disabled={modelsLoading || models.length === 0 || multiMode}
+              disabled={modelsLoading || models.length === 0 || orchestratedMode}
               title={
                 multiMode
                   ? t('chat.input.modelSelectorTitle.council')
-                  : t('chat.input.modelSelectorTitle.single')
+                  : mixinMode
+                    ? t('chat.input.modelSelectorTitle.mixin')
+                    : t('chat.input.modelSelectorTitle.single')
               }
               aria-haspopup="listbox"
               aria-expanded={isModelDropdownOpen}
               aria-controls="model-selector-listbox"
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-colors max-w-[180px] sm:max-w-[260px] active:scale-95 transition-transform duration-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-app)] disabled:opacity-40"
               style={{
-                backgroundColor: multiMode ? 'transparent' : 'var(--hover)',
-                color: multiMode ? 'var(--text-4)' : 'var(--text-2)',
-                cursor: multiMode ? 'not-allowed' : 'pointer',
+                backgroundColor: orchestratedMode ? 'transparent' : 'var(--hover)',
+                color: orchestratedMode ? 'var(--text-4)' : 'var(--text-2)',
+                cursor: orchestratedMode ? 'not-allowed' : 'pointer',
               }}
             >
-              {!multiMode && (
+              {!orchestratedMode && (
                 <svg
                   className="w-3.5 h-3.5 shrink-0"
                   fill="none"
@@ -640,8 +690,10 @@ export function ChatInputBar(props: ChatInputBarProps) {
                   />
                 </svg>
               )}
-              <span className="truncate">{multiMode ? councilCountLabel : selectedLabel}</span>
-              {!multiMode && selectedProvider && (
+              <span className="truncate">
+                {multiMode ? councilCountLabel : mixinMode ? mixinCountLabel : selectedLabel}
+              </span>
+              {!orchestratedMode && selectedProvider && (
                 <span
                   className="hidden sm:inline shrink-0 font-mono-ui"
                   style={{ color: 'var(--text-4)' }}
@@ -649,14 +701,14 @@ export function ChatInputBar(props: ChatInputBarProps) {
                   {selectedProvider}
                 </span>
               )}
-              {!multiMode && (
+              {!orchestratedMode && (
                 <ChevronDownIcon
                   className={`w-3 h-3 shrink-0 transition-transform ${isModelDropdownOpen ? 'rotate-180' : ''}`}
                 />
               )}
             </button>
 
-            {isModelDropdownOpen && !multiMode && (
+            {isModelDropdownOpen && !orchestratedMode && (
               <div
                 className="absolute bottom-full right-0 mb-2 w-80 overflow-hidden z-50"
                 style={{
@@ -824,7 +876,7 @@ export function ChatInputBar(props: ChatInputBarProps) {
           </div>
 
           {/* Effort dropdown (hidden from main bar, but kept for advanced use if needed) */}
-          {(effortSpec || effortLoading) && !multiMode && (
+          {(effortSpec || effortLoading) && !orchestratedMode && (
             <div className="relative hidden" ref={effortDropdownRef}>
               <button
                 type="button"

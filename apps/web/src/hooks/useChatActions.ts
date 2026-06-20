@@ -21,6 +21,7 @@ interface ActionArgs {
   setInputText: React.Dispatch<React.SetStateAction<string>>;
   selectedModel: string | null;
   multiMode: boolean;
+  mixinMode?: boolean;
   incognito: boolean;
   /** Connected providers — drives the defensive send gate (2026-06-14). */
   userProviders: UserProvider[];
@@ -35,12 +36,14 @@ interface ActionArgs {
 export function buildPrefs(args: {
   selectedModel: string | null;
   multiMode: boolean;
+  mixinMode?: boolean;
   incognito: boolean;
   effortSpec: EffortSpec | null;
   selectedEffort: string;
 }): Record<string, unknown> {
   const prefs: Record<string, unknown> = {
     multiMode: args.multiMode,
+    mixinMode: args.mixinMode,
     incognito: args.incognito,
     memoryEnabled: storage.get('memoryEnabled') !== 'false',
   };
@@ -53,16 +56,16 @@ export function buildPrefs(args: {
   } catch {
     // Intl unavailable (ancient runtime): skip — the API falls back to UTC.
   }
-  // In Council mode the orchestrator picks the best model per subtask;
+  // In Council or Mixin mode the orchestrator picks the participating models;
   // forcing a model would defeat the purpose, so we omit it.
-  if (args.selectedModel && !args.multiMode) {
+  if (args.selectedModel && !args.multiMode && !args.mixinMode) {
     const parsedModel = parseSelectedModel(args.selectedModel);
     if (parsedModel) {
       prefs.forceProvider = parsedModel.provider;
       prefs.forceModel = parsedModel.modelId;
     }
   }
-  if (!args.multiMode && args.effortSpec && args.selectedEffort !== 'default') {
+  if (!args.multiMode && !args.mixinMode && args.effortSpec && args.selectedEffort !== 'default') {
     prefs.effort = args.selectedEffort;
   }
   return prefs;
@@ -85,6 +88,7 @@ export function useChatActions({
   setInputText,
   selectedModel,
   multiMode,
+  mixinMode,
   incognito,
   userProviders,
   effortSpec,
@@ -117,7 +121,7 @@ export function useChatActions({
 
       setError(null);
       setMultiInfo(null);
-      if (multiMode) setCouncilInfo(null);
+      if (multiMode || mixinMode) setCouncilInfo(null);
 
       // Carry the attachments on the optimistic user message so the image/file
       // shows in the conversation immediately (object URLs = instant, no async
@@ -142,7 +146,7 @@ export function useChatActions({
         id: `pending-${Date.now()}`,
         role: 'assistant',
         content: '',
-        provider: multiMode ? 'council' : undefined,
+        provider: multiMode ? 'council' : mixinMode ? 'mixin' : undefined,
       };
       setMessages((prev) => [...prev, userMsg, pendingMsg]);
 
@@ -160,7 +164,14 @@ export function useChatActions({
         return;
       }
 
-      const prefs = buildPrefs({ selectedModel, multiMode, incognito, effortSpec, selectedEffort });
+      const prefs = buildPrefs({
+        selectedModel,
+        multiMode,
+        mixinMode,
+        incognito,
+        effortSpec,
+        selectedEffort,
+      });
       const allMessages = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
 
       startStream(
@@ -177,6 +188,7 @@ export function useChatActions({
       messages,
       selectedModel,
       multiMode,
+      mixinMode,
       incognito,
       userProviders,
       effortSpec,
@@ -198,7 +210,7 @@ export function useChatActions({
     (messageIndex: number) => {
       setError(null);
       setMultiInfo(null);
-      if (multiMode) setCouncilInfo(null);
+      if (multiMode || mixinMode) setCouncilInfo(null);
 
       const keptMessages = messages.slice(0, messageIndex);
       setMessages(keptMessages);
@@ -217,14 +229,21 @@ export function useChatActions({
         return;
       }
 
-      const prefs = buildPrefs({ selectedModel, multiMode, incognito, effortSpec, selectedEffort });
+      const prefs = buildPrefs({
+        selectedModel,
+        multiMode,
+        mixinMode,
+        incognito,
+        effortSpec,
+        selectedEffort,
+      });
       const allMessages = keptMessages.map((m) => ({ role: m.role, content: m.content }));
 
       const pendingMsg: ChatMessage = {
         id: `pending-${Date.now()}`,
         role: 'assistant',
         content: '',
-        provider: multiMode ? 'council' : undefined,
+        provider: multiMode ? 'council' : mixinMode ? 'mixin' : undefined,
       };
       setMessages((prev) => [...prev, pendingMsg]);
 
@@ -240,6 +259,7 @@ export function useChatActions({
       messages,
       selectedModel,
       multiMode,
+      mixinMode,
       incognito,
       effortSpec,
       selectedEffort,

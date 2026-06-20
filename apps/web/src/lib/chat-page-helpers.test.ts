@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildGreeting, QUICK_ACTIONS } from './chat-page-helpers';
+import { buildGreeting, getMixinEligibleCount, QUICK_ACTIONS } from './chat-page-helpers';
 
 describe('QUICK_ACTIONS color tokens (Capability 10)', () => {
   // Image generation chip removed by product decision — the three remaining
@@ -48,5 +48,17 @@ describe('buildGreeting (Capability 9)', () => {
 
   it("preserves the prefix verbatim (time-of-day is the caller's responsibility)", () => {
     expect(buildGreeting('Buenos días', 'Carlos', false, true)).toBe('Buenos días');
+  });
+});
+
+describe('getMixinEligibleCount', () => {
+  it('counts only chat-capable models for the Mixin notice', () => {
+    expect(
+      getMixinEligibleCount([
+        { capabilities: ['text', 'image'] },
+        { capabilities: ['image'] },
+        { capabilities: undefined },
+      ])
+    ).toBe(2);
   });
 });

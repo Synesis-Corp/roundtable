@@ -116,6 +116,27 @@ describe('useSSE', () => {
     expect(handlers.onMultiStatus).toHaveBeenCalledWith({ type: 'plan', plan: ['a', 'b'] });
   });
 
+  it('routes to /api/chat/mixin when Mixin mode is active', async () => {
+    const handlers = makeHandlers();
+    const fetchSpy = vi.fn(() =>
+      Promise.resolve(
+        streamResponse([
+          'data: {"token":"mixed"}\n\n',
+          'data: {"isFinished":true,"conversationId":"mixin-1"}\n\n',
+        ])
+      )
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const { result } = renderHook(() => useSSE(handlers));
+    act(() => {
+      result.current.startStream('tok', [{ role: 'user', content: 'hi' }], { mixinMode: true });
+    });
+
+    await waitFor(() => expect(handlers.onFinish).toHaveBeenCalled());
+    expect(fetchSpy).toHaveBeenCalledWith('/api/chat/mixin', expect.anything());
+  });
+
   it('surfaces SSE error events instead of swallowing them', async () => {
     const handlers = makeHandlers();
     vi.stubGlobal(

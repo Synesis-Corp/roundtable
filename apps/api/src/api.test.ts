@@ -1411,6 +1411,70 @@ describe('API Integration', () => {
     });
   });
 
+  describe('POST /chat/mixin', () => {
+    const authHeader = { Authorization: `Bearer ${TEST_TOKEN}` };
+
+    beforeEach(() => {
+      mockPrisma.providerConfig.findMany.mockResolvedValue([
+        {
+          id: 'config-1',
+          providerId: 'openai',
+          userId: 'test-user',
+          encryptedApiKey: 'enc:test-api-key',
+          isActive: true,
+        },
+        {
+          id: 'config-2',
+          providerId: 'deepseek',
+          userId: 'test-user',
+          encryptedApiKey: 'enc:test-api-key-2',
+          isActive: true,
+        },
+      ]);
+      mockPrisma.activeModelsConfig.findMany.mockResolvedValue([]);
+      mockPrisma.conversation.create.mockResolvedValue({ id: 'mixin-conv', userId: 'test-user' });
+      mockPrisma.message.create.mockResolvedValue({ id: 'mixin-msg' });
+    });
+
+    it('runs independent model calls plus one synthesis, and streams the final Mixin answer', async () => {
+      const res = await request(app)
+        .post('/chat/mixin')
+        .set({ ...authHeader, 'Content-Type': 'application/json' })
+        .send({ messages: [{ role: 'user', content: 'Combine perspectives' }] });
+
+      expect(res.status).toBe(200);
+      const events = parseSSE(res.text);
+      expect(events.find((event) => event.type === 'mixin.start')).toMatchObject({
+        modelCount: 2,
+        totalEligibleCount: 2,
+        capped: false,
+      });
+      expect(
+        events.some((event) => typeof event.token === 'string' && event.token.length > 0)
+      ).toBe(true);
+      expect(events.find((event) => event.type === 'mixin.done')).toMatchObject({ modelCount: 2 });
+      expect(events.at(-1)).toMatchObject({ conversationId: 'mixin-conv', isFinished: true });
+      expect(mockPrisma.usageEvent.create).toHaveBeenCalledTimes(3);
+      expect(mockPrisma.message.create).toHaveBeenCalledTimes(2);
+    });
+
+    it('honors an active-model allow-list before starting Mixin', async () => {
+      mockPrisma.activeModelsConfig.findMany.mockResolvedValue([
+        { providerId: 'openai', modelIds: ['gpt-4o'] },
+        { providerId: 'deepseek', modelIds: ['not-available'] },
+      ]);
+
+      const res = await request(app)
+        .post('/chat/mixin')
+        .set({ ...authHeader, 'Content-Type': 'application/json' })
+        .send({ messages: [{ role: 'user', content: 'Only active models' }], preferences: {} });
+
+      const events = parseSSE(res.text);
+      expect(events.find((event) => event.type === 'mixin.start')).toMatchObject({ modelCount: 1 });
+      expect(mockPrisma.usageEvent.create).toHaveBeenCalledTimes(2);
+    });
+  });
+
   // ─── Provider fallback selection ────────────────────────────────────────
   describe('POST /chat — fallback selection', () => {
     const authHeader = {

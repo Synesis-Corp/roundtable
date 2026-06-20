@@ -130,6 +130,8 @@
     },
     "councilChip_one": "Consejo · {{count}} modelo",
     "councilChip_other": "Consejo · {{count}} modelos",
+    "mixinChip_one": "Mixin · {{count}} modelo",
+    "mixinChip_other": "Mixin · {{count}} modelos",
     "disclaimer": "Puede cometer errores.",
     "connectHere": "Conectar aquí",
     "rejectedOne": "«{{names}}» no es compatible. Solo se permiten imágenes y PDFs.",
@@ -142,6 +144,7 @@
     "welcome": {
       "titlePrivate": "¿Qué quieres explorar en privado?",
       "titleCouncil": "¿Qué resolvemos en consejo?",
+      "titleMixin": "¿Qué combinamos hoy?",
       "titleDefault": "¿En qué trabajamos hoy?",
       "councilSubtitle_one": "<accent>{{count}} modelo</accent> deliberará y convergerá.",
       "councilSubtitle_other": "<accent>{{count}} modelos</accent> deliberarán y convergerán.",
@@ -153,6 +156,7 @@
       "placeholder": {
         "incognito": "Escribe sin guardar…",
         "council": "Pregunta al consejo…",
+        "mixin": "Combina todos tus modelos…",
         "reply": "Responde…",
         "default": "Escribe un mensaje…"
       },
@@ -162,14 +166,21 @@
       "modeGroup": "Modo de chat",
       "singleMode": "Único",
       "councilMode": "Consejo",
+      "mixinMode": "Mixin",
       "incognitoMode": "Incógnito",
       "incognitoActivate": "Activar modo incógnito",
       "incognitoDeactivate": "Desactivar modo incógnito",
       "incognitoNotice": "No se guarda. Solo se registran métricas de uso.",
       "councilCount_one": "Sin modelos disponibles",
       "councilCount_other": "{{count}} modelos en consejo",
+      "mixinCount_one": "{{count}} modelo en Mixin",
+      "mixinCount_other": "{{count}} modelos en Mixin",
+      "mixinNoticeAll": "Modo Mixin: se usarán todos tus {{count}} modelos para generar la mejor respuesta posible.",
+      "mixinNoticeCapped": "Modo Mixin: se usarán 8 de tus {{count}} modelos para generar la mejor respuesta posible.",
+      "mixinCostNote": "Puede tardar más y usar más tokens.",
       "modelSelectorTitle": {
         "council": "Modelo auto-seleccionado en modo Consejo",
+        "mixin": "Modelos auto-seleccionados en modo Mixin",
         "single": "Elegir modelo"
       },
       "modelSearchPlaceholder": "Buscar modelos…",

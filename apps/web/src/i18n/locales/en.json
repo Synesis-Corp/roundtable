@@ -132,6 +132,8 @@
     },
     "councilChip_one": "Council · {{count}} model",
     "councilChip_other": "Council · {{count}} models",
+    "mixinChip_one": "Mixin · {{count}} model",
+    "mixinChip_other": "Mixin · {{count}} models",
     "disclaimer": "May make mistakes.",
     "connectHere": "Connect here",
     "rejectedOne": "\"{{names}}\" is not supported. Only images and PDFs are allowed.",
@@ -144,6 +146,7 @@
     "welcome": {
       "titlePrivate": "What do you want to explore privately?",
       "titleCouncil": "What shall we solve in council?",
+      "titleMixin": "What shall we combine today?",
       "titleDefault": "What are we working on today?",
       "councilSubtitle_one": "<accent>{{count}} model</accent> will deliberate and converge.",
       "councilSubtitle_other": "<accent>{{count}} models</accent> will deliberate and converge.",
@@ -155,6 +158,7 @@
       "placeholder": {
         "incognito": "Type without saving…",
         "council": "Ask the Council…",
+        "mixin": "Combine all your models…",
         "reply": "Reply…",
         "default": "Type a message…"
       },
@@ -164,14 +168,21 @@
       "modeGroup": "Chat mode",
       "singleMode": "Single",
       "councilMode": "Council",
+      "mixinMode": "Mixin",
       "incognitoMode": "Incognito",
       "incognitoActivate": "Turn on incognito mode",
       "incognitoDeactivate": "Turn off incognito mode",
       "incognitoNotice": "Not saved. Only usage metrics are recorded.",
       "councilCount_one": "No models available",
       "councilCount_other": "{{count}} models in council",
+      "mixinCount_one": "{{count}} model in Mixin",
+      "mixinCount_other": "{{count}} models in Mixin",
+      "mixinNoticeAll": "Mixin mode: all {{count}} of your models will be used to generate the best possible answer.",
+      "mixinNoticeCapped": "Mixin mode: 8 of your {{count}} models will be used to generate the best possible answer.",
+      "mixinCostNote": "It may take longer and use more tokens.",
       "modelSelectorTitle": {
         "council": "Auto-selected model in Council mode",
+        "mixin": "Auto-selected models in Mixin mode",
         "single": "Choose model"
       },
       "modelSearchPlaceholder": "Search models…",

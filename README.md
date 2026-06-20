@@ -50,6 +50,7 @@ Docker keeps the legacy default database name `chatia` unless `POSTGRES_DB` is s
 |---------|--------|
 | Single-provider chat (SSE streaming) | ✅ |
 | **Council deliberation** (strong + light model per provider, consenso convergente) | ✅ |
+| **Mixin synthesis** (all active chat models, capped at 8, parallel contributions + final synthesis) | ✅ |
 | **Background stream resume** (generation survives navigation, re-attach via `/live`) | ✅ |
 | **AI Usage dashboard** (input/output tokens, cost, charts; filtered by connected providers) | ✅ |
 | JWT auth (email/password) + **refresh token (httpOnly cookie)** | ✅ |
@@ -175,6 +176,21 @@ The **Council mode** selects, for each connected provider, a **strong** and a **
 4. **Synthesis** — the final answer integrates the winning base plus the best improvements from the rest of the council
 
 Results are persisted in `CouncilTurn` + `CouncilVoice` tables. The UI shows round progress, collapsible proposal details, provider logos, and a styled final synthesis. Image attachments are previewed inside the composer instead of above it.
+
+### Mixin synthesis (SSE)
+
+```
+POST /chat/mixin  { messages, conversationId?, preferences: { mixinMode: true } }
+→ SSE token stream plus persistence and background resume through the shared stream hub
+```
+
+**Mixin** is a third mode, separate from Single and Council. It runs all connected,
+active, text-capable models in parallel (up to 8, ranked deterministically when the
+user has more), then asks the leading successful model to synthesize one final answer.
+It does not debate or vote. The composer shows the exact number of selected models and
+warns that parallel calls can take longer and consume more tokens. It respects image/PDF
+attachments, incognito, memory, conversation persistence, generated titles and usage
+tracking.
 
 ### Council Members Configuration
 

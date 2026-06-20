@@ -239,7 +239,11 @@ export function useSSE({
       extraHeaders['Content-Type'] = 'application/json';
     }
 
-    const url = preferences?.multiMode ? '/chat/multi' : '/chat/stream';
+    const url = preferences?.mixinMode
+      ? '/chat/mixin'
+      : preferences?.multiMode
+        ? '/chat/multi'
+        : '/chat/stream';
 
     apiStream(url, {
       method: 'POST',

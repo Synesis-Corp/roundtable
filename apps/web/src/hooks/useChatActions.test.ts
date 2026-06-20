@@ -55,6 +55,23 @@ describe('useChatActions memory request contract', () => {
   });
 });
 
+describe('useChatActions Mixin request contract', () => {
+  it('marks Mixin requests and omits the manually selected model', () => {
+    const preferences = buildPrefs({
+      selectedModel: 'openai:gpt-4o',
+      multiMode: false,
+      mixinMode: true,
+      incognito: false,
+      effortSpec: null,
+      selectedEffort: 'default',
+    });
+
+    expect(preferences).toMatchObject({ multiMode: false, mixinMode: true });
+    expect(preferences.forceModel).toBeUndefined();
+    expect(preferences.forceProvider).toBeUndefined();
+  });
+});
+
 // ─── Onboarding UX gate (2026-06-14): defensive gate in handleSend ─────────
 
 describe('useChatActions — send gate (no providers)', () => {

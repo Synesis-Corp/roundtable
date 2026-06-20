@@ -126,6 +126,7 @@ export interface UserPreference {
   forceModel?: string;
   forceProvider?: string;
   multiMode?: boolean;
+  mixinMode?: boolean;
   incognito?: boolean;
   temperature?: number;
   effort?: string;
@@ -214,7 +215,13 @@ export interface CouncilInfo {
 
 export type StreamEvent =
   // --- común ---
-  | { type: 'turn.start'; mode: 'single' | 'council'; conversationId: string }
+  | {
+      type: 'turn.start';
+      mode: 'single' | 'council' | 'mixin';
+      conversationId?: string;
+      streamId?: string;
+      incognito?: boolean;
+    }
   // --- modo único ---
   | { type: 'message.delta'; textDelta: string }
   | {
@@ -256,6 +263,10 @@ export type StreamEvent =
     }
   | { type: 'council.answer.delta'; textDelta: string }
   | { type: 'council.answer.done' }
+  // --- Mixin ---
+  | { type: 'mixin.start'; modelCount: number; totalEligibleCount: number; capped: boolean }
+  | { type: 'mixin.member.error'; modelId: string }
+  | { type: 'mixin.done'; modelCount: number }
   // --- errores / fallback ---
   | {
       type: 'voice.error';

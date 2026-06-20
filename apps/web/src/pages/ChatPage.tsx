@@ -11,7 +11,12 @@ import { useSettings } from '../hooks/useSettings';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { useCouncilConfig } from '../hooks/useCouncilConfig';
 import { useStreaming } from '../lib/streaming-context';
-import { getGreeting, getCouncilPreviewCount, buildGreeting } from '../lib/chat-page-helpers';
+import {
+  getGreeting,
+  getCouncilPreviewCount,
+  getMixinEligibleCount,
+  buildGreeting,
+} from '../lib/chat-page-helpers';
 import { emitIncognitoChanged } from '../lib/incognito-events';
 import {
   useNewChatListener,
@@ -42,6 +47,7 @@ export default function ChatPage() {
     storage.get('selectedModel')
   );
   const [multiMode, setMultiMode] = useState(false);
+  const [mixinMode, setMixinMode] = useState(false);
   const [incognito, setIncognito] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(routeConversationId ?? null);
@@ -225,11 +231,11 @@ export default function ChatPage() {
     stopStream,
   });
 
-  // Load effort variants for the selected model. In Auto or Council mode the
+  // Load effort variants for the selected model. In Auto, Council or Mixin mode the
   // target provider is not fixed, so no request-level effort can be applied.
   useEffortVariants({
     selectedModel,
-    multiMode,
+    multiMode: multiMode || mixinMode,
     setIsEffortDropdownOpen,
     setEffortSearch,
     setEffortSpec,
@@ -247,6 +253,7 @@ export default function ChatPage() {
     setInputText,
     selectedModel,
     multiMode,
+    mixinMode,
     incognito,
     // Onboarding UX gate (2026-06-14): defensive send gate in handleSend.
     userProviders,
@@ -338,7 +345,10 @@ export default function ChatPage() {
 
   // Onboarding CTA — single mode only; never shown in council mode.
   const showOnboardingCta =
-    !multiMode && showWelcome && (onboarding.kind === 'new' || onboarding.kind === 'returning');
+    !multiMode &&
+    !mixinMode &&
+    showWelcome &&
+    (onboarding.kind === 'new' || onboarding.kind === 'returning');
 
   // Council model count: use manual config if available, otherwise auto-compute
   const configuredCouncilCount =
@@ -347,6 +357,7 @@ export default function ChatPage() {
       : null;
   const availableCouncilModelCount =
     configuredCouncilCount ?? getCouncilPreviewCount(models, userProviders.length);
+  const mixinEligibleCount = getMixinEligibleCount(models);
 
   // Shared props for both ChatInputBar instances (messages view + welcome). The
   // two differ only in `stopStream`, overridden at each call site.
@@ -366,6 +377,8 @@ export default function ChatPage() {
     modelsLoading,
     multiMode,
     setMultiMode,
+    mixinMode,
+    setMixinMode,
     // Onboarding UX gate (2026-06-14): ChatInputBar disables the send
     // button when userProviders is empty (or <2 in Consejo mode).
     userProviders,
@@ -388,6 +401,7 @@ export default function ChatPage() {
     textareaRef,
     hasMessages,
     councilModelCount: availableCouncilModelCount,
+    mixinModelCount: mixinEligibleCount,
     // Surface rejected files (anything that isn't an image or a PDF) as a
     // top-of-chat error banner. Single source of truth for the type allowlist
     // lives in `apps/web/src/lib/file-types.ts`; this callback just renders.
@@ -509,6 +523,17 @@ export default function ChatPage() {
                   {t('chat.councilChip', {
                     count: councilInfo?.members.length ?? availableCouncilModelCount,
                   })}
+                </span>
+              ) : mixinMode ? (
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full"
+                  style={{
+                    backgroundColor: 'var(--accent-quiet)',
+                    color: 'var(--accent-text)',
+                    border: '1px solid var(--accent-line)',
+                  }}
+                >
+                  {t('chat.mixinChip', { count: Math.min(mixinEligibleCount, 8) })}
                 </span>
               ) : selectedModelData ? (
                 <span
@@ -640,7 +665,9 @@ export default function ChatPage() {
                         ? t('chat.welcome.titlePrivate')
                         : multiMode
                           ? t('chat.welcome.titleCouncil')
-                          : t('chat.welcome.titleDefault')}
+                          : mixinMode
+                            ? t('chat.welcome.titleMixin')
+                            : t('chat.welcome.titleDefault')}
                     </h1>
                   </>
                 )}
@@ -662,6 +689,15 @@ export default function ChatPage() {
                         accent: <span style={{ color: 'var(--accent)', fontWeight: 500 }} />,
                       }}
                     />
+                  </p>
+                ) : mixinMode ? (
+                  <p
+                    className="mt-4 max-w-md mx-auto leading-relaxed select-none"
+                    style={{ fontSize: 14, color: 'var(--text-3)' }}
+                  >
+                    {mixinEligibleCount > 8
+                      ? t('chat.input.mixinNoticeCapped', { count: mixinEligibleCount })
+                      : t('chat.input.mixinNoticeAll', { count: mixinEligibleCount })}
                   </p>
                 ) : null}
               </div>

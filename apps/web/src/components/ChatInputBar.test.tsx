@@ -173,6 +173,40 @@ describe('ChatInputBar — incognito mode', () => {
   });
 });
 
+describe('ChatInputBar — Mixin mode', () => {
+  it('places Mixin between Single and Council in the mode selector', () => {
+    render(<ChatInputBar {...defaultProps()} />);
+
+    const modeButtons = Array.from(
+      screen.getByRole('group', { name: /chat mode/i }).querySelectorAll('button')
+    ).map((button) => button.textContent?.trim());
+
+    expect(modeButtons).toEqual(['Single', 'Mixin', 'Council']);
+  });
+
+  it('shows the capped personalized notice and exposes the third mode', () => {
+    render(<ChatInputBar {...defaultProps({ mixinMode: true, mixinModelCount: 11 })} />);
+
+    expect(screen.getByRole('button', { name: 'Mixin' })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Mixin mode: 8 of your 11 models will be used to generate the best possible answer.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('switches to Mixin and clears Council mode', () => {
+    const setMultiMode = vi.fn();
+    const setMixinMode = vi.fn();
+    render(<ChatInputBar {...defaultProps({ setMultiMode, setMixinMode })} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mixin' }));
+
+    expect(setMultiMode).toHaveBeenCalledWith(false);
+    expect(setMixinMode).toHaveBeenCalledWith(true);
+  });
+});
+
 // ─── Composer border — incognito/drag/normal 3-way ternary (Capability 8) ──
 
 describe('ChatInputBar — composer border (Capability 8)', () => {

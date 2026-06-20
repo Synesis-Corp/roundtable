@@ -1,6 +1,6 @@
 import { prisma } from './db';
 
-export type UsageMode = 'single' | 'council';
+export type UsageMode = 'single' | 'council' | 'mixin';
 
 export interface UsageSource {
   provider: string;
