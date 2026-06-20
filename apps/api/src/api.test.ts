@@ -3321,3 +3321,59 @@ describe('DELETE /providers/:id — cleanup of dependent state', () => {
     expect(mockPrisma.councilConfig.upsert).not.toHaveBeenCalled();
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth rate limiting — regression guard.
+//
+// The limiter is mounted with `app.use('/auth', authLimiter, authRoutes)`.
+// Express strips the mount prefix, so INSIDE the limiter `req.path` is `/login`,
+// NOT `/auth/login`. The original skip predicate compared `req.path` against the
+// full `/auth/...` strings, so it never matched and the limiter skipped EVERY
+// request — leaving login/register/google with zero brute-force protection.
+//
+// The limiter self-skips when NODE_ENV === 'test' (the reason the bug survived
+// the suite), so these tests flip NODE_ENV to engage it exactly as in prod.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('Auth rate limiting', () => {
+  const realNodeEnv = process.env.NODE_ENV;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // The skip predicate reads process.env.NODE_ENV per request; flip it so the
+    // limiter behaves as it does in production. Restored in afterEach.
+    process.env.NODE_ENV = 'development';
+  });
+
+  afterEach(() => {
+    process.env.NODE_ENV = realNodeEnv;
+  });
+
+  it('blocks /auth/login past the limit (req.path is mount-relative "/login")', async () => {
+    const statuses: number[] = [];
+    // limit = 20 per window → the 21st request must be rejected with 429.
+    for (let i = 0; i < 21; i++) {
+      const res = await request(app)
+        .post('/auth/login')
+        .send({ email: 'bruteforce@example.com', password: 'x' });
+      statuses.push(res.status);
+    }
+
+    // First 20 reach the handler (401 invalid creds) — none rate-limited.
+    expect(statuses.slice(0, 20).some((s) => s === 429)).toBe(false);
+    // The 21st is blocked by the limiter.
+    expect(statuses[20]).toBe(429);
+  });
+
+  it('never blocks /auth/refresh (the frontend calls it automatically on 401)', async () => {
+    // Even with the per-IP bucket already saturated by the login test, refresh
+    // must stay exempt — it is not in the limited set, so the frontend's
+    // automatic refresh-on-401 never exhausts the bucket.
+    const statuses: number[] = [];
+    for (let i = 0; i < 25; i++) {
+      const res = await request(app).post('/auth/refresh');
+      statuses.push(res.status);
+    }
+
+    expect(statuses.every((s) => s !== 429)).toBe(true);
+  });
+});

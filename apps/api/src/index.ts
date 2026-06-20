@@ -63,8 +63,10 @@ const authLimiter = rateLimit({
   limit: 20,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  skip: (req) =>
-    skipInTest() || !['/auth/login', '/auth/register', '/auth/google'].includes(req.path),
+  // Paths are MOUNT-RELATIVE: this runs under `app.use('/auth', ...)`, so Express
+  // strips the prefix and req.path is "/login", not "/auth/login". Listing the
+  // full "/auth/..." paths here matched nothing and silently disabled the limiter.
+  skip: (req) => skipInTest() || !['/login', '/register', '/google'].includes(req.path),
   message: { error: 'Too many authentication attempts, try again later' },
 });
 
