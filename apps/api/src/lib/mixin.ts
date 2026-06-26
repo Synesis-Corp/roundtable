@@ -1,4 +1,4 @@
-import type { ModelCapability } from '@chat/sdk';
+import type { Message, ModelCapability } from '@chat/sdk';
 
 /** Mixin fans out to every eligible active model, but never beyond this cost and latency guardrail. */
 export const MAX_MIXIN_MODELS = 8;
@@ -22,6 +22,34 @@ export function rankMixinModels(models: ModelCapability[]): ModelCapability[] {
 
 export function selectMixinModels(models: ModelCapability[]): ModelCapability[] {
   return rankMixinModels(models).slice(0, MAX_MIXIN_MODELS);
+}
+
+/**
+ * Builds the message variant for text-only Mixin members: image attachments are
+ * removed (some providers throw on image parts they can't consume) and any
+ * message that carried an image gets a notice so the model doesn't claim "no
+ * image attached". Vision-capable members keep the original messages instead.
+ *
+ * Returns the input untouched when there are no images, so callers can share a
+ * single array across all members in the common case.
+ */
+export function stripImagesForTextOnly(messages: Message[], imageCount: number): Message[] {
+  if (imageCount <= 0) return messages;
+  return messages.map((message) => {
+    if (!message.attachments?.length) return message;
+    const hadImage = message.attachments.some((att) => att.type === 'image');
+    const kept = message.attachments.filter((att) => att.type !== 'image');
+    const notice = hadImage
+      ? `\n\n[Nota: el usuario adjuntó ${imageCount} ${
+          imageCount === 1 ? 'imagen' : 'imágenes'
+        } que vos no podés ver. Otros modelos con visión las analizarán; no afirmes que no se adjuntó imagen.]`
+      : '';
+    return {
+      ...message,
+      content: message.content + notice,
+      attachments: kept.length ? kept : undefined,
+    };
+  });
 }
 
 /**

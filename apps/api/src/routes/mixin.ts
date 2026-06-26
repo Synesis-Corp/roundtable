@@ -11,7 +11,7 @@ import {
 import { getProvider } from '../lib/provider-registry';
 import { uploadFiles, parseMultipartBody } from '../lib/multipart';
 import { ensureValidMessages } from '../lib/validate-messages';
-import { buildMixinSynthesisPrompt, selectMixinModels } from '../lib/mixin';
+import { buildMixinSynthesisPrompt, selectMixinModels, stripImagesForTextOnly } from '../lib/mixin';
 import { unwrapWholeAnswerFence } from '../lib/council';
 import { generateConversationTitle } from '../lib/title';
 import { streamHub } from '../lib/stream-hub';
@@ -263,6 +263,13 @@ async function handleMixinRequest(req: AuthenticatedRequest, res: Response): Pro
           recalledMemories,
           new Date()
         );
+        // Route images by capability: vision members get `generationMessages`
+        // as-is; text-only members get a variant with image parts stripped (some
+        // providers throw on them) plus a notice so they don't claim "no image".
+        const imageCount = (lastUserMessage?.attachments ?? []).filter(
+          (att) => att.type === 'image'
+        ).length;
+        const textOnlyMessages = stripImagesForTextOnly(generationMessages, imageCount);
         const startTime = Date.now();
         let totalInputTokens = 0;
         let totalOutputTokens = 0;
@@ -278,8 +285,12 @@ async function handleMixinRequest(req: AuthenticatedRequest, res: Response): Pro
             const provider = getProvider(model.provider, credential.options);
             if (!provider) return null;
             try {
+              const canSeeImages = imageCount > 0 && model.modalities.includes('image');
               const response = await provider.chat(
-                { messages: generationMessages, model: model.modelId },
+                {
+                  messages: canSeeImages ? generationMessages : textOnlyMessages,
+                  model: model.modelId,
+                },
                 credential.apiKey,
                 session.abort.signal
               );
@@ -321,11 +332,12 @@ async function handleMixinRequest(req: AuthenticatedRequest, res: Response): Pro
 
         const synthesizer = successes[0]!;
         let finalAnswer = unwrapWholeAnswerFence(synthesizer.response.content);
+        const synthSeesImages = imageCount > 0 && synthesizer.model.modalities.includes('image');
         try {
           const synthesis = await synthesizer.provider.chat(
             {
               messages: [
-                ...generationMessages,
+                ...(synthSeesImages ? generationMessages : textOnlyMessages),
                 {
                   role: 'user',
                   content: buildMixinSynthesisPrompt(

@@ -397,6 +397,18 @@ describe('buildCouncilMembersFromConfig', () => {
       })
     );
   });
+
+  it('carries each model real image capability instead of forcing false', () => {
+    const members = buildCouncilMembersFromConfig(
+      ['openai:gpt-4o', 'deepseek:deepseek-chat'],
+      [
+        { provider: 'openai', modelId: 'gpt-4o', attachment: true },
+        { provider: 'deepseek', modelId: 'deepseek-chat', attachment: false },
+      ]
+    );
+    expect(members[0].attachment).toBe(true);
+    expect(members[1].attachment).toBe(false);
+  });
 });
 
 describe('buildConversationContext (#6 — council inherits chat history)', () => {
@@ -449,6 +461,37 @@ describe('council prompts carry conversation context (#6)', () => {
     expect(prompt).toContain('¿Cuál es la capital de Francia?');
     // No history → no "conversación previa" framing leaks in.
     expect(prompt).not.toMatch(/conversaci[oó]n previa/i);
+  });
+
+  it('buildProposalPrompt warns text-only members about images they cannot see', () => {
+    const prompt = buildProposalPrompt(
+      '¿Qué tipo de bolso es este?',
+      'deepseek-v4',
+      '',
+      undefined,
+      2
+    );
+    expect(prompt).toMatch(/2 im[aá]genes/i);
+    expect(prompt).toContain('no tenés capacidad visual');
+    // It must explicitly tell the model NOT to claim there is no image.
+    expect(prompt).toMatch(/no se adjunt[oó] imagen/i);
+  });
+
+  it('buildProposalPrompt uses the singular for a single unseen image', () => {
+    const prompt = buildProposalPrompt(
+      '¿Qué tipo de bolso es este?',
+      'deepseek-v4',
+      '',
+      undefined,
+      1
+    );
+    expect(prompt).toMatch(/1 imagen/i);
+    expect(prompt).not.toMatch(/1 im[aá]genes/i);
+  });
+
+  it('buildProposalPrompt stays clean when there are no unseen images (vision model)', () => {
+    const prompt = buildProposalPrompt('¿Qué tipo de bolso es este?', 'gpt-5.4', '', undefined, 0);
+    expect(prompt).not.toMatch(/capacidad visual/i);
   });
 
   it('buildProposalPrompt injects the assigned angle', () => {

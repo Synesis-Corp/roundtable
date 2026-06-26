@@ -311,7 +311,13 @@ export function buildProposalPrompt(
   userQuestion: string,
   modelName: string,
   history = '',
-  angle?: string
+  angle?: string,
+  /**
+   * Number of images the user attached that THIS model cannot see (it lacks
+   * vision). When > 0, a notice is injected so the model does not claim "no
+   * image was attached" — other vision-capable members will analyze it.
+   */
+  unseenImageCount = 0
 ): string {
   const contextBlock = history
     ? `Para que tu propuesta sea coherente con la conversación previa, este es el historial hasta ahora:\n\n"""\n${history}\n"""\n\n`
@@ -319,7 +325,13 @@ export function buildProposalPrompt(
   const angleBlock = angle
     ? `\n\n## Tu perspectiva asignada\nActúa bajo el ángulo "${angle}". ${getCouncilAngleDescription(angle)}\n`
     : '';
-  return `Eres ${modelName}. ${contextBlock}El usuario ha hecho la siguiente pregunta:
+  const imageNoticeBlock =
+    unseenImageCount > 0
+      ? `\n\n⚠️ El usuario adjuntó ${unseenImageCount} ${
+          unseenImageCount === 1 ? 'imagen' : 'imágenes'
+        } que vos NO podés ver porque no tenés capacidad visual. NO afirmes que "no se adjuntó imagen": SÍ hay una. Otros miembros del consejo con visión la analizarán. Aportá una metodología, marco o criterios que complementen ese análisis visual en vez de pedir la imagen.\n`
+      : '';
+  return `Eres ${modelName}. ${contextBlock}${imageNoticeBlock}El usuario ha hecho la siguiente pregunta:
 
 """${userQuestion}"""
 
@@ -642,6 +654,7 @@ export function buildCouncilMembersFromConfig(
     reasoning?: boolean;
     toolCall?: boolean;
     structuredOutput?: boolean;
+    attachment?: boolean;
   }>
 ): Array<CouncilCandidateModel & { tier: CouncilTier }> {
   const modelMap = new Map(textModels.map((m) => [`${m.provider}:${m.modelId}`, m]));
@@ -656,7 +669,7 @@ export function buildCouncilMembersFromConfig(
       reasoning: model.reasoning,
       toolCall: model.toolCall,
       structuredOutput: model.structuredOutput,
-      attachment: false,
+      attachment: model.attachment ?? false,
       tier: 'strong' as CouncilTier,
     };
   });

@@ -170,7 +170,10 @@ POST /chat/multi   { messages, conversationId?, preferences? }
 ```
 
 The **Council mode** selects, for each connected provider, a **strong** and a **light** model whenever possible. Those models deliberate in 3 rounds:
-1. **Proposals** — each model proposes an approach in structured markdown
+1. **Proposals** — each model proposes an approach in structured markdown. Image
+   attachments are routed to vision-capable members so they actually see them;
+   text-only members receive a notice (so they don't claim "no image attached")
+   and contribute methodology around the others' visual analysis
 2. **Debate** — models compare proposals and identify the best common base
 3. **Vote** — each model votes for the strongest base and contributes one improvement
 4. **Synthesis** — the final answer integrates the winning base plus the best improvements from the rest of the council
@@ -188,9 +191,11 @@ POST /chat/mixin  { messages, conversationId?, preferences: { mixinMode: true } 
 active, text-capable models in parallel (up to 8, ranked deterministically when the
 user has more), then asks the leading successful model to synthesize one final answer.
 It does not debate or vote. The composer shows the exact number of selected models and
-warns that parallel calls can take longer and consume more tokens. It respects image/PDF
-attachments, incognito, memory, conversation persistence, generated titles and usage
-tracking.
+warns that parallel calls can take longer and consume more tokens. Image attachments are
+routed by capability — vision members receive them, text-only members get the images
+stripped plus a notice (so they don't claim "no image attached"); the same applies to the
+synthesizer. It also respects PDF attachments, incognito, memory, conversation
+persistence, generated titles and usage tracking.
 
 ### Council Members Configuration
 

@@ -353,6 +353,10 @@ export async function handleCouncilRequest(
       targetConversationId = conversation.id;
     }
     const lastUserAttachments = messages[messages.length - 1]?.attachments;
+    // Image attachments routed to vision-capable members during the proposal
+    // round. The deliberation (debate/vote/synthesis) then works on the text
+    // proposals, which already incorporate what the vision models saw.
+    const imageAttachments = (lastUserAttachments ?? []).filter((att) => att.type === 'image');
     if (!incognito && targetConversationId) {
       await prisma.message.create({
         data: {
@@ -434,15 +438,23 @@ export async function handleCouncilRequest(
 
             try {
               const angle = angleAssignments.get(model.modelId);
+              // Route the user's image attachments to vision-capable members so
+              // they actually SEE it; text-only members get a notice instead so
+              // they don't poison the deliberation claiming "no image attached".
+              const canSeeImages = !!model.attachment && imageAttachments.length > 0;
               const prompt = buildProposalPrompt(
                 lastUserMsg,
                 model.modelId,
                 conversationHistory,
-                angle
+                angle,
+                canSeeImages ? 0 : imageAttachments.length
               );
+              const userMessage: Message = canSeeImages
+                ? { role: 'user', content: prompt, attachments: imageAttachments }
+                : { role: 'user', content: prompt };
               const response = await provider.chat(
                 {
-                  messages: [councilContext, { role: 'user', content: prompt }],
+                  messages: [councilContext, userMessage],
                   model: model.modelId,
                 },
                 credential.apiKey,
